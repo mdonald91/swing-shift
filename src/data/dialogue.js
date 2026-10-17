@@ -9,14 +9,18 @@
 // {name} is replaced with the captain's name.
 
 // Which conversation starts when you talk to someone or use something.
-export function entry(id, flags) {
+export function entry(id, flags, location) {
+  const docks = location === 'docks';
   switch (id) {
-    case 'rook': return flags.met_rook ? 'rook_idle' : 'rook_first';
-    case 'tam': return flags.met_tam ? 'tam_idle' : 'tam_first';
-    case 'brushes': return flags.met_brushes ? 'brushes_idle' : 'brushes_first';
+    case 'rook': return docks ? 'rook_docks' : flags.velvet_done ? 'rook_after' : flags.met_rook ? 'rook_idle' : 'rook_first';
+    case 'tam': return docks ? 'tam_docks' : flags.velvet_done ? 'tam_after' : flags.met_tam ? 'tam_idle' : 'tam_first';
+    case 'brushes': return flags.velvet_done ? 'brushes_after' : flags.met_brushes ? 'brushes_idle' : 'brushes_first';
+    case 'ozzie': return flags.met_ozzie ? 'ozzie_idle' : 'ozzie_first';
     case 'cockpit':
-      if (flags.velvet_course) return 'cockpit_set';
+      if (flags.velvet_done) return 'cockpit_done';
+      if (flags.velvet_course) return 'cockpit_return';
       return flags.bounty_velvet ? 'cockpit_go' : 'cockpit_none';
+    case 'door': return flags.door_open ? 'door_open' : 'door_locked';
     default: return id;
   }
 }
@@ -81,7 +85,7 @@ export const DIALOGUE = {
   tam_calm: [{ who: 'tam', t: 'Fuel. Then food. Then the weird noise from the galley. In that order.' }],
   tam_ruth: [{ who: 'tam', t: 'Touch my engine and I strip YOU for parts, Captain.' }],
   tam_idle: [
-    { who: 'tam', if: 'velvet_course', t: "Course is locked in. I'll keep the engine purring. Or at least growling." },
+    { who: 'tam', if: 'velvet_course', t: "Dock 9 is one jump away. I'll keep the engine purring. Or at least growling." },
     { who: 'tam', ifNot: 'velvet_course', pick: [
       "If you hear a bang, that's normal. If you hear two bangs, run.",
       "Gerald's looking good today. The plant, Cap. The plant is Gerald.",
@@ -110,8 +114,8 @@ export const DIALOGUE = {
   brushes_ideal: [{ who: 'brushes', t: "I've added it to the list. The list is very long, Captain." }],
   brushes_ruth: [{ who: 'brushes', t: 'Market value of one egg: four chits. Market value of your soul: still being assessed.' }],
   brushes_idle: [
-    { who: 'brushes', if: 'velvet_course', t: 'Course plotted for Ganymede, Dock 9. The rest of this track is still being recorded, Captain.' },
-    { who: 'brushes', if: 'bounty_velvet', ifNot: 'velvet_course', t: 'Contract accepted. The cockpit is ready when you are.' },
+    { who: 'brushes', if: 'velvet_course', t: "Dock 9 is waiting, Captain. The cockpit will take us back down whenever you're ready." },
+    { who: 'brushes', if: 'bounty_velvet', ifNot: 'velvet_course', t: 'Contract accepted. Head to the cockpit and I will count us in.' },
     { who: 'brushes', ifNot: 'bounty_velvet', t: "The bounty board is right behind me. Velvet Moreau. Fifteen thousand chits. I'm just saying." }
   ],
 
@@ -144,15 +148,106 @@ export const DIALOGUE = {
   cockpit_go: [
     { who: null, t: 'Ship systems. Contract: Velvet Moreau. Course available: Ganymede, Dock 9.' },
     { choices: [
-      { t: 'Plot the course', go: 'cockpit_plot' },
+      { t: 'Fly to Dock 9', go: 'cockpit_plot' },
       { t: 'Not yet' }
     ] }
   ],
-  cockpit_plot: [
-    { set: 'velvet_course' },
-    { do: 'objective' },
-    { who: 'brushes', t: 'Course plotted. One, two, one-two-three-four!' },
-    { who: null, t: 'The engine coughs, then catches. Dock 9, mission maps and combat land in the next build.' }
+  cockpit_plot: [{ set: 'velvet_course' }, { do: 'depart' }],
+  cockpit_return: [
+    { who: null, t: 'Course stored: Ganymede, Dock 9.' },
+    { choices: [
+      { t: 'Fly back to Dock 9', go: 'cockpit_back' },
+      { t: 'Not yet' }
+    ] }
   ],
-  cockpit_set: [{ who: null, t: 'Course locked: Ganymede, Dock 9. Mission maps and combat land in the next build.' }]
+  cockpit_back: [{ do: 'toDocks' }],
+  cockpit_done: [{ who: null, t: 'Ship systems. Fuel: 64%. Hull: patched with shoes. New contracts arrive on the bounty board soon.' }],
+
+  // ---- after Track 01 ----
+  rook_after: [{ who: 'rook', pick: ['Velvet had a mean right hook for someone in a hat that big.', 'Payday nap. The best kind of nap.', 'Tam took my shoes. I want that on the record.'] }],
+  tam_after: [{ who: 'tam', pick: ['Hull patch is holding. Mostly shoe leather.', "I bought real noodles. Don't touch them. Any of you.", 'Gerald got a new pot. Gerald deserves it.'] }],
+  brushes_after: [{ who: 'brushes', pick: ['Fridge report: two eggs! Growth!', "I've started a file on Ghost Frequency. It's mostly static. Spooky static.", 'Excellent drumming in that fight, Captain. Very on the beat. Mostly.'] }],
+
+  // ---- Dock 9 ----
+  rook_docks: [{ who: 'rook', pick: ["I'm guarding the ship. It's very safe. Look how safe it is.", 'Ozzie by the vending machine knows things. Dock workers always know things.', 'If you hear shooting, that was probably me. Probably.'] }],
+  tam_docks: [
+    { who: 'tam', ifNot: 'door_open', t: 'Look for anything that smells like fresh ink. Or money. Same smell, really.' },
+    { who: 'tam', if: 'door_open', t: "Brushes cracked the lock on 9-C. Velvet's in there. Let's go earn some noodles." }
+  ],
+  ozzie_first: [
+    { set: 'met_ozzie' },
+    { who: 'ozzie', t: "Bounty hunters? Keep your voice down. The twins outside 9-C don't like visitors." },
+    { choices: [
+      { t: "What's inside 9-C?", go: 'ozzie_info' },
+      { t: "Thanks. We'll keep it quiet.", temp: 'Calm', go: 'ozzie_calm' },
+      { t: 'Twins? How do you tell them apart?', temp: 'Sarcastic', go: 'ozzie_sarc' },
+      { t: "We'll get her off your dock for good.", temp: 'Idealistic', go: 'ozzie_ideal' },
+      { t: 'Talk, or I tell Velvet you were helpful.', temp: 'Ruthless', go: 'ozzie_ruth' },
+      { t: 'Never mind.' }
+    ] }
+  ],
+  ozzie_info: [
+    { who: 'ozzie', t: 'Officially, decorative paper. Unofficially, I hear printing at 3 a.m.' },
+    { who: 'ozzie', t: 'Check the crates on the east side, the ink drums, and that vending machine. It ate a very suspicious chit this morning.' }
+  ],
+  ozzie_calm: [{ who: 'ozzie', t: 'Appreciated. Crates on the east side, ink drums, the vending machine. That is all I know. I have two kids and one kidney.' }],
+  ozzie_sarc: [{ who: 'ozzie', t: 'One of them has a neck. Try the east crates, the ink drums and the vending machine.' }],
+  ozzie_ideal: [{ who: 'ozzie', t: "Do that and I'll buy you noodles. One cup. Each. Start with the east crates, the ink drums and the vending machine." }],
+  ozzie_ruth: [{ who: 'ozzie', t: '...East crates. Ink drums. The vending machine took a dodgy chit. Please never tell her anything.' }],
+  ozzie_idle: [
+    { who: 'ozzie', if: 'door_open', t: "Whatever you're about to do in there, I didn't see it." },
+    { who: 'ozzie', ifNot: 'door_open', pick: ['East crates, ink drums, vending machine. I am repeating myself because I am nervous.', 'Night shift on Ganymede. Minus 160 outside, and the coffee is somehow colder.'] }
+  ],
+  goon: [
+    { who: 'goon', ifNot: 'door_open', pick: ['Move along. Nothing to see here. Definitely no printing.', 'Boss says no visitors. Boss also says no eye contact.', 'This is a decorative paper warehouse. Very decorative. Very paper.'] },
+    { who: 'goon', if: 'door_open', t: "Hey, why's the door unlocked? ...Not my shift problem." }
+  ],
+  door_locked: [{ who: null, t: "Warehouse 9-C. Locked tight, with a printing-press hum coming through the door. Brushes needs proof before cracking it." }],
+  door_open: [
+    { who: null, t: 'The lock on 9-C blinks green. Inside: the thump of a printing press, and someone humming.' },
+    { choices: [
+      { t: 'Go in', go: 'door_go' },
+      { t: 'Not yet' }
+    ] }
+  ],
+  door_go: [{ do: 'confront' }],
+  manifest: [
+    { who: null, if: 'clue_manifest', t: 'Crates of "decorative paper". You already have the manifest.' },
+    { ifNot: 'clue_manifest', set: 'clue_manifest' },
+    { who: null, if: 'clue_manifest', ifNot: 'manifest_seen', t: 'A shipping manifest: 400 kg of decorative paper, delivered to Warehouse 9-C every night this month. Nobody needs that much decoration.' },
+    { set: 'manifest_seen' },
+    { do: 'clue' }
+  ],
+  ink: [
+    { who: null, if: 'clue_ink', t: 'Empty drums. You already found the ink.' },
+    { ifNot: 'clue_ink', set: 'clue_ink' },
+    { who: null, if: 'clue_ink', ifNot: 'ink_seen', t: 'Drums of magnetic banknote ink, still warm. Someone has been printing all night.' },
+    { set: 'ink_seen' },
+    { do: 'clue' }
+  ],
+  chit: [
+    { who: null, if: 'clue_chit', t: 'The vending machine hums. It has nothing left to confess.' },
+    { ifNot: 'clue_chit', set: 'clue_chit' },
+    { who: null, if: 'clue_chit', ifNot: 'chit_seen', t: "The machine's reject tray holds a credit chit. The serial number is a phone number. It's fake, and the machine gave you a free noodle cup out of guilt." },
+    { set: 'chit_seen' },
+    { do: 'noodle' },
+    { do: 'clue' }
+  ],
+  comms_open: [
+    { who: 'brushes', t: "Captain, that's all the proof I need. Cracking the lock on Warehouse 9-C now..." },
+    { who: 'brushes', t: "...and done. Velvet's inside. Bring her out alive, please. Alive pays." }
+  ],
+  drum: [{ who: null, t: 'An oil drum. It sloshes ominously.' }],
+  crate: [{ who: null, t: 'Empty crates. One says FRAGILE in four languages, and has clearly been kicked in all four.' }],
+  container: [{ who: null, pick: ['A shipping container. Empty, except for echoes and a strong smell of fish.', 'A container stencilled IO NOODLE CO. Tam would want you to check. It is empty. Tam would be devastated.', 'Locked container. Someone has scratched a tiny saxophone into the paint.'] }],
+  lamp: [{ who: null, t: 'A sodium lamp buzzing in B-flat. Brushes would approve.' }],
+  warehouse: [{ who: null, t: 'Corrugated warehouse wall. Cold enough to stick your tongue to. Do not.' }],
+  ship: [
+    { who: null, t: 'The Hi-Hat, parked and ticking as it cools. Head back aboard?' },
+    { choices: [
+      { t: 'Board the Hi-Hat', go: 'ship_board' },
+      { t: 'Stay on the dock' }
+    ] }
+  ],
+  ship_board: [{ do: 'toShip' }]
 };

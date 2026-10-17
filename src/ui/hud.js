@@ -10,9 +10,13 @@ export function objective() {
   const f = state.flags;
   if (!f.intro_done) return '';
   const met = ['met_rook', 'met_tam', 'met_brushes'].filter(k => f[k]).length;
+  if (f.velvet_done) return 'Track 01 complete. Ghost Frequency is coming.';
   if (!f.bounty_velvet) return met < 3 ? `Talk to your crew (${met}/3)` : 'Check the bounty board';
-  if (!f.velvet_course) return 'Plot a course in the cockpit';
-  return 'Next build: Dock 9, Ganymede';
+  if (state.location === 'docks') {
+    if (!f.door_open) return `Find proof of the press (${f.clues || 0}/3)`;
+    return 'Get into Warehouse 9-C';
+  }
+  return f.velvet_course ? 'Fly back to Dock 9 from the cockpit' : 'Fly to Dock 9 from the cockpit';
 }
 
 export const Hud = {

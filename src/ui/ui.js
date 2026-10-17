@@ -1,9 +1,11 @@
 // The HTML layer over the game canvas: screens, menus, dialogue, toasts.
 import { bus } from '../bus.js';
-import { state, flag } from '../state.js';
+import { state, flag, setFlag } from '../state.js';
 import { block, unblock } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
 import { entry } from '../data/dialogue.js';
+import { MAPS } from '../data/maps.js';
+import { playCut } from './cutscene.js';
 import { Title } from './title.js';
 import { Hud } from './hud.js';
 import { runDialogue } from './dialog.js';
@@ -26,18 +28,23 @@ export const UI = {
   init(g) {
     game = g;
     const root = document.getElementById('ui');
-    root.innerHTML = `<div id="screen"></div><div id="hud-layer"></div><div id="dialog-layer"></div><div id="modal-layer"></div><div id="toast-layer" aria-live="polite"></div>`;
-    ['screen', 'hud-layer', 'dialog-layer', 'modal-layer', 'toast-layer'].forEach(id => layers[id] = document.getElementById(id));
+    root.innerHTML = `<div id="screen"></div><div id="hud-layer"></div><div id="dialog-layer"></div><div id="scene-layer"></div><div id="modal-layer"></div><div id="toast-layer" aria-live="polite"></div>`;
+    ['screen', 'hud-layer', 'dialog-layer', 'scene-layer', 'modal-layer', 'toast-layer'].forEach(id => layers[id] = document.getElementById(id));
     Hud.mount(layers['hud-layer']);
 
     bus.on('interact', id => {
       if (id === 'board') return openBoard();
       if (id === 'jukebox') return openJukebox();
-      runDialogue(entry(id, state.flags));
+      runDialogue(entry(id, state.flags, state.location));
     });
     bus.on('menu', () => { if (!modals.length && !document.querySelector('.dlg')) openPauseMenu(); });
     bus.on('hint', t => Hud.hint(t));
-    bus.on('area', map => Hud.area(map));
+    bus.on('area', map => {
+      Hud.area(map);
+      if (state.location === 'docks' && !flag('docks_arrived')) {
+        setTimeout(() => playCut('arrive').then(() => { setFlag('docks_arrived'); Hud.refresh(); }), 400);
+      }
+    });
 
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && modals.length) { e.preventDefault(); modals[modals.length - 1].close(); }
@@ -77,6 +84,17 @@ export function leaveWorld() {
 }
 
 export function dialogLayer() { return layers['dialog-layer']; }
+export function sceneLayer() { return layers['scene-layer']; }
+
+// Move to another map. spawn names a point in that map's "spawns".
+export function travel(location, spawn = 'default') {
+  const m = MAPS[location]; if (!m) return;
+  const s = m.spawns[spawn] || m.spawns.default;
+  state.location = location;
+  state.pos = { px: s.x * 16 + 8, py: s.y * 16 + 8 };
+  if (game.scene.isActive('world') || game.scene.isPaused('world')) game.scene.stop('world');
+  game.scene.start('world');
+}
 
 // A modal panel over the world. Returns a handle with close().
 export function openModal(node, { onClose } = {}) {

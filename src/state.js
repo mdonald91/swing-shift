@@ -16,6 +16,7 @@ function blank() {
     flags: {},
     bounties: {},          // id -> 'active' | 'done'
     chits: 480,
+    items: { noodle: 2 },
     playtime: 0,
     savedAt: 0
   };

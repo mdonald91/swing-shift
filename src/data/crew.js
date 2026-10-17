@@ -7,7 +7,8 @@ export const CREW = {
   brushes: { name: 'Brushes', short: 'Brushes', role: 'Ship drone', color: 'var(--mustard)', blip: 720,
     hp: 85, sp: 70, bio: 'Ship AI in a flying drum kit. Counts everyone in.', skills: ['Static Brush', 'Jam Signal'] },
   velvet: { name: 'Velvet Moreau', short: 'Velvet', color: 'var(--violet)', blip: 360 },
-  goon: { name: 'Dock Goon', short: 'Goon', color: 'var(--smoke)', blip: 180 }
+  goon: { name: 'Dock Goon', short: 'Goon', color: 'var(--smoke)', blip: 180 },
+  ozzie: { name: 'Ozzie Banda', short: 'Ozzie', color: 'var(--mustard)', blip: 300 }
 };
 
 // What the captain brings to a fight, based on temperament.

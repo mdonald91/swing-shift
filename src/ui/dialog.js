@@ -7,12 +7,35 @@ import { state, settings, flag, setFlag, saveGame } from '../state.js';
 import { block, unblock } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
 import { bus } from '../bus.js';
-import { el, esc, dialogLayer, toast } from './ui.js';
+import { el, esc, dialogLayer, toast, travel } from './ui.js';
 import { Hud } from './hud.js';
+import { playCut } from './cutscene.js';
+import { startBattle } from './battle.js';
 
+// Things a conversation can trigger. Anything that changes scene waits until the box closes.
+let after = null;
 const ACTIONS = {
   save() { const ok = saveGame(); Audio.sfx('save'); toast(ok ? `Saved to slot ${state.slot + 1}` : "Couldn't save: this browser is blocking storage"); },
-  objective() { Hud.refresh(); }
+  objective() { Hud.refresh(); },
+  depart() { after = () => playCut('depart', { restoreMood: false }).then(() => travel('docks')); },
+  toDocks() { after = () => travel('docks'); },
+  toShip() { after = () => travel('ship', 'cockpit'); },
+  confront() { after = () => playCut('confront', { restoreMood: false }).then(() => startBattle('velvet')); },
+  noodle() {
+    if (flag('noodle_given')) return;
+    setFlag('noodle_given');
+    state.items.noodle = (state.items.noodle || 0) + 1;
+    toast('Got a Noodle Cup');
+  },
+  clue() {
+    const n = ['clue_manifest', 'clue_ink', 'clue_chit'].filter(flag).length;
+    if (n <= (state.flags.clues || 0)) return;
+    state.flags.clues = n;
+    Audio.sfx('confirm');
+    toast(`Clue found (${n}/3)`);
+    Hud.refresh();
+    if (n >= 3 && !flag('door_open')) { setFlag('door_open'); after = () => runDialogue('comms_open'); }
+  }
 };
 
 let running = false;
@@ -60,6 +83,8 @@ export async function runDialogue(id) {
     box.remove();
     running = false; unblock();
     bus.emit('dialog-closed');
+    const next = after; after = null;
+    if (next) setTimeout(next, 60);
   }
 }
 

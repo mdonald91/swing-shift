@@ -174,7 +174,8 @@ export const Audio = {
   get mood() { return moodName; },
   isSuno(name) { return !!(suno.playing && suno.mood === name); },
   sunoMissing(name) { return !!suno.missing[name]; },
-  beatPos() { return (now() - Clock.origin) * Clock.bpm / 60; },
+  // Where we are in the music, in beats. Allows for speaker/Bluetooth delay so taps line up with what you hear.
+  beatPos() { const lag = A.ctx ? (A.ctx.outputLatency || A.ctx.baseLatency || 0) : 0; return (now() - lag - Clock.origin) * Clock.bpm / 60; },
   volumes() { applyVolumes(); if (!settings.suno) stopSuno(); else if (A.ctx) trySuno(moodName); },
   sfx(name, arg) {
     if (!A.ctx) return;
@@ -189,6 +190,16 @@ export const Audio = {
         case 'save': [0, 4, 7, 12].forEach((iv, i) => osc('sine', mf(72 + iv), t + i * .06, .4, .11, { dest: d })); break;
         case 'cymbal': noise(t, 1.6, .25, { type: 'highpass', f: 5000, dest: d }); break;
         case 'bump': osc('sine', 120, t, .08, .12, { dest: d, glideTo: 70 }); break;
+        case 'bang': noise(t, .25, .6, { type: 'lowpass', f: 2600, dest: d }); osc('sine', 170, t, .2, .6, { glideTo: 40, dest: d }); break;
+        case 'ping': osc('sine', 2400, t, .3, .12, { glideTo: 900, dest: d }); noise(t, .1, .3, { type: 'lowpass', f: 2000, dest: d }); break;
+        case 'clank': [520, 1310, 2090].forEach(f => osc('square', f, t, .35, .07, { dest: d, cut: 4000 })); noise(t, .08, .3, { f: 3000, dest: d }); break;
+        case 'zap': osc('sawtooth', 1800, t, .3, .12, { glideTo: 120, dest: d, cut: 3000 }); break;
+        case 'tok': noise(t, .06, .5, { f: 1800, q: 3, dest: d }); osc('triangle', 600, t, .08, .2, { dest: d }); break;
+        case 'heal': [0, 4, 7, 12].forEach((iv, i) => osc('sine', mf(72 + iv), t + i * .06, .4, .12, { dest: d })); break;
+        case 'hurt': osc('square', 220, t, .18, .14, { glideTo: 90, dest: d, cut: 1200 }); noise(t, .12, .3, { type: 'lowpass', f: 900, dest: d }); break;
+        case 'perfect': osc('sine', mf(88), t, .25, .14, { dest: d }); osc('sine', mf(95), t + .05, .3, .11, { dest: d }); break;
+        case 'clam': osc('sawtooth', mf(50), t, .25, .08, { dest: d, cut: 900, glideTo: mf(48) }); break;
+        case 'scratch': noise(t, .4, .5, { f: 600, q: 4, dest: d }); osc('sawtooth', 300, t, .35, .12, { glideTo: 60, dest: d, cut: 1500 }); break;
         case 'countin': for (let i = 0; i < 4; i++) { noise(t + i * .4, .05, .5, { f: 4500, q: 3, dest: d }); osc('square', 1900, t + i * .4, .03, .06, { dest: d }); } break;
       }
     } catch (e) {}

@@ -188,7 +188,7 @@ export function droneSheet() {
 
 // ---- Ship tiles (16x16), in the order used by data/maps.js TILE ----
 export function tileSheet() {
-  const T = 16, cols = 8, count = 18;
+  const T = 16, cols = 8, count = 32;
   const cv = document.createElement('canvas');
   cv.width = T * cols; cv.height = T * Math.ceil(count / cols);
   const ctx = cv.getContext('2d');
@@ -227,6 +227,63 @@ export function tileSheet() {
   r = at(15); floor(r); r(2, 2, 12, 14, P.crimson); r(3, 1, 10, 1, P.crimson); r(4, 3, 8, 6, P.mustard); r(5, 4, 6, 4, '#f3c860'); r(4, 10, 8, 4, P.ink);
   for (let y = 10; y < 14; y += 2) r(4, y, 8, 1, '#3a2018'); r(2, 15, 12, 1, '#8a2a22');
   r = at(16); floor(r); r(0, 2, 16, 10, '#262a40'); r(0, 3, 16, 4, '#0d3b3a'); r(1, 4, 14, 1, P.teal); r(2, 9, 1, 1, P.crimson); r(5, 9, 1, 1, P.mustard); r(8, 9, 2, 1, P.teal); r(12, 9, 1, 1, P.mustard); r(0, 12, 16, 2, '#1b1e30');
+
+  // ---- Dock 9 ----
+  const dock = r => {
+    r(0, 0, 16, 16, '#3a4152'); r(0, 15, 16, 1, '#323847'); r(15, 0, 1, 16, '#323847');
+    [[3, 4], [11, 2], [7, 10], [13, 12], [2, 13]].forEach(([x, y]) => r(x, y, 1, 1, '#465066'));
+    r(9, 6, 2, 1, '#2f3542');
+  };
+  r = at(18); dock(r);
+  r = at(19); r(0, 0, 16, 16, '#30364a');
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) if ((x + y) % 8 < 2) r(x, y, 1, 1, '#6e5a26');
+  const container = (i, main, rib, lip) => {
+    r = at(i); r(0, 0, 16, 16, main); for (let x = 1; x < 16; x += 3) r(x, 2, 1, 12, rib);
+    r(0, 0, 16, 2, lip); r(0, 14, 16, 2, '#14161f');
+  };
+  container(20, '#8a2e26', '#6b221c', '#a8463a');
+  container(21, '#22706c', '#18524f', '#3a8f8a');
+  container(22, '#5b3f74', '#432d57', '#7a5a98');
+  r = at(23); dock(r); r(1, 2, 14, 13, '#8a6a3a'); r(1, 2, 14, 1, '#a5844e'); r(1, 7, 14, 1, '#6b4f28'); r(1, 12, 14, 1, '#6b4f28');
+  for (let k = 0; k < 10; k++) r(2 + k, 3 + k, 2, 1, '#6b4f28'); r(1, 14, 14, 1, '#4a321c');
+  r = at(24); r(0, 0, 16, 16, '#4a5470'); for (let x = 0; x < 16; x += 2) r(x, 0, 1, 16, '#3a4258'); r(0, 0, 16, 2, '#5d6a80'); r(0, 6, 16, 2, '#b3842a'); r(0, 14, 16, 2, '#2c3346');
+  r = at(25); r(0, 0, 16, 16, '#151a28'); r(1, 1, 14, 15, '#5d6a80'); for (let y = 3; y < 16; y += 2) r(1, y, 14, 1, '#46516a');
+  for (let x = 0; x < 16; x += 4) { r(x, 0, 2, 1, P.mustard); r(x + 2, 0, 2, 1, P.ink); } r(7, 2, 2, 1, P.crimson);
+  r = at(26); dock(r); r(7, 3, 2, 12, '#262a40'); r(5, 1, 6, 2, '#262a40'); r(5, 3, 6, 1, P.mustard); r(6, 14, 4, 2, '#1b1e30');
+  r = at(27); r(0, 0, 16, 16, '#1a2233'); r(2, 3, 5, 2, '#2c3a52'); r(9, 9, 6, 2, '#2c3a52'); r(4, 12, 3, 1, '#2c3a52');
+  [[5, 3], [12, 9], [3, 12], [10, 2]].forEach(([x, y]) => r(x, y, 1, 1, '#c9d6e8'));
+  r = at(28); r(0, 0, 16, 16, '#22404a'); r(0, 0, 16, 1, '#2c5560'); r(0, 15, 16, 1, '#1a3038'); r(7, 0, 2, 16, '#6e5a26');
+  r = at(30); dock(r); r(2, 0, 12, 16, P.crimson); r(3, 2, 7, 10, '#0d1424');
+  [[4, 3, P.mustard], [6, 3, P.teal], [8, 3, P.cream], [4, 6, P.teal], [6, 6, P.crimson], [8, 6, P.mustard], [4, 9, P.cream], [6, 9, P.mustard], [8, 9, P.teal]]
+    .forEach(([x, y, c]) => r(x, y, 1, 2, c));
+  r(11, 3, 2, 3, '#f3c860'); r(11, 8, 2, 1, P.ink); r(3, 13, 7, 2, '#8a2a22');
+  r = at(31); dock(r); r(3, 3, 10, 12, '#2b8f8a'); r(3, 6, 10, 1, '#1d6663'); r(3, 11, 10, 1, '#1d6663'); r(3, 2, 10, 2, '#3fb0aa'); r(6, 2, 4, 1, '#1d6663'); r(3, 14, 10, 1, '#14403e');
+  return cv;
+}
+
+// The Hi-Hat parked on a landing pad (80x44).
+export function shipSprite() {
+  const W = 80, H = 44;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const r = rectFn(ctx, 0, 0);
+  const ell = (cx, cy, rx, ry, c) => {
+    for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) if ((x * x) / (rx * rx) + (y * y) / (ry * ry) <= 1) r(cx + x, cy + y, 1, 1, c);
+  };
+  r(18, 31, 3, 6, '#262a40'); r(59, 31, 3, 6, '#262a40');  // landing legs
+  r(6, 20, 10, 4, P.crimson); r(4, 24, 10, 3, P.crimson);  // fins
+  r(64, 20, 10, 4, P.crimson); r(66, 24, 10, 3, P.crimson);
+  ell(40, 26, 34, 8, P.cream);
+  ell(40, 28, 30, 4, '#d9cfb8');
+  ell(40, 18, 16, 9, P.teal); r(24, 22, 33, 5, P.cream);
+  r(44, 12, 7, 5, '#0d3b3a');
+  r(10, 25, 60, 1, P.ink);
+  for (let i = 0; i < 5; i++) r(24 + i * 7, 28, 3, 2, i % 2 ? P.mustard : '#f3c860');
+  r(33, 30, 14, 4, '#3a4258'); r(35, 34, 10, 4, '#5d6a80');  // ramp
+  outline(ctx, 0, 0, W, H);
+  ctx.globalCompositeOperation = 'destination-over';
+  r(12, 36, 56, 4, 'rgba(0,0,0,.35)');                    // shadow
+  ctx.globalCompositeOperation = 'source-over';
   return cv;
 }
 

@@ -1,6 +1,7 @@
 // The walkable world: tile map, the captain, crew and things to interact with.
-import { MAPS, TILE, SOLID } from '../data/maps.js';
-import { characterSheet, droneSheet, tileSheet, starTile, addSheet, DIRS } from '../art/pixel.js';
+import { MAPS, TILE, SOLID, TILE_LOOKS } from '../data/maps.js';
+import { CREW } from '../data/crew.js';
+import { characterSheet, droneSheet, tileSheet, starTile, shipSprite, addSheet, DIRS } from '../art/pixel.js';
 import { resolveLook, NPC_LOOKS } from '../data/appearance.js';
 import { Input } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
@@ -33,8 +34,14 @@ export class WorldScene extends Phaser.Scene {
     this.W = tm.widthInPixels; this.H = tm.heightInPixels;
     this.physics.world.setBounds(0, 0, this.W, this.H);
 
-    const sx = state.pos ? state.pos.px : map.spawn.x * T + 8;
-    const sy = state.pos ? state.pos.py : map.spawn.y * T + 8;
+    const sp = map.spawns.default;
+    const sx = state.pos ? state.pos.px : sp.x * T + 8;
+    const sy = state.pos ? state.pos.py : sp.y * T + 8;
+
+    if (map.ship) {
+      if (!this.textures.exists('hihat')) this.textures.addCanvas('hihat', shipSprite());
+      this.add.image(map.ship.x * T + 8, map.ship.y * T + 14, 'hihat').setOrigin(0.5, 1).setDepth(map.ship.y * T + 14);
+    }
     this.player = this.physics.add.sprite(sx, sy, 'player', 0).setOrigin(0.5, 0.85);
     this.player.body.setSize(10, 6).setOffset(3, 17);
     this.player.setCollideWorldBounds(true);
@@ -45,7 +52,8 @@ export class WorldScene extends Phaser.Scene {
     this.npcs = [];
     const blockers = this.physics.add.staticGroup();
     for (const n of map.npcs) {
-      const key = 'npc-' + n.id;
+      const lookId = n.look || n.id;
+      const key = 'npc-' + lookId;
       const x = n.x * T + 8, y = n.y * T + 8;
       let spr;
       if (n.id === 'brushes') {
@@ -54,7 +62,7 @@ export class WorldScene extends Phaser.Scene {
         this.tweens.add({ targets: spr, y: y - 8, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
         this.time.addEvent({ delay: 2600, loop: true, callback: () => { spr.setFrame(1); this.time.delayedCall(140, () => spr.setFrame(0)); } });
       } else {
-        if (!this.textures.exists(key)) { addSheet(this, key, characterSheet(NPC_LOOKS[n.id]), 16, 24); }
+        if (!this.textures.exists(key)) addSheet(this, key, characterSheet(NPC_LOOKS[lookId]), 16, 24);
         spr = this.add.sprite(x, y, key, DIRS.indexOf(n.face || 'down') * 3).setOrigin(0.5, 0.85);
       }
       spr.npcId = n.id; spr.homeFace = n.face || 'down'; spr.footY = y + 4;
@@ -120,11 +128,14 @@ export class WorldScene extends Phaser.Scene {
     let best = null, bd = 15;
     for (const n of this.npcs) {
       const dist = Phaser.Math.Distance.Between(f.x, f.y, n.x, n.footY - 4);
-      if (dist < bd) { bd = dist; best = { kind: 'npc', id: n.npcId, spr: n, label: 'Talk to ' + n.npcId[0].toUpperCase() + n.npcId.slice(1) }; }
+      if (dist < bd) { bd = dist; best = { kind: 'npc', id: n.npcId, spr: n, label: 'Talk to ' + (CREW[n.npcId]?.short || n.npcId) }; }
     }
     if (best) return best;
     const o = this.objects.find(o => o.rect.contains(f.x, f.y));
-    return o ? { kind: 'object', id: o.id, label: o.label } : null;
+    if (o) return { kind: 'object', id: o.id, label: o.label };
+    const tile = this.layer.getTileAtWorldXY(f.x, f.y);
+    const look = tile && TILE_LOOKS[tile.index];
+    return look ? { kind: 'object', id: look, label: 'Look' } : null;
   }
 
   update(time, dt) {

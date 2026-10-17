@@ -76,5 +76,11 @@ export const NPC_LOOKS = {
   rook: { face: 0, skin: '#c99272', hair: '#1d2a3a', style: 'swept', acc: 'None',
     outfit: { main: '#2b8f8a', shade: '#1d6663', acc: '#e9b23a', style: 'suit' } },
   tam: { face: 1, skin: '#82502f', hair: '#2a1a14', style: 'curls', acc: 'Goggles', pants: '#8a2a22',
-    outfit: { main: '#d5473b', shade: '#8a2a22', acc: '#e9b23a', style: 'flight' } }
+    outfit: { main: '#d5473b', shade: '#8a2a22', acc: '#e9b23a', style: 'flight' } },
+  ozzie: { face: 1, skin: '#a8714f', hair: '#e9b23a', style: 'buzz', acc: 'None', pants: '#3a4258',
+    outfit: { main: '#d39a2a', shade: '#a5741a', acc: '#f1e8d4', style: 'flight' } },
+  goon: { face: 3, skin: '#b08a72', hair: '#7a2a24', style: 'buzz', acc: 'Shades',
+    outfit: { main: '#2f3346', shade: '#1f2232', acc: '#7a2a24', style: 'hoodie' } },
+  goon2: { face: 3, skin: '#93725e', hair: '#7a2a24', style: 'buzz', acc: 'Shades',
+    outfit: { main: '#2f3346', shade: '#1f2232', acc: '#7a2a24', style: 'hoodie' } }
 };

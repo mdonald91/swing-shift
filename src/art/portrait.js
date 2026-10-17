@@ -161,6 +161,26 @@ export function npcPortrait(id) {
       <rect x="60" y="64" width="80" height="8" fill="${INK}"/>
       <g class="eyes"><path d="M80 114 q8 -6 16 0 M106 114 q8 -6 16 0" stroke="${INK}" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
       <path class="mouth" d="M90 134 q10 7 20 0 q-10 3 -20 0Z" fill="${P.crimson}" stroke="${P.crimson}" stroke-width="2"/>`);
+    case 'goon': return svg(`
+      <path d="M0 240 C10 180 50 160 100 160 C150 160 190 180 200 240Z" fill="#2f3346"/>
+      <path d="M60 176 C60 150 80 142 100 150 C120 142 140 150 140 176Z" fill="#1f2232"/>
+      <rect x="82" y="134" width="36" height="30" fill="#93725e"/>
+      <rect x="56" y="62" width="88" height="88" rx="18" fill="#b08a72"/>
+      <path d="M54 84 C54 38 146 38 146 84Z" fill="#7a2a24"/>
+      <rect x="52" y="76" width="96" height="12" fill="#5a1d19"/>
+      <g class="eyes"><rect x="62" y="100" width="76" height="14" rx="4" fill="${INK}"/></g>
+      <path class="mouth" d="M84 132 h32" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`);
+    case 'ozzie': return svg(`
+      <path d="${SHOULDERS}" fill="#d39a2a"/>
+      <path d="M40 200 L160 200 M30 222 L170 222" stroke="${P.cream}" stroke-width="7"/>
+      <rect x="88" y="140" width="24" height="32" fill="#8a5a3c"/>
+      <path d="M61 108 C61 80 78 64 100 64 C122 64 139 80 139 108 C139 136 122 154 100 154 C78 154 61 136 61 108Z" fill="#a8714f"/>
+      <path d="M62 96 C62 58 138 58 138 96 L132 92 C120 80 80 80 68 92Z" fill="${P.mustard}"/>
+      <rect x="54" y="88" width="92" height="8" rx="4" fill="#c48a1e"/>
+      <path d="M78 104 l14 0 M108 104 l14 0" stroke="#3a2418" stroke-width="3" stroke-linecap="round"/>
+      <g class="eyes"><circle cx="86" cy="114" r="4.5" fill="${INK}"/><circle cx="114" cy="114" r="4.5" fill="${INK}"/></g>
+      <path d="M78 136 q22 18 44 0 q-4 18 -22 18 q-18 0 -22 -18Z" fill="#4a2e1e"/>
+      <path class="mouth" d="M90 136 q10 6 20 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`);
     default: return svg(`
       <path d="${SHOULDERS}" fill="#2a2e44"/>
       <ellipse cx="100" cy="108" rx="38" ry="46" fill="#2a2e44"/>
