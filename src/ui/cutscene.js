@@ -30,7 +30,10 @@ export function playCut(name, { restoreMood = true } = {}) {
     sceneLayer().append(root);
     const $ = s => root.querySelector(s);
     const L = $('.cs-slot.left'), R = $('.cs-slot.right');
+    const ok = s => !(s.if && !state.flags[s.if]) && !(s.ifNot && state.flags[s.ifNot]);
     let i = 0, typing = null, full = '', who = null, finished = false;
+    while (i < script.length && !ok(script[i])) i++;
+    if (i >= script.length) { root.remove(); unblock(); resolve(); return; }
 
     function setSlot(slot, id, side) {
       if (!id) { slot.innerHTML = ''; slot.dataset.id = ''; return; }
@@ -84,6 +87,7 @@ export function playCut(name, { restoreMood = true } = {}) {
       if (typing) { stopTyping(); $('.cs-line').textContent = full; return; }
       Audio.sfx('tick');
       i++;
+      while (i < script.length && !ok(script[i])) i++;
       if (i >= script.length) end(); else render();
     }
     function end() {

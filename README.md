@@ -69,6 +69,7 @@ Saves are kept in the browser on each device (3 slots).
 - [x] **0.3 Track 01, Counterfeit Swing:** cutscenes, the Dock 9 mission map with clues to find, party combat (Attack / Skill / Item / Defend / Run, on-the-beat timing, Jam Session), captain skills by temperament, the payday ledger
 - [x] **0.4 Hub life:** supply terminal and Ozzie's stall, new items (Hot Coffee, Patch Kit), gear upgrades, faction standing, crew side chats with bond perks, Brushes' song
 - [x] **0.5 Cygnus Station:** neon plaza in the rain, the Flat Ninth bar (rumours, Lou, Rhea), Kessler's Outfitters and Neon Noodle, busking with Old Sol, Helix Salvage offers Ghost Frequency
-- [ ] **0.6 Track 02, Ghost Frequency:** Relay K-17, Rhea joins, the four-bar mystery
+- [x] **0.6 Track 02, Ghost Frequency:** Relay K-17 (dark until you restore power, doors, keycard, minimap), Rhea joins with her own skills, party selection, drone skirmish, the Warden boss, a choice with real consequences
+- [ ] **0.7 Track 03, The Missing Courier**
 
 Built with [Phaser 3](https://phaser.io) (MIT licence), included in `vendor/`.

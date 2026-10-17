@@ -95,6 +95,8 @@ export const NPC_LOOKS = {
     outfit: { main: '#f1e8d4', shade: '#c9c0aa', acc: '#d5473b', style: 'flight' } },
   kessler: { face: 0, skin: '#c99272', hair: '#8d90a8', style: 'buzz', acc: 'Goggles',
     outfit: { main: '#4a321c', shade: '#2c1e10', acc: '#e9b23a', style: 'hoodie' } },
+  juno: { face: 2, skin: '#c99272', hair: '#d8dbe4', style: 'long', acc: 'None',
+    outfit: { main: '#46516a', shade: '#2f3346', acc: '#e9b23a', style: 'flight' } },
   // passers-by on the station plaza
   w1: { face: 1, skin: '#f2cdb4', hair: '#c23a30', style: 'long', acc: 'None', outfit: { main: '#5b3f74', shade: '#3f2b52', acc: '#f1e8d4', style: 'coat' } },
   w2: { face: 3, skin: '#82502f', hair: '#1d2230', style: 'buzz', acc: 'Shades', outfit: { main: '#2b8f8a', shade: '#1d6663', acc: '#e9b23a', style: 'hoodie' } },

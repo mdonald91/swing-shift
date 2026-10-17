@@ -21,14 +21,22 @@ export function entry(id, flags, location) {
   switch (id) {
     case 'rook': return docks ? 'rook_docks' : flags.velvet_done ? 'rook_after' : flags.met_rook ? 'rook_idle' : 'rook_first';
     case 'tam': return docks ? 'tam_docks' : flags.velvet_done ? 'tam_after' : flags.met_tam ? 'tam_idle' : 'tam_first';
-    case 'brushes': return flags.velvet_done ? 'brushes_after' : flags.met_brushes ? 'brushes_idle' : 'brushes_first';
+    case 'brushes': return location === 'relay' ? 'brushes_relay' : flags.velvet_done ? 'brushes_after' : flags.met_brushes ? 'brushes_idle' : 'brushes_first';
     case 'ozzie': return flags.met_ozzie ? 'ozzie_idle' : 'ozzie_first';
     case 'cockpit':
       if (flags.velvet_done) return 'cockpit_nav';
       if (flags.velvet_course) return 'cockpit_return';
       return flags.bounty_velvet ? 'cockpit_go' : 'cockpit_none';
     case 'sax': return flags.busked_visit ? 'sax_after' : 'sax';
-    case 'rhea': return flags.rhea_met ? 'rhea_idle' : 'rhea_first';
+    case 'rhea':
+      if (location === 'relay') return 'rhea_relay';
+      if (location === 'ship') return 'rhea_ship';
+      return flags.rhea_met ? 'rhea_idle' : 'rhea_first';
+    case 'drone': return 'drones';
+    case 'juno': return 'juno';
+    case 'generator': return flags.power_on ? 'generator_done' : 'generator';
+    case 'lockers': return flags.k17_keycard ? 'lockers_done' : flags.power_on ? 'lockers' : 'lockers_dark';
+    case 'cryo': return flags.cryo_found ? 'cryo_done' : 'cryo';
     case 'helix': return flags.ghost_offered ? 'helix_again' : 'helix';
     case 'door': return flags.velvet_done ? 'door_done' : flags.door_open ? 'door_open' : 'door_locked';
     default: return id;
@@ -182,8 +190,9 @@ export const DIALOGUE = {
   ],
   nav_cygnus: [{ do: 'toCygnus' }],
   nav_k17: [
-    { who: 'brushes', t: "Relay K-17 is a long, cold jump past the belt. I've plotted it. The four bars are getting louder." },
-    { who: null, t: 'Track 02 is still being recorded. Relay K-17 opens in the next build.' }
+    { if: 'ghost_done', who: null, t: 'Relay K-17 is sealed by the Bounty Office now. Nothing left out there but static.' },
+    { ifNot: 'ghost_done', if: 'k17_arrived', do: 'toRelay' },
+    { ifNot: 'k17_arrived', do: 'departK17' }
   ],
   cockpit_done: [
     { who: null, t: 'Ship systems. Fuel: 64%. Hull: patched with shoes. New contracts arrive on the bounty board soon.' },
@@ -269,6 +278,118 @@ export const DIALOGUE = {
   bottles: [{ who: null, t: 'Bottles from six moons. One is labelled DO NOT. Nobody knows what it does not do.' }],
   bartable: [{ who: null, t: 'A table with a candle in a jar and initials carved in the edge. One set says R.V.' }],
   booth: [{ who: null, t: 'A red booth, worn soft by a thousand bad decisions.' }],
+
+  // ---- Relay K-17 ----
+  airlock_k17: [
+    { who: null, t: 'The Hi-Hat is clamped to the outer airlock. Head back aboard?' },
+    { choices: [{ t: 'Board the Hi-Hat', go: 'ship_board' }, { t: 'Keep exploring' }] }
+  ],
+  rhea_relay: [
+    { who: 'rhea', ifNot: 'power_on', t: "Generator first. Upper deck, far left. Nothing opens until the lights do." },
+    { who: 'rhea', if: 'power_on', ifNot: 'k17_keycard', t: 'The comms hub needs a keycard. Crew quarters, top middle. Juno always kept a spare in her locker.' },
+    { who: 'rhea', if: 'k17_keycard', ifNot: 'drones_cleared', t: "Keycard opens the comms hub, top right. Mind the drones by the door. They don't do conversation." },
+    { who: 'rhea', if: 'drones_cleared', t: "Hub's clear. Whoever's playing that song is in there." },
+    { who: 'rhea', if: 'power_on', ifNot: 'cryo_found', t: 'The medbay is bottom right. If anyone made it, that is where they would be.' }
+  ],
+  rhea_ship: [{ who: 'rhea', pick: [
+    "Tam gave me the bunk next to the noisy pipe. I've named the pipe. It's called Hale.",
+    "Your drone asked me to rate his song out of ten. I said eleven. He hasn't stopped humming since.",
+    "Nice ship. Held together by tape and optimism. I've worked on worse. Not many."
+  ] }],
+  brushes_relay: [{ who: 'brushes', pick: [
+    'The four bars repeat every eleven seconds. Eleven! Who writes in eleven?',
+    'I am staying by the airlock. For tactical reasons. The reasons are fear.',
+    'Somebody on this station plays very good jazz. Somebody on this station is also very scared.'
+  ] }],
+  drones: [
+    { who: null, t: 'Two security drones hover by the comms hub door. Their red eyes swivel towards you.' },
+    { choices: [{ t: 'Fight', do: 'fightDrones' }, { t: 'Back off' }] }
+  ],
+  generator: [
+    { who: null, t: "The relay's generator. Dead, but intact. The breaker has been thrown by hand. From the outside." },
+    { choices: [{ t: 'Throw the breaker', go: 'generator_on' }, { t: 'Leave it' }] }
+  ],
+  generator_on: [
+    { set: 'power_on' }, { do: 'power' },
+    { who: null, t: 'The generator coughs, hums, then roars. Red emergency light gives way to cold blue. Somewhere, doors unlock.' },
+    { who: 'brushes', t: 'Power restored! The four bars just got louder. They are coming from the comms hub, Captain. Top right.' }
+  ],
+  generator_done: [{ who: null, t: 'The generator hums. Someone has scratched JUNO WAS HERE into the casing.' }],
+  lockers_dark: [{ who: null, t: 'Crew lockers, but the quarters door is dead. You need the power on.' }],
+  lockers: [
+    { who: null, t: 'Crew lockers. Most are empty. One is labelled REYES, with a photo of a drum kit taped inside.' },
+    { set: 'k17_keycard' }, { do: 'keycard' },
+    { who: null, t: 'Tucked behind the photo: a comms hub keycard.' }
+  ],
+  lockers_done: [{ who: null, t: "Juno's locker. The drum kit photo smiles back at you." }],
+  log_bunk: [
+    { who: null, t: "Personal log, day 4: Hale's engineers installed something in the comms hub. We aren't supposed to ask what. Juno asked." },
+    { who: null, t: 'Day 9: Juno says the new array can hear everything. Every call, every message, every whisper in the system. We voted not to switch it on.' }
+  ],
+  log_med: [{ who: null, t: "Medical log: four crew placed in cryo to save air. Juno stayed awake to keep the signal going. Her words: 'Someone will hear the song.'" }],
+  cryo: [
+    { set: 'cryo_found' },
+    { who: null, t: 'Four cryo pods. Four sleeping faces. Four steady heartbeats. The missing crew, alive.' },
+    { do: 'cryo' }
+  ],
+  cryo_done: [{ who: null, t: 'The cryo pods hum softly. Everyone inside is still sleeping peacefully.' }],
+  comms: [
+    { who: null, ifNot: 'juno_met', t: 'Every screen shows the same waveform: four bars, looping. Someone is breathing behind the racks.' },
+    { who: null, if: 'juno_met', t: 'The hub screens are dark now. The loop has stopped.' }
+  ],
+  door_power: [
+    { who: null, ifNot: 'power_on', t: 'The door is dead. No power.' },
+    { who: null, if: 'power_on', t: 'The door is open.' }
+  ],
+  door_key: [
+    { who: null, ifNot: 'power_on', t: 'The comms hub. Dead, and keycard-locked.' },
+    { who: null, if: 'power_on', ifNot: 'k17_keycard', t: 'The comms hub. The keypad wants a keycard.' },
+    { who: null, if: 'k17_keycard', t: 'The keycard opens the comms hub.' }
+  ],
+  juno: [
+    { set: 'juno_met' },
+    { who: 'juno', t: "Stop. Don't come closer. ...You're not Helix. Helix doesn't knock." },
+    { choices: [
+      { t: 'Who are you?', go: 'juno_who' },
+      { t: 'Tell me what happened.', go: 'juno_what' },
+      { t: "You're coming with me.", go: 'juno_come' },
+      { t: "I'll decide after I hear more.", go: 'juno_what' }
+    ] }
+  ],
+  juno_who: [{ who: 'juno', t: "Juno Reyes. Signals tech. I'm the one playing the song." }, { go: 'juno_what' }],
+  juno_come: [{ who: 'juno', t: "Not yet. Not until you know what's in here. Listen." }, { go: 'juno_what' }],
+  juno_what: [
+    { who: 'juno', t: 'Helix turned this relay into an ear on the whole system. We refused to switch it on. So they sent the Warden to switch us off.' },
+    { who: 'juno', t: 'I hid the truth in the only thing their filters ignore. Four bars of music, on every frequency, for three weeks.' },
+    { do: 'warden' }
+  ],
+  k17_choice: [
+    { who: null, t: 'Director Hale is calling. The data core is warm in your hand. Juno is watching you.' },
+    { choices: [
+      { t: 'Protect Juno. Send the data to the Bounty Office.', go: 'choice_protect' },
+      { t: "Hand everything to Hale. A contract's a contract.", go: 'choice_hand' },
+      { t: 'Juno, what do you want to happen?', temp: 'Calm', go: 'choice_ask' },
+      { t: 'Can we keep the data AND the money?', temp: 'Sarcastic', go: 'choice_both' },
+      { t: 'Five people nearly died for this. Helix answers for it.', temp: 'Idealistic', go: 'choice_protect' },
+      { t: "Hale pays. Juno's her problem.", temp: 'Ruthless', go: 'choice_hand' }
+    ] }
+  ],
+  choice_ask: [{ who: 'juno', t: 'I want the system to know what Helix built. That is all I have wanted for three weeks.' }, { go: 'k17_choice_again' }],
+  choice_both: [{ who: 'hale', t: 'No. Choose, Captain.' }, { go: 'k17_choice_again' }],
+  k17_choice_again: [{ choices: [
+    { t: 'Protect Juno. Send the data to the Bounty Office.', go: 'choice_protect' },
+    { t: 'Hand everything to Hale.', go: 'choice_hand' }
+  ] }],
+  choice_protect: [
+    { set: 'juno_protected' }, { rep: { office: 2, helix: -3 } }, { do: 'protect' },
+    { who: 'hale', t: "You have made an expensive enemy, Captain. I'll pay half, because the contract says I must. Enjoy it." },
+    { who: 'juno', t: 'Thank you. I mean it.' }
+  ],
+  choice_hand: [
+    { set: 'juno_handed' }, { rep: { helix: 2, office: -1 } }, { do: 'handOver' },
+    { who: 'hale', t: 'A professional. How refreshing. Payment in full is on its way.' },
+    { who: 'juno', t: '...I thought you were different.' }
+  ],
 
   door_done: [{ who: null, t: 'Warehouse 9-C is wrapped in Bounty Office tape. Somebody has drawn a tiny hat on it.' }],
 

@@ -165,7 +165,7 @@ export function characterSheet(look) {
   return cv;
 }
 
-export function droneSheet() {
+export function droneSheet(hostile = false) {
   const cv = document.createElement('canvas');
   cv.width = 32; cv.height = 16;
   const ctx = cv.getContext('2d');
@@ -173,14 +173,18 @@ export function droneSheet() {
     const r = rectFn(ctx, f * 16, 0);
     for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
       const dx = x - 7.5, dy = y - 9.5;
-      if (dx * dx + dy * dy <= 30) r(x, y, 1, 1, y > 10 ? '#46516a' : '#5d6a80');
+      if (dx * dx + dy * dy <= 30) r(x, y, 1, 1, y > 10 ? (hostile ? '#262a3a' : '#46516a') : (hostile ? '#3a4258' : '#5d6a80'));
     }
+    const eye = hostile ? P.crimson : P.mustard;
     r(5, 7, 6, 5, P.ink);
-    if (f === 0) { r(6, 8, 4, 3, P.mustard); r(7, 9, 2, 1, P.ink); r(8, 8, 1, 1, P.cream); }
-    else { r(6, 9, 4, 1, P.mustard); }
-    r(6, 13, 4, 1, P.teal);
-    r(4, 3, 1, 2, '#8d90a8'); r(3, 2, 1, 1, '#8d90a8'); r(11, 3, 1, 2, '#8d90a8'); r(12, 2, 1, 1, '#8d90a8');
-    r(2, 0, 3, 2, P.mustard); r(11, 0, 3, 2, P.mustard);
+    if (f === 0) { r(6, 8, 4, 3, eye); r(7, 9, 2, 1, P.ink); r(8, 8, 1, 1, P.cream); }
+    else { r(6, 9, 4, 1, eye); }
+    r(6, 13, 4, 1, hostile ? P.crimson : P.teal);
+    if (hostile) { r(1, 8, 3, 2, '#262a3a'); r(12, 8, 3, 2, '#262a3a'); r(7, 2, 2, 2, '#5d6a80'); }
+    else {
+      r(4, 3, 1, 2, '#8d90a8'); r(3, 2, 1, 1, '#8d90a8'); r(11, 3, 1, 2, '#8d90a8'); r(12, 2, 1, 1, '#8d90a8');
+      r(2, 0, 3, 2, P.mustard); r(11, 0, 3, 2, P.mustard);
+    }
     outline(ctx, f * 16, 0, 16, 16);
   }
   return cv;
@@ -188,7 +192,7 @@ export function droneSheet() {
 
 // ---- Ship tiles (16x16), in the order used by data/maps.js TILE ----
 export function tileSheet() {
-  const T = 16, cols = 8, count = 54;
+  const T = 16, cols = 8, count = 70;
   const cv = document.createElement('canvas');
   cv.width = T * cols; cv.height = T * Math.ceil(count / cols);
   const ctx = cv.getContext('2d');
@@ -301,7 +305,51 @@ export function tileSheet() {
   r = at(52); front(r); r(3, 2, 10, 14, '#1d4a4a'); r(4, 3, 8, 13, '#5fe3d455'); r(7, 3, 2, 13, '#1d4a4a'); r(3, 1, 10, 1, '#5fe3d4'); r(6, 7, 4, 2, P.cream);
   r = at(53); r(0, 0, 16, 16, '#151a28'); r(3, 0, 10, 16, '#3a2418'); r(4, 1, 8, 15, '#6b4a2a'); r(10, 8, 1, 2, P.mustard); r(3, 0, 10, 1, '#ff5fa2');
 
+  // ---- Relay K-17 ----
+  const kfloor = r => {
+    r(0, 0, 16, 16, '#262b3a'); r(0, 0, 16, 1, '#2f3546'); r(0, 0, 1, 16, '#2f3546'); r(15, 0, 1, 16, '#1d2130'); r(0, 15, 16, 1, '#1d2130');
+    r(4, 4, 8, 8, '#2a3040'); r(4, 4, 8, 1, '#323a4e'); [[2, 2], [13, 2], [2, 13], [13, 13]].forEach(([x, y]) => r(x, y, 1, 1, '#3a4258'));
+  };
+  const kwall = r => {
+    r(0, 0, 16, 16, '#252938'); r(0, 0, 16, 2, '#30364a'); r(0, 13, 16, 3, '#1b1e2a'); r(3, 3, 1, 9, '#1b1e2a'); r(12, 3, 1, 9, '#1b1e2a');
+    r(0, 11, 16, 1, '#d5473b'); r(6, 5, 4, 3, '#1b1e2a');
+  };
+  r = at(54); r(0, 0, 16, 16, '#0e1018'); r(0, 15, 16, 1, '#1a1e2c'); r(4, 6, 1, 1, '#1a1e2c'); r(11, 9, 1, 1, '#1a1e2c');
+  r = at(55); kwall(r);
+  r = at(56); kfloor(r);
+  r = at(57); r(0, 0, 16, 16, '#1b1f2c'); for (let y = 2; y < 16; y += 3) r(1, y, 14, 1, '#11131c'); r(0, 0, 16, 1, '#262b3a');
+  const door = (i, light, extra) => {
+    r = at(i); r(0, 0, 16, 16, '#0e1018'); r(1, 1, 14, 15, '#3a4258'); r(7, 1, 2, 15, '#252938'); r(2, 3, 4, 1, '#4a5470'); r(10, 3, 4, 1, '#4a5470');
+    for (let x = 0; x < 16; x += 4) { r(x, 0, 2, 1, P.mustard); r(x + 2, 0, 2, 1, P.ink); }
+    r(7, 2, 2, 2, light); extra && extra(r);
+  };
+  door(58, P.crimson);
+  door(59, P.crimson, r2 => { r2(11, 7, 3, 4, '#1b1e2a'); r2(12, 8, 1, 1, P.mustard); r2(12, 9, 1, 1, P.mustard); });
+  r = at(60); r(0, 0, 16, 16, '#11131c'); r(0, 0, 2, 16, '#3a4258'); r(14, 0, 2, 16, '#3a4258'); r(2, 0, 12, 1, '#7fe0c8'); r(2, 15, 12, 1, '#262b3a');
+  r = at(61); kfloor(r); r(1, 1, 14, 13, '#1b1e2a'); r(2, 2, 12, 6, '#0d3b3a'); r(3, 3, 6, 1, '#5fe3d4'); r(3, 5, 9, 1, '#2b8f8a'); r(10, 3, 2, 1, P.crimson);
+  for (let x = 3; x < 13; x += 2) r(x, 10, 1, 1, '#5d6a80');
+  r = at(62); kfloor(r); r(1, 0, 14, 15, '#3a4258'); r(1, 0, 14, 2, '#4a5470'); r(3, 3, 10, 9, '#1b1e2a');
+  for (let y = 4; y < 12; y += 2) r(4, y, 8, 1, P.mustard); r(2, 13, 4, 2, P.crimson); r(10, 13, 4, 2, '#5fe3d4');
+  r = at(63); kfloor(r); r(2, 0, 12, 15, '#10121a'); r(2, 0, 12, 1, '#2a2f44');
+  for (let y = 2; y < 14; y += 3) { r(3, y, 10, 2, '#1b1e2a'); r(4, y, 1, 1, '#5fe3d4'); r(6, y, 1, 1, y % 2 ? P.crimson : '#5fe3d4'); r(11, y + 1, 1, 1, P.mustard); }
+  r = at(64); kfloor(r); r(3, 0, 10, 16, '#46516a'); r(4, 1, 8, 14, '#9fc6e0'); r(5, 2, 6, 12, '#7fa8c8'); r(6, 4, 4, 3, '#c9d6e8'); r(6, 7, 4, 6, '#b0c4da'); r(3, 7, 1, 2, '#5fe3d4');
+  r = at(65); kfloor(r); r(1, 2, 14, 13, '#3a4258'); r(2, 3, 12, 4, '#c9c0aa'); r(2, 8, 12, 6, '#46516a'); r(1, 14, 14, 1, '#1b1e2a');
+  r = at(66); kwall(r); r(1, 1, 6, 15, '#5d6a80'); r(9, 1, 6, 15, '#5d6a80'); for (let y = 3; y < 8; y += 2) { r(2, y, 4, 1, '#46516a'); r(10, y, 4, 1, '#46516a'); } r(5, 9, 1, 2, P.ink); r(13, 9, 1, 2, P.ink);
+  r = at(67); kwall(r); r(2, 2, 12, 8, '#5a647e'); r(3, 3, 10, 6, '#05060c'); [[4, 4], [9, 5], [11, 7], [6, 7]].forEach(([x, y]) => r(x, y, 1, 1, P.cream)); r(10, 3, 3, 2, '#f3c860');
+  r = at(68); kfloor(r); r(0, 5, 16, 1, '#8a2a22'); r(0, 9, 16, 1, '#1d6663'); r(0, 7, 6, 1, '#a5741a'); r(9, 7, 7, 1, '#a5741a');
+  r = at(69); kfloor(r); r(2, 3, 12, 11, '#5d6a80'); r(2, 3, 12, 2, '#8d90a8'); r(2, 8, 12, 1, '#46516a'); r(6, 5, 4, 2, P.mustard);
+
   r = at(31); dock(r); r(3, 3, 10, 12, '#2b8f8a'); r(3, 6, 10, 1, '#1d6663'); r(3, 11, 10, 1, '#1d6663'); r(3, 2, 10, 2, '#3fb0aa'); r(6, 2, 4, 1, '#1d6663'); r(3, 14, 10, 1, '#14403e');
+  return cv;
+}
+
+// Soft circle of torchlight for dark maps (transparent centre, dark edges).
+export function darknessCanvas() {
+  const S = 1024, cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const c = cv.getContext('2d');
+  const g = c.createRadialGradient(S / 2, S / 2, 26, S / 2, S / 2, S / 2);
+  g.addColorStop(0, 'rgba(4,4,10,0)'); g.addColorStop(.08, 'rgba(4,4,10,.5)'); g.addColorStop(.2, 'rgba(4,4,10,.93)'); g.addColorStop(1, 'rgba(4,4,10,.97)');
+  c.fillStyle = g; c.fillRect(0, 0, S, S);
   return cv;
 }
 

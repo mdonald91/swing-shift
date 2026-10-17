@@ -15,7 +15,14 @@ export function objective() {
     if (!f.cygnus_arrived) return chats < 3 ? `Catch up with your crew (${chats}/3), then fly to Cygnus Station` : 'Fly to Cygnus Station from the cockpit';
     if (!f.ghost_offered) return 'Visit Helix Salvage on the Cygnus plaza';
     if (!f.bounty_ghost) return 'Accept Ghost Frequency on the bounty board';
-    return 'Ghost Frequency: Relay K-17 opens next build';
+    if (f.ghost_done) return 'Track 02 complete. Track 03 is coming.';
+    if (state.location === 'relay') {
+      if (!f.power_on) return 'Restore power at the generator';
+      if (!f.k17_keycard) return 'Search the crew quarters';
+      if (!f.drones_cleared) return 'Deal with the drones outside the comms hub';
+      return 'Find whoever is playing the four bars';
+    }
+    return 'Fly to Relay K-17 from the cockpit';
   }
   if (!f.bounty_velvet) return met < 3 ? `Talk to your crew (${met}/3)` : 'Check the bounty board';
   if (state.location === 'docks') {
@@ -39,6 +46,7 @@ export const Hud = {
         <span class="chits" id="hud-chits" title="Chits"></span>
         <button class="hud-menu" id="hud-menu" type="button">Menu</button>
       </div>
+      <canvas class="minimap" id="minimap" hidden aria-label="Map"></canvas>
       <div class="hud-hint" id="hud-hint" hidden><kbd class="k-key">Space</kbd><kbd class="k-touch">A</kbd><span></span></div>
       <div class="stick-zone" id="stick-zone"><div class="stick" id="stick" hidden><i class="knob" id="knob"></i></div></div>
       <button class="btn-a" id="btn-a" type="button" aria-label="Interact">A</button>
@@ -62,6 +70,19 @@ export const Hud = {
     window.addEventListener('keydown', e => { if (e.key.length > 1 || /^[a-z ]$/i.test(e.key)) setTouch(false); });
 
     bus.on('dialog-closed', () => Hud.refresh());
+    const mm = root.querySelector('#minimap');
+    let mmData = null, mmPos = null;
+    const drawMM = () => {
+      if (!mmData) { mm.hidden = true; return; }
+      const C = 3, h = mmData.length, w = mmData[0].length;
+      mm.width = w * C; mm.height = h * C; mm.hidden = false;
+      const c = mm.getContext('2d');
+      const col = ['rgba(0,0,0,0)', '#3a4258', '#151a28', '#7fe0c8', '#d5473b'];
+      mmData.forEach((row, y) => row.forEach((v, x) => { if (v) { c.fillStyle = col[v]; c.fillRect(x * C, y * C, C, C); } }));
+      if (mmPos) { c.fillStyle = '#e9b23a'; c.fillRect(Math.floor(mmPos[0]) * C - 1, Math.floor(mmPos[1]) * C - 1, C + 2, C + 2); }
+    };
+    bus.on('minimap', d => { mmData = d; drawMM(); });
+    bus.on('minimap-pos', (x, y) => { mmPos = [x, y]; drawMM(); });
   },
   show() { root.hidden = false; Hud.refresh(); },
   hide() { root.hidden = true; },

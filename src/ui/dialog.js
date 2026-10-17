@@ -36,6 +36,19 @@ const ACTIONS = {
       Hud.refresh();
     });
   },
+  departK17() { after = () => playCut('k17_depart', { restoreMood: false }).then(() => { joinRhea(); travel('relay'); }); },
+  toRelay() { after = () => travel('relay'); },
+  power() { Audio.sfx('save'); },
+  keycard() { Audio.sfx('confirm'); toast('Got the comms hub keycard'); },
+  cryo() { Audio.sfx('heal'); toast('Found the missing crew, alive (bonus)'); },
+  fightDrones() { after = () => startBattle('drones'); },
+  warden() { after = () => playCut('k17_warden', { restoreMood: false }).then(() => startBattle('warden')); },
+  protect() {
+    if (flag('rhea_joined')) { state.bonds.rhea = Math.min(3, (state.bonds.rhea || 0) + 1); toast(`Bond with Rhea deepened: +${BOND_HP} HP, +${BOND_ATK} ATK`); }
+  },
+  handOver() {
+    if (flag('rhea_joined')) { state.flags.rhea_joined = false; state.party = state.party.filter(x => x !== 'rhea'); toast('Rhea has left the crew'); }
+  },
   drink() {
     if (state.chits < 40) { toast('Not enough chits'); return; }
     state.chits -= 40; Hud.refresh();
@@ -71,6 +84,16 @@ const ACTIONS = {
     if (n >= 3 && !flag('door_open')) { setFlag('door_open'); after = () => runDialogue('comms_open'); }
   }
 };
+
+function joinRhea() {
+  if (flag('rhea_joined')) return;
+  setFlag('rhea_joined');
+  if (!state.party.includes('rhea')) {
+    const i = state.party.indexOf('rook');
+    if (state.party.length >= 3) state.party[i >= 0 ? i : state.party.length - 1] = 'rhea'; else state.party.push('rhea');
+  }
+  setTimeout(() => toast('Rhea joined the crew. Change the party under Menu, Crew.'), 1600);
+}
 
 let running = false;
 

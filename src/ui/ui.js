@@ -46,6 +46,9 @@ export const UI = {
     bus.on('hint', t => Hud.hint(t));
     bus.on('area', map => {
       Hud.area(map);
+      if (state.location === 'relay' && !flag('k17_arrived')) {
+        setTimeout(() => playCut('k17_arrive').then(() => { setFlag('k17_arrived'); Hud.refresh(); }), 400);
+      }
       if (state.location === 'cygnus' && !flag('cygnus_arrived')) {
         setTimeout(() => playCut('cygnus_arrive').then(() => { setFlag('cygnus_arrived'); Hud.refresh(); }), 400);
       }

@@ -161,6 +161,19 @@ export function npcPortrait(id) {
       <rect x="60" y="64" width="80" height="8" fill="${INK}"/>
       <g class="eyes"><path d="M80 114 q8 -6 16 0 M106 114 q8 -6 16 0" stroke="${INK}" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
       <path class="mouth" d="M90 134 q10 7 20 0 q-10 3 -20 0Z" fill="${P.crimson}" stroke="${P.crimson}" stroke-width="2"/>`);
+    case 'warden': return svg(`
+      <path d="M10 240 L30 170 L170 170 L190 240Z" fill="#3a4258"/><path d="M30 170 L60 150 L140 150 L170 170Z" fill="#4a5470"/>
+      <rect x="40" y="186" width="120" height="10" fill="${P.mustard}"/>
+      <rect x="56" y="54" width="88" height="96" rx="10" fill="#262a3a"/><rect x="50" y="76" width="100" height="22" fill="#10121e"/>
+      <g class="eyes"><rect x="60" y="80" width="80" height="14" fill="${P.crimson}"/><rect x="92" y="80" width="16" height="14" fill="#ff8a7a"/></g>
+      <rect x="70" y="112" width="60" height="6" fill="#3a4258"/><rect x="70" y="124" width="60" height="6" fill="#3a4258"/>
+      <path d="M100 54 V24" stroke="#5d6a80" stroke-width="5"/><circle cx="100" cy="20" r="7" fill="${P.crimson}"/>
+      <rect class="mouth" x="80" y="136" width="40" height="5" fill="${P.crimson}" opacity=".7"/>`);
+    case 'drone': return svg(`<g class="bob">
+      <ellipse cx="100" cy="128" rx="74" ry="44" fill="#3a4258"/><ellipse cx="100" cy="120" rx="74" ry="40" fill="#4a5470"/>
+      <path d="M26 112 H174" stroke="#262a3a" stroke-width="6"/><rect x="20" y="104" width="22" height="12" fill="#262a3a"/><rect x="158" y="104" width="22" height="12" fill="#262a3a"/>
+      <circle cx="100" cy="122" r="26" fill="#10121e"/><g class="eyes"><circle cx="100" cy="122" r="15" fill="${P.crimson}"/><circle cx="104" cy="118" r="4" fill="#ffb0a0"/></g>
+      <path d="M70 160 L60 190 M130 160 L140 190" stroke="#5d6a80" stroke-width="5"/><rect class="mouth" x="90" y="152" width="20" height="4" fill="${P.crimson}"/></g>`);
     case 'goon': return svg(`
       <path d="M0 240 C10 180 50 160 100 160 C150 160 190 180 200 240Z" fill="#2f3346"/>
       <path d="M60 176 C60 150 80 142 100 150 C120 142 140 150 140 176Z" fill="#1f2232"/>

@@ -12,10 +12,14 @@ export const CREW = {
   sax: { name: 'Old Sol', short: 'Old Sol', color: 'var(--crimson)', blip: 200 },
   mags: { name: 'Mags', short: 'Mags', color: 'var(--violet)', blip: 380 },
   lou: { name: 'Lou', short: 'Lou', color: 'var(--teal)', blip: 280 },
-  rhea: { name: 'Rhea Vance', short: 'Rhea', color: 'var(--teal)', blip: 460 },
   hale: { name: 'Director Hale', short: 'Hale', color: 'var(--cream)', blip: 330 },
   chef: { name: 'Chef Ama', short: 'Chef Ama', color: 'var(--crimson)', blip: 400 },
-  kessler: { name: 'Kessler', short: 'Kessler', color: 'var(--mustard)', blip: 240 }
+  kessler: { name: 'Kessler', short: 'Kessler', color: 'var(--mustard)', blip: 240 },
+  rhea: { name: 'Rhea Vance', short: 'Rhea', role: 'Signals specialist', color: 'var(--teal)', blip: 460,
+    bio: 'Ex-Helix comms tech. Speaks fluent relay, sarcasm and three kinds of static.', skillKeys: ['tap', 'feedback'] },
+  juno: { name: 'Juno Reyes', short: 'Juno', color: 'var(--smoke)', blip: 520 },
+  drone: { name: 'Security drone', short: 'Drone', color: 'var(--crimson)', blip: 900 },
+  warden: { name: 'The Warden', short: 'Warden', color: 'var(--crimson)', blip: 120 }
 };
 
 // What the captain brings to a fight, based on temperament.

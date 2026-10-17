@@ -1,5 +1,5 @@
 // Crew stats with gear and bonds applied. Used by combat and the crew screen.
-import { PARTY } from '../data/battles.js';
+import { PARTY, ROSTER } from '../data/battles.js';
 import { GEAR } from '../data/shop.js';
 import { state } from '../state.js';
 
@@ -25,4 +25,17 @@ export function startingGroove() {
 // Extra beat-window width from gear like the Pocket metronome.
 export function beatWindowBonus() {
   return GEAR.filter(g => g.window && ownsGear(g.id)).reduce((s, g) => s + g.window, 0);
+}
+
+// Crew who are aboard right now.
+export function available(id) {
+  const r = ROSTER.find(x => x.id === id);
+  return !!r && (!r.needs || !!state.flags[r.needs]);
+}
+
+// The three who fight alongside the captain, topped up if someone has left.
+export function activeParty() {
+  const picked = (state.party || []).filter(available).slice(0, 3);
+  for (const r of ROSTER) { if (picked.length >= 3) break; if (!picked.includes(r.id) && available(r.id)) picked.push(r.id); }
+  return picked;
 }

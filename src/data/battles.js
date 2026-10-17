@@ -11,13 +11,20 @@
 //   buff     rounds the whole crew hits 30% harder
 //   exec     double damage against targets under 40% HP
 //   wide     a more forgiving beat window
+//   machine  damage multiplier against machine enemies
 
 export const PARTY = {
   captain: { hp: 110, sp: 40, atk: 17, def: 4, attack: { n: 'Shoot', word: 'BANG!', sfx: 'bang' } },
   rook: { hp: 120, sp: 40, atk: 19, def: 4, attack: { n: 'Shoot', word: 'BANG!', sfx: 'bang' }, skills: ['quickdraw', 'ricochet'] },
   tam: { hp: 105, sp: 40, atk: 14, def: 5, attack: { n: 'Wrench', word: 'CLANK!', sfx: 'clank' }, skills: ['patch', 'overclock'] },
-  brushes: { hp: 85, sp: 40, atk: 12, def: 3, attack: { n: 'Rimshot', word: 'TOK!', sfx: 'tok' }, skills: ['static', 'jamsignal'] }
+  brushes: { hp: 85, sp: 40, atk: 12, def: 3, attack: { n: 'Rimshot', word: 'TOK!', sfx: 'tok' }, skills: ['static', 'jamsignal'] },
+  rhea: { hp: 95, sp: 40, atk: 15, def: 3, attack: { n: 'Taser', word: 'ZAP!', sfx: 'zap' }, skills: ['tap', 'feedback'] }
 };
+
+// Crew who can be picked for the party, and what makes them available.
+export const ROSTER = [
+  { id: 'rook' }, { id: 'tam' }, { id: 'brushes' }, { id: 'rhea', needs: 'rhea_joined' }
+];
 
 export const CAPTAIN_SKILLS = {
   Calm: ['steady', 'talkdown'],
@@ -40,7 +47,9 @@ export const SKILLS = {
   rally: { n: 'Rally', cost: 10, tgt: 'party', d: 'Heal the crew, +4 SP', heal: 22, sp: 4 },
   coverfire: { n: 'Cover Fire', cost: 10, tgt: 'enemies', d: 'Spray every enemy', hit: .7, word: 'RAT-TAT!', sfx: 'bang' },
   execution: { n: 'Execution', cost: 10, tgt: 'enemy', d: 'Double damage under 40% HP', hit: 1.2, exec: true, word: 'BANG!', sfx: 'bang' },
-  intimidate: { n: 'Intimidate', cost: 10, tgt: 'enemies', d: 'May stun every enemy', stun: .45, word: 'GLARE' }
+  intimidate: { n: 'Intimidate', cost: 10, tgt: 'enemies', d: 'May stun every enemy', stun: .45, word: 'GLARE' },
+  tap: { n: 'Signal Tap', cost: 8, tgt: 'enemy', d: 'Hack: target takes more, hits softer', hit: .6, jam: 3, weaken: 2, word: 'TAPPED', sfx: 'zap' },
+  feedback: { n: 'Feedback Loop', cost: 12, tgt: 'enemies', d: 'Hits all; brutal against machines', hit: .7, machine: 1.8, stun: .25, word: 'SKREEE', sfx: 'zap' }
 };
 
 // tgt: living (a standing crewmate), downed (a knocked-out one) or party (everyone standing)
@@ -51,13 +60,33 @@ export const ITEMS = {
   curry: { n: 'Neon Curry', d: 'Heals the whole crew 30 HP', heal: 30, tgt: 'party', price: 180 }
 };
 
+// Encounter fields: bg backdrop; noRun text if you can't flee; bounty id for story fights
+// (cutscene + ledger after); otherwise flag + reward for a skirmish.
+// Enemy ai: velvet | warden | grunt (default). machine: true makes Feedback Loop hit harder.
 export const ENCOUNTERS = {
+  drones: {
+    bg: 'relay_in', intro: 'Two security drones swivel their red eyes towards you.',
+    flag: 'drones_cleared', reward: { chits: 450, items: { coffee: 1 } },
+    enemies: [
+      { id: 'drone', name: 'Security drone', hp: 60, atk: 13, def: 3, machine: true, word: 'ZZT!' },
+      { id: 'drone', name: 'Security drone', hp: 60, atk: 13, def: 3, machine: true, word: 'ZZT!' }
+    ]
+  },
+  warden: {
+    bg: 'relay_in', bounty: 'ghost', intro: 'The Warden unfolds from the ceiling. Every screen in the hub turns red.',
+    noRun: 'The comms hub doors have sealed behind you.',
+    enemies: [
+      { id: 'drone', name: 'Security drone', hp: 55, atk: 13, def: 3, machine: true, word: 'ZZT!' },
+      { id: 'warden', name: 'The Warden', hp: 360, atk: 22, def: 6, boss: true, machine: true, ai: 'warden' },
+      { id: 'drone', name: 'Security drone', hp: 55, atk: 13, def: 3, machine: true, word: 'ZZT!' }
+    ]
+  },
   velvet: {
-    bg: 'warehouse',
+    bg: 'warehouse', bounty: 'velvet', intro: 'Velvet tips her hat. Two goons crack their knuckles in 4/4 time.',
     noRun: "Velvet's goons have the exit covered.",
     enemies: [
       { id: 'goon', name: 'Dock Goon', hp: 55, atk: 12, def: 2 },
-      { id: 'velvet', name: 'Velvet Moreau', hp: 270, atk: 20, def: 4, boss: true },
+      { id: 'velvet', name: 'Velvet Moreau', hp: 270, atk: 20, def: 4, boss: true, ai: 'velvet' },
       { id: 'goon', name: 'Dock Goon', hp: 55, atk: 12, def: 2 }
     ]
   }

@@ -10,16 +10,21 @@ export const TILE = {
   '~': 27, 'P': 28, 'v': 30, 'o': 31,
   // Cygnus Station and the Flat Ninth
   's': 32, 'w': 33, 'S': 34, 'N': 35, 'M': 36, 'Y': 37, 'd': 38, 'Q': 39, 'u': 40, 'l': 41,
-  'k': 43, 'X': 44, 'F': 45, 'A': 46, 'z': 47, 'I': 48, 'J': 49, 'n': 50, 'U': 51, 'h': 52, 'E': 53
+  'k': 43, 'X': 44, 'F': 45, 'A': 46, 'z': 47, 'I': 48, 'J': 49, 'n': 50, 'U': 51, 'h': 52, 'E': 53,
+  // Relay K-17 (1 and 2 are doors that open later)
+  'q': 54, 'Z': 55, 'm': 56, 'y': 57, '1': 58, '2': 59, '3': 61, '4': 62, '5': 63, '6': 64, '7': 65, '8': 66, '9': 67, '!': 68, '$': 69
 };
+export const DOOR_OPEN = 60;
 // Tiles you can't walk through.
 export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31,
-  34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 46, 48, 49, 50, 51, 52, 53];
+  34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 46, 48, 49, 50, 51, 52, 53,
+  54, 55, 58, 59, 61, 62, 63, 64, 65, 66, 67, 69];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
 export const TILE_LOOKS = {
   20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
   34: 'storefront', 35: 'neon', 36: 'neon', 37: 'neon', 41: 'neonlamp', 43: 'planter', 44: 'railing',
-  48: 'piano', 49: 'bottles', 50: 'bartable', 51: 'booth'
+  48: 'piano', 49: 'bottles', 50: 'bartable', 51: 'booth',
+  61: 'console_k17', 63: 'racks', 64: 'cryo_look', 65: 'bunk', 66: 'locker', 67: 'window_k17', 69: 'crate_k17'
 };
 
 export const MAPS = {
@@ -45,7 +50,8 @@ export const MAPS = {
     npcs: [
       { id: 'rook', x: 2, y: 6, face: 'down' },
       { id: 'tam', x: 8, y: 2, face: 'down' },
-      { id: 'brushes', x: 20, y: 4 }
+      { id: 'brushes', x: 20, y: 4 },
+      { id: 'rhea', x: 14, y: 7, face: 'down', if: 'rhea_joined' }
     ],
     objects: [
       { id: 'bed', x: 1, y: 2, w: 1, h: 2, label: 'Rest' },
@@ -179,6 +185,58 @@ export const MAPS = {
       { id: 'mags', x: 1, y: 3, w: 7, label: 'Talk to Mags' },
       { id: 'jukebox', x: 15, y: 7, label: 'Jukebox' },
       { id: 'bar_exit', x: 8, y: 9, label: 'Back to the plaza' }
+    ]
+  },
+
+  relay: {
+    name: 'Relay K-17',
+    jp: 'リレー K-17',
+    where: 'Orbital relay station, past the belt',
+    music: 'tense',
+    dark: 'power_on',          // dark with emergency lights until this flag is set
+    minimap: true,
+    rows: [
+      'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq',
+      'qZZZ9ZZZqZZZ9ZZZZ9ZZZqZZZ9ZZZ9ZZZq',
+      'q4mmmmmmq7m7m7mmmm888q5m5m5m5m5mmq',
+      'q4mmmmmmqmmmmmmmmmmmmqmmmmmmmmmmmq',
+      'qmm!!mmmq7m7m7mmmmmmmq5m5m5mm333mq',
+      'qmmmmmmmqmmmmmmmmmmmmqmmmmmmmmmmmq',
+      'qqqqyqqqqqqqqqq1qqqqqqqqqqqq2qqqqq',
+      'qyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyq',
+      'qyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyq',
+      'qqqqqqyqqqqqqqqqqyqqqqqqqqqq1qqqqq',
+      'qZZZZZZZZZZZZqZZZZZZZqZZZZZZZZZZZq',
+      'qmmmmmmmmmmmmq$m$$m$mq6m6m6m6mmmmq',
+      'qmmmmmmmmmmmmqmmmmmmmqmmmmmmmmmmmq',
+      'qmmm!!!!!!mmmq$mmmm$$q6m6m6m6mm3mq',
+      'qmmmmmmmmmmmmqmmmmmmmqmmmmmmmmmmmq',
+      'qqqqqqDqqqqqqqqqqqqqqqqqqqqqqqqqqq'
+    ],
+    doors: [
+      { x: 15, y: 6, flag: 'power_on' },
+      { x: 28, y: 9, flag: 'power_on' },
+      { x: 28, y: 6, flag: 'k17_keycard' }
+    ],
+    spawns: { default: { x: 6, y: 13 } },
+    npcs: [
+      { id: 'rhea', x: 9, y: 12, face: 'left', if: 'rhea_joined' },
+      { id: 'brushes', x: 3, y: 12 },
+      { id: 'drone', x: 27, y: 7, look: 'drone', ifNot: 'drones_cleared' },
+      { id: 'drone', x: 29, y: 7, look: 'drone', ifNot: 'drones_cleared' },
+      { id: 'juno', x: 32, y: 5, face: 'left', ifNot: 'ghost_done' }
+    ],
+    objects: [
+      { id: 'generator', x: 1, y: 2, h: 2, label: 'Generator' },
+      { id: 'lockers', x: 18, y: 2, w: 3, label: 'Search the lockers' },
+      { id: 'log_bunk', x: 9, y: 2, label: 'Read the bunk log' },
+      { id: 'comms', x: 29, y: 4, w: 3, label: 'Comms console' },
+      { id: 'cryo', x: 22, y: 11, w: 7, h: 3, label: 'Cryo pods' },
+      { id: 'log_med', x: 31, y: 13, label: 'Medical log' },
+      { id: 'door_power', x: 15, y: 6, label: 'Door' },
+      { id: 'door_power', x: 28, y: 9, label: 'Door' },
+      { id: 'door_key', x: 28, y: 6, label: 'Comms hub door' },
+      { id: 'airlock_k17', x: 6, y: 15, label: 'Airlock to the Hi-Hat' }
     ]
   }
 };

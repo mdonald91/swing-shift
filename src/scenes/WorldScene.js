@@ -1,7 +1,7 @@
 // The walkable world: tile map, the captain, crew and things to interact with.
-import { MAPS, TILE, SOLID, TILE_LOOKS } from '../data/maps.js';
+import { MAPS, TILE, SOLID, TILE_LOOKS, DOOR_OPEN } from '../data/maps.js';
 import { CREW } from '../data/crew.js';
-import { characterSheet, droneSheet, tileSheet, starTile, shipSprite, addSheet, DIRS } from '../art/pixel.js';
+import { characterSheet, droneSheet, tileSheet, starTile, shipSprite, darknessCanvas, addSheet, DIRS } from '../art/pixel.js';
 import { resolveLook, NPC_LOOKS } from '../data/appearance.js';
 import { Input } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
@@ -32,6 +32,7 @@ export class WorldScene extends Phaser.Scene {
     const ts = tm.addTilesetImage('tiles', 'tiles', T, T, 0, 0);
     this.layer = tm.createLayer(0, ts, 0, 0).setDepth(0);
     this.layer.setCollision(SOLID);
+    this.doorTiles = (map.doors || []).map(d => ({ ...d, closed: data[d.y][d.x] }));
     this.W = tm.widthInPixels; this.H = tm.heightInPixels;
     this.physics.world.setBounds(0, 0, this.W, this.H);
 
@@ -54,14 +55,12 @@ export class WorldScene extends Phaser.Scene {
     const blockers = this.physics.add.staticGroup();
     if (!this.textures.exists('bubble')) this.textures.addCanvas('bubble', bubbleCanvas());
     for (const n of map.npcs) {
-      if (n.ifNot && state.flags[n.ifNot]) continue;
-      if (n.if && !state.flags[n.if]) continue;
       const lookId = n.look || n.id;
       const key = 'npc-' + lookId;
       const x = n.x * T + 8, y = n.y * T + 8;
       let spr;
-      if (n.id === 'brushes') {
-        if (!this.textures.exists(key)) addSheet(this, key, droneSheet(), 16, 16);
+      if (n.id === 'brushes' || lookId === 'drone') {
+        if (!this.textures.exists(key)) addSheet(this, key, droneSheet(lookId === 'drone'), 16, 16);
         spr = this.add.sprite(x, y - 4, key, 0).setOrigin(0.5, 0.8);
         this.tweens.add({ targets: spr, y: y - 8, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
         this.time.addEvent({ delay: 2600, loop: true, callback: () => { spr.setFrame(1); this.time.delayedCall(140, () => spr.setFrame(0)); } });
@@ -74,6 +73,7 @@ export class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: spr.bubble, y: spr.bubble.y - 2, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
       const z = this.add.zone(x, y + 3, 12, 8);
       blockers.add(z);
+      spr.zone = z; spr.def = n;
       this.npcs.push(spr);
     }
     this.physics.add.collider(this.player, blockers);
@@ -132,13 +132,53 @@ export class WorldScene extends Phaser.Scene {
       this.drops = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), v: .5 + Math.random() * .5 }));
     }
 
+    // darkness until the power comes back
+    this.dark = null;
+    if (map.dark && !state.flags[map.dark]) {
+      if (!this.textures.exists('dark')) this.textures.addCanvas('dark', darknessCanvas());
+      this.dark = this.add.image(sx, sy, 'dark').setScale(1).setDepth(8000);
+      this.alarm = this.add.rectangle(this.W / 2, this.H / 2, this.W + 400, this.H + 400, 0xd5473b, 0.08).setDepth(7999);
+      this.tweens.add({ targets: this.alarm, alpha: 0.02, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    }
+
     this.hintText = null;
-    const refresh = () => this.npcs.forEach(n => n.bubble.setVisible(chatAvailable(n.npcId, state.flags, state.location)));
+    const refresh = () => {
+      const f = state.flags;
+      this.npcs.forEach(n => {
+        const show = !(n.def.ifNot && f[n.def.ifNot]) && !(n.def.if && !f[n.def.if]);
+        n.setVisible(show); n.active = show;
+        if (n.zone.body) n.zone.body.enable = show;
+        n.bubble.setVisible(show && chatAvailable(n.npcId, f, state.location));
+      });
+      let changed = false;
+      for (const d of this.doorTiles) {
+        const want = f[d.flag] ? DOOR_OPEN : d.closed;
+        if (this.layer.getTileAt(d.x, d.y).index !== want) { this.layer.putTileAt(want, d.x, d.y); changed = true; }
+      }
+      if (changed) { this.layer.setCollision(SOLID); bus.emit('minimap', this.minimapData()); }
+      if (this.dark && map.dark && f[map.dark]) {
+        this.tweens.add({ targets: [this.dark, this.alarm], alpha: 0, duration: 900, onComplete: () => { this.dark?.destroy(); this.alarm?.destroy(); this.dark = null; } });
+      }
+    };
     refresh();
     const off = bus.on('dialog-closed', refresh);
     this.events.once('shutdown', off);
     Audio.setMood(map.music);
     bus.emit('area', map);
+    bus.emit('minimap', map.minimap ? this.minimapData() : null);
+  }
+
+  minimapData() {
+    const rows = [];
+    for (let y = 0; y < this.layer.layer.height; y++) {
+      const row = [];
+      for (let x = 0; x < this.layer.layer.width; x++) {
+        const t = this.layer.getTileAt(x, y);
+        row.push(!t || t.index < 0 ? 0 : t.index === DOOR_OPEN ? 3 : this.doorTiles.some(d => d.x === x && d.y === y) ? 4 : SOLID.includes(t.index) ? 1 : 2);
+      }
+      rows.push(row);
+    }
+    return rows;
   }
 
   makeAnims(key) {
@@ -173,6 +213,7 @@ export class WorldScene extends Phaser.Scene {
     const f = this.facingPoint();
     let best = null, bd = 15;
     for (const n of this.npcs) {
+      if (!n.active) continue;
       const dist = Phaser.Math.Distance.Between(f.x, f.y, n.x, n.footY - 4);
       if (dist < bd) { bd = dist; best = { kind: 'npc', id: n.npcId, spr: n, label: 'Talk to ' + (CREW[n.npcId]?.short || n.npcId) }; }
     }
@@ -230,6 +271,8 @@ export class WorldScene extends Phaser.Scene {
     p.setDepth(p.y);
     this.npcs.forEach(n => n.setDepth(n.footY));
     state.pos = { px: Math.round(p.x), py: Math.round(p.y) };
+    if (this.dark) this.dark.setPosition(p.x, p.y - 6);
+    if (this.mapDef.minimap && (!this._mm || time - this._mm > 150)) { this._mm = time; bus.emit('minimap-pos', p.x / T, p.y / T); }
 
     const target = this.findTarget();
     const label = target ? target.label : null;
@@ -244,7 +287,7 @@ export class WorldScene extends Phaser.Scene {
     const pressed = Input.action || J(k.act) || J(k.e) || J(k.enter);
     Input.action = false;
     if (pressed && target) {
-      if (target.kind === 'npc' && target.spr.npcId !== 'brushes') {
+      if (target.kind === 'npc' && target.spr.npcId !== 'brushes' && target.spr.npcId !== 'drone') {
         const dx = p.x - target.spr.x, dy = p.y - target.spr.y;
         const face = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
         target.spr.setFrame(DIRS.indexOf(face) * 3);

@@ -101,6 +101,25 @@ const BUILD = {
     <rect y="820" width="1600" height="80" fill="#0b0d18"/><rect y="820" width="1600" height="3" fill="#ff5fa2" opacity=".5"/>
     ${rain}</svg>`;
   },
+  relay_out: () => `${open}<rect width="1600" height="900" fill="#05060c"/>${stars(260, 1600, 900)}
+    <circle cx="1380" cy="160" r="40" fill="#f3c860" opacity=".9"/><circle cx="1380" cy="160" r="90" fill="#f3c860" opacity=".08"/>
+    <g transform="translate(800 470)">
+      <rect x="-420" y="-18" width="840" height="36" fill="#2f3346"/><rect x="-420" y="-18" width="840" height="6" fill="#46516a"/>
+      <rect x="-90" y="-150" width="180" height="300" fill="#262a3a"/><rect x="-60" y="-260" width="120" height="110" fill="#30364a"/>
+      <path d="M0 -260 V-380" stroke="#46516a" stroke-width="10"/><circle cx="0" cy="-390" r="16" fill="${P.crimson}"/>
+      <rect x="-380" y="-60" width="120" height="120" fill="#30364a"/><rect x="260" y="-60" width="120" height="120" fill="#30364a"/>
+      <rect x="-520" y="-90" width="90" height="180" fill="#1b4a6a" stroke="#46516a" stroke-width="6"/><rect x="430" y="-90" width="90" height="180" fill="#1b4a6a" stroke="#46516a" stroke-width="6"/>
+      ${Array.from({ length: 10 }, (_, i) => `<rect x="${-70 + (i % 5) * 30}" y="${-120 + Math.floor(i / 5) * 60}" width="14" height="10" fill="${P.crimson}" opacity=".8"/>`).join('')}
+      <text x="0" y="40" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="54" fill="#5d6a80">K-17</text>
+    </g>${SHIP}</svg>`,
+  relay_in: () => `${open}<rect width="1600" height="900" fill="#0e1018"/>
+    <path d="M0 0 L520 260 H1080 L1600 0Z" fill="#161a26"/><path d="M0 900 L520 640 H1080 L1600 900Z" fill="#1b1f2c"/>
+    <rect x="520" y="260" width="560" height="380" fill="#05060c"/>${stars(40, 1600, 900).replace(/<circle/g, '<circle clip-path="url(#bdWin)"')}
+    <defs><clipPath id="bdWin"><rect x="520" y="260" width="560" height="380"/></clipPath></defs>
+    <rect x="520" y="260" width="560" height="380" fill="none" stroke="#3a4258" stroke-width="18"/>
+    <g fill="#10121a">${[60, 200, 1300, 1440].map(x => `<rect x="${x}" y="300" width="110" height="420"/>`).join('')}</g>
+    ${[60, 200, 1300, 1440].map(x => Array.from({ length: 6 }, (_, k) => `<rect x="${x + 16}" y="${330 + k * 60}" width="8" height="8" fill="${k % 2 ? P.crimson : '#5fe3d4'}"/>`).join('')).join('')}
+    <rect x="0" y="120" width="1600" height="8" fill="${P.crimson}" opacity=".6"/><rect x="0" y="120" width="1600" height="60" fill="${P.crimson}" opacity=".06"/></svg>`,
   black: () => ''
 };
 

@@ -7,7 +7,7 @@ import { playerPortrait, npcPortrait } from '../art/portrait.js';
 import { state, settings, saveGame, saveSettings, setFlag, formatTime } from '../state.js';
 import { SHOPS, GEAR, FACTIONS, tier } from '../data/shop.js';
 import { ITEMS, SKILLS, CAPTAIN_SKILLS } from '../data/battles.js';
-import { crewStats, ownsGear, BOND_HP, BOND_ATK } from '../systems/party.js';
+import { crewStats, ownsGear, BOND_HP, BOND_ATK, available, activeParty } from '../systems/party.js';
 import { Audio } from '../systems/audio.js';
 import { el, esc, openModal, toast, leaveWorld } from './ui.js';
 import { Hud } from './hud.js';
@@ -63,8 +63,8 @@ export function openBoard() {
     const s = status(b);
     const anyActive = BOUNTIES.some(x => state.bounties[x.id] === 'active');
     let action;
-    if (s === 'locked') action = `<p class="lock">${esc(b.unlock)}</p>`;
-    else if (s === 'active') action = `<p class="ok">${b.id === 'ghost' ? 'In progress. Relay K-17 opens in the next build.' : 'In progress. Fly to the target from the cockpit.'}</p>`;
+    if (s === 'locked') action = `<p class="lock">${esc(b.id === 'courier' && state.flags.ghost_done ? 'Track 03 arrives in the next build' : b.unlock)}</p>`;
+    else if (s === 'active') action = `<p class="ok">In progress. Fly to the target from the cockpit.</p>`;
     else if (s === 'done') action = `<p class="ok">Completed.</p>`;
     else if (anyActive) action = `<p class="lock">Finish your current contract first.</p>`;
     else action = `<button class="btn primary" type="button" data-accept>Accept contract</button>`;
@@ -148,12 +148,13 @@ function confirmTitle(btn) {
 }
 
 /* ---------------- Crew ---------------- */
-function openCrew() {
-  Audio.sfx('confirm');
+function openCrew(quiet) {
+  if (!quiet) Audio.sfx('confirm');
+  const party = activeParty();
   const p = state.player, temp = temperament(p), cap = CAPTAIN_ROLES[temp];
   const cards = [
     { key: 'captain', name: p.name, role: `Captain · ${cap.role}`, pt: playerPortrait(p), skills: CAPTAIN_SKILLS[temp], bio: `${OUTFITS[p.outfit].n}. ${temp} under pressure.`, color: 'var(--mustard)' },
-    ...['rook', 'tam', 'brushes'].map(id => ({ key: id, name: CREW[id].name, role: CREW[id].role, pt: npcPortrait(id), skills: CREW[id].skillKeys, bio: CREW[id].bio, color: CREW[id].color }))
+    ...['rook', 'tam', 'brushes', 'rhea'].filter(available).map(id => ({ key: id, name: CREW[id].name, role: CREW[id].role, pt: npcPortrait(id), skills: CREW[id].skillKeys, bio: CREW[id].bio, color: CREW[id].color }))
   ].map(c => ({ ...c, st: crewStats(c.key) }));
   const node = el(`<div class="panel crew">
     ${head('Crew', 'クルー')}
@@ -163,15 +164,30 @@ function openCrew() {
         <div class="cc-info">
           <b>${esc(c.name)}</b><small>${esc(c.role)}</small>
           <p class="cc-stats"><span>HP <b>${c.st.hp}</b></span><span>SP <b>${c.st.sp}</b></span><span>ATK <b>${c.st.atk}</b></span><span>DEF <b>${c.st.def}</b></span></p>
+          ${c.key === 'captain' ? '<p class="cc-party lead">Leads every fight</p>' : `<button class="cc-party ${party.includes(c.key) ? 'on' : ''}" type="button" data-p="${c.key}">${party.includes(c.key) ? 'In the party' : 'On the bench'}</button>`}
           ${c.key === 'captain' ? '' : `<p class="bond" title="Bond">${[0, 1, 2].map(i => `<i class="${i < c.st.bond ? 'on' : ''}"></i>`).join('')}<span>Bond ${c.st.bond}</span></p>`}
           <p class="skills">${(c.skills || []).map(k => `<span>${esc(SKILLS[k]?.n || k)}</span>`).join('')}</p>
           <p class="bio">${esc(c.bio)}</p>
         </div>
       </article>`).join('')}</div>
-    <p class="muted small panel-foot">Bond grows when you make time for your crew between jobs. Each level adds ${BOND_HP} HP and ${BOND_ATK} ATK.</p>
+    <p class="muted small panel-foot">Three crew fight beside you: tap a card's button to swap. Bond grows when you make time for your crew between jobs; each level adds ${BOND_HP} HP and ${BOND_ATK} ATK.</p>
   </div>`);
   const m = openModal(node);
   wireClose(node, m);
+  node.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.p;
+    let p = activeParty();
+    if (p.includes(k)) {
+      if (p.length <= 1) return;
+      p = p.filter(x => x !== k);
+    } else {
+      if (p.length >= 3) { toast('The party is full. Bench someone first.'); Audio.sfx('back'); return; }
+      p.push(k);
+    }
+    state.party = p;
+    Audio.sfx('tick');
+    m.close(true); openCrew(true);
+  }));
 }
 
 /* ---------------- Bag ---------------- */

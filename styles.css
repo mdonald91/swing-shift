@@ -621,3 +621,10 @@ body.touch-on .hud-hint { bottom: calc(118px + var(--safe-b)); }
 .busk-hint, .busk-verdict { margin: 0; font-size: 14px; color: var(--smoke); line-height: 1.45; }
 .busk-verdict { color: var(--cream); }
 .busk-pay { margin: 0; font-size: 18px; }
+
+/* ---------------- 0.6: minimap ---------------- */
+.minimap { position: absolute; top: calc(54px + var(--safe-t)); right: max(12px, var(--safe-r)); image-rendering: pixelated; background: rgba(7, 8, 15, .78); border: 1px solid var(--line); padding: 4px; width: auto; height: auto; max-width: 34vw; pointer-events: none; }
+.cc-party { align-self: flex-start; margin: 4px 0 2px; font: 700 11px var(--f-ui); letter-spacing: .12em; text-transform: uppercase; padding: 4px 9px; background: transparent; color: var(--smoke); border: 1px solid var(--line-soft); cursor: pointer; }
+.cc-party.on { background: var(--c); color: var(--ink); border-color: var(--c); }
+.cc-party.lead { cursor: default; color: var(--mustard); border-color: transparent; padding-left: 0; }
+.crew-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }

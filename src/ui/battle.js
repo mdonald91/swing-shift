@@ -6,11 +6,14 @@ import { temperament } from '../data/appearance.js';
 import { backdrop } from '../art/backdrops.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
 import { state, setFlag, saveGame, addRep } from '../state.js';
-import { crewStats, startingGroove, beatWindowBonus } from '../systems/party.js';
+import { crewStats, startingGroove, beatWindowBonus, activeParty } from '../systems/party.js';
+import { MAPS } from '../data/maps.js';
+import { bus } from '../bus.js';
 import { block, unblock } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
 import { el, esc, sceneLayer, toast, travel } from './ui.js';
 import { playCut } from './cutscene.js';
+import { runDialogue } from './dialog.js';
 import { Hud } from './hud.js';
 
 const RHY = {
@@ -36,7 +39,7 @@ export function startBattle(id, { retry = false } = {}) {
   const temp = temperament(state.player);
   const party = [
     { key: 'captain', id: 'player', name: state.player.name, ...crewStats('captain'), skills: CAPTAIN_SKILLS[temp] },
-    ...['rook', 'tam', 'brushes'].map(k => ({ key: k, id: k, name: CREW[k].short, ...crewStats(k) }))
+    ...activeParty().map(k => ({ key: k, id: k, name: CREW[k].short, ...crewStats(k) }))
   ].map(u => ({ ...u, max: u.hp, spMax: u.sp, sp: 14, ko: false, guard: false }));
   const enemies = enc.enemies.map((e, i) => ({ ...e, key: 'e' + i, max: e.hp, ko: false }));
   B = { id, enc, party, enemies, groove: Math.min(100, startingGroove()), turn: 0, overclock: 0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null };
@@ -67,7 +70,7 @@ export function startBattle(id, { retry = false } = {}) {
   root.addEventListener('pointerdown', () => rhythmPress());
   document.addEventListener('keydown', onKey);
   update();
-  log(id === 'velvet' ? 'Velvet tips her hat. Two goons crack their knuckles in 4/4 time.' : 'Here they come.');
+  log(enc.intro || 'Here they come.');
   raf = requestAnimationFrame(frame);
   setTimeout(nextActor, 900);
 }
@@ -171,8 +174,8 @@ function menuPick(a, c) {
     a.guard = true; a.sp = Math.min(a.spMax, a.sp + 6);
     log(`${a.name} lays out a bar and steadies their nerve.`); update(); endAction(300);
   } else if (c === 'run') {
-    log(B.enc.noRun || 'You slip away.');
-    Audio.sfx('back');
+    if (B.enc.noRun) { log(B.enc.noRun); Audio.sfx('back'); return; }
+    Audio.sfx('back'); cleanup(); unblock(); backToWorld(); toast('You slip away. The drones will still be there.');
   } else if (c === 'jam') doJam(a);
 }
 
@@ -248,6 +251,7 @@ function applySkill(a, sk, target, m) {
       if (sk.hit) {
         let mult = sk.hit * m;
         if (sk.exec && t.hp < t.max * .4) mult *= 2;
+        if (sk.machine && t.machine) mult *= sk.machine;
         hitEnemy(a, t, mult, sk.word || a.attack.word, sk.sfx || 'bang');
       } else {
         if (sk.word) pop(cardOf(t), sk.word);
@@ -361,6 +365,7 @@ function hitParty(e, p, mult, word) {
 async function doJam(a) {
   B.mode = 'busy'; cmd('<p class="bt-who">Big finish</p>');
   const band = living(B.party);
+  $('.bt-jam-panels').style.gridTemplateColumns = `repeat(${B.party.length}, 1fr)`;
   $('.bt-jam-panels').innerHTML = B.party.map((u, i) => `<div class="jp p${i + 1}">${u.ko ? '' : portraitOf(u)}</div>`).join('');
   $('.bt-jam').hidden = false; Audio.sfx('cymbal');
   await sleep(1500);
@@ -387,7 +392,19 @@ async function enemyPhase() {
     if (e.stun) { e.stun = false; log(`${e.name} is still seeing stars. Turn skipped.`); update(); continue; }
     clearMarks(); cardOf(e).classList.add('acting');
     const targets = living(B.party); if (!targets.length) break;
-    if (e.boss) {
+    if (e.ai === 'warden') {
+      if (e.hp < e.max * .5 && !e.overclocked) {
+        e.overclocked = true; e.atk += 5;
+        pop(cardOf(e), 'OVERCLOCK'); Audio.sfx('zap');
+        log('The Warden reroutes the relay power into itself. Its eye burns white. It hits harder now.');
+      } else if (Math.random() < .3) {
+        log('LOCKDOWN PULSE. Every light on the station strobes at once.');
+        targets.forEach((p, i) => setTimeout(() => root && hitParty(e, p, .55, 'KZZT!'), i * 150));
+      } else {
+        const p = pick(targets); const v = hitParty(e, p, 1.15, 'BZOW!');
+        log(`The Warden's targeting laser finds ${p.name}. ${v} damage.`);
+      }
+    } else if (e.ai === 'velvet') {
       if (e.hp < e.max * .45 && !e.healed) {
         e.healed = true; e.hp = Math.min(e.max, e.hp + 60);
         pop(cardOf(e), '+60', 'num heal'); Audio.sfx('heal');
@@ -400,8 +417,8 @@ async function enemyPhase() {
         log(`Velvet's silver derringer tags ${p.name} for ${v}.`);
       }
     } else {
-      const p = pick(targets); const v = hitParty(e, p, 1, 'POW!');
-      log(`${e.name} throws a haymaker at ${p.name}. ${v} damage.`);
+      const p = pick(targets); const v = hitParty(e, p, 1, e.word || 'POW!');
+      log(e.machine ? `${e.name} fires a stun bolt at ${p.name}. ${v} damage.` : `${e.name} throws a haymaker at ${p.name}. ${v} damage.`);
     }
     await sleep(600);
   }
@@ -421,7 +438,18 @@ function checkEnd() {
   if (!living(B.enemies).length) {
     B.over = true; B.mode = 'busy'; cmd('');
     Audio.sfx('cymbal');
-    setTimeout(() => { const res = { ...B }; cleanup(); playCut('victory', { restoreMood: false }).then(() => showLedger(res)); }, 1200);
+    setTimeout(() => {
+      const res = { ...B };
+      cleanup();
+      if (res.enc.bounty) return finishBounty(res);
+      // a skirmish: collect the spoils and carry on exploring
+      if (res.enc.flag) setFlag(res.enc.flag);
+      const rw = res.enc.reward || {};
+      if (rw.chits) state.chits += rw.chits;
+      Object.entries(rw.items || {}).forEach(([k, n]) => { state.items[k] = (state.items[k] || 0) + n; });
+      unblock(); backToWorld();
+      toast(`Victory! ₡ ${rw.chits || 0}${rw.items ? ' and supplies' : ''}`);
+    }, 1200);
     return true;
   }
   if (!living(B.party).length) {
@@ -444,34 +472,82 @@ function showDefeat() {
   o.hidden = false;
   o.querySelector('[data-retry]').addEventListener('click', () => { Audio.sfx('confirm'); startBattle(B.id, { retry: true }); });
   o.querySelector('[data-leave]').addEventListener('click', () => { Audio.sfx('back'); cleanup(); unblock(); travel('ship', 'lounge'); });
+  if (!B.enc.bounty) {
+    o.querySelector('[data-leave]').textContent = 'Retreat';
+    o.querySelector('[data-leave]').replaceWith(o.querySelector('[data-leave]').cloneNode(true));
+    o.querySelector('[data-leave]').addEventListener('click', () => { Audio.sfx('back'); cleanup(); unblock(); backToWorld(); });
+  }
   o.querySelector('[data-retry]').focus({ preventScroll: true });
 }
 
-/* ---------------- payday ---------------- */
+function backToWorld() {
+  Audio.setMood((MAPS[state.location] || MAPS.ship).music);
+  Hud.refresh();
+  bus.emit('dialog-closed');
+}
+
+/* ---------------- story fights: aftermath and payday ---------------- */
+const AFTER = {
+  velvet: { cut: 'victory', ending: 'ending', title: 'Track 01 · Counterfeit Swing' },
+  ghost: { cut: 'k17_victory', choice: 'k17_choice', ending: 'k17_ending', title: 'Track 02 · Ghost Frequency' }
+};
+
+async function finishBounty(res) {
+  res.id = res.enc.bounty;          // from here on, the bounty rather than the encounter
+  const a = AFTER[res.id];
+  await playCut(a.cut, { restoreMood: false });
+  if (a.choice) await runDialogue(a.choice);
+  showLedger(res);
+}
+
+function ledgerFor(res) {
+  const b = BOUNTIES.find(x => x.id === res.id) || { name: 'Bounty', reward: 0 };
+  const style = [`Style bonus: ${res.perfects} ${res.perfects === 1 ? 'hit' : 'hits'} on the beat`, res.perfects * 150];
+  if (res.id === 'ghost') {
+    const f = state.flags, prot = f.juno_protected;
+    return {
+      outcome: prot ? 'Survivor protected. Helix exposed.' : 'Data and survivor handed to Helix Salvage.',
+      items: [
+        prot ? ['Helix Salvage pays half (and hates you)', 12000] : [`Contract: ${b.name}`, b.reward],
+        ...(prot ? [['Bounty Office whistleblower bonus', 9000]] : []),
+        ...(f.cryo_found ? [['Four crew found alive in cryo', 2500]] : []),
+        style,
+        ['Fuel for the long jump past the belt', -5800],
+        ['Drone damage repairs', -1900],
+        ...(prot ? [] : [["Rhea's bar tab (she isn't speaking to you)", -300]])
+      ],
+      extra: 'Recovered: Relay log data'
+    };
+  }
+  return {
+    outcome: 'Velvet Moreau delivered alive.',
+    items: [
+      [`Bounty: ${b.name}, alive`, b.reward], style,
+      [res.ricochet ? 'Warehouse roof (ricochet damage)' : 'Warehouse crate damage', res.ricochet ? -3850 : -920],
+      ['Fuel, at Ganymede prices', -4120],
+      ['Hull patch', -2460],
+      ...(res.wrench ? [['Replacement wrench (bent)', -240]] : []),
+      ['New drum brushes for Brushes', -115],
+      ['Instant noodles, bulk', -89]
+    ]
+  };
+}
+
 function showLedger(res) {
   Audio.setMood('victory');
-  const b = BOUNTIES.find(x => x.id === res.id) || { name: 'Bounty', reward: 0 };
-  const items = [
-    [`Bounty: ${b.name}, alive`, b.reward],
-    [`Style bonus: ${res.perfects} hits on the beat`, res.perfects * 150],
-    [res.ricochet ? 'Warehouse roof (ricochet damage)' : 'Warehouse crate damage', res.ricochet ? -3850 : -920],
-    ['Fuel, at Ganymede prices', -4120],
-    ['Hull patch', -2460],
-    ...(res.wrench ? [['Replacement wrench (bent)', -240]] : []),
-    ['New drum brushes for Brushes', -115],
-    ['Instant noodles, bulk', -89]
-  ];
-  const net = items.reduce((s, i) => s + i[1], 0);
+  const a = AFTER[res.id];
+  const L = ledgerFor(res);
+  const net = L.items.reduce((s, i) => s + i[1], 0);
   state.chits += net;
   const fmt = n => Math.abs(n).toLocaleString('en-AU');
   const screen = el(`<div class="ledger">
     <div class="ledger-inner">
       <div class="receipt">
-        <p class="eyebrow">Payday ledger</p>
-        <h2>Track 01 · Counterfeit Swing</h2>
-        <p class="sub">Bounty office, Ganymede relay · amounts in chits</p>
-        ${items.map((it, i) => `<div class="lrow ${it[1] < 0 ? 'neg' : ''}" style="animation-delay:${i * .12}s"><span>${esc(it[0])}</span><span>${it[1] < 0 ? '−' : ''}₡ ${fmt(it[1])}</span></div>`).join('')}
-        <div class="lrow total" style="animation-delay:${items.length * .12}s"><span>Take-home</span><span>₡ ${fmt(net)}</span></div>
+        <p class="eyebrow">Mission complete</p>
+        <h2>${esc(a.title)}</h2>
+        <p class="sub">Outcome: ${esc(L.outcome)}${L.extra ? ` · ${esc(L.extra)}` : ''}</p>
+        ${L.items.map((it, i) => `<div class="lrow ${it[1] < 0 ? 'neg' : ''}" style="animation-delay:${i * .12}s"><span>${esc(it[0])}</span><span>${it[1] < 0 ? '−' : ''}₡ ${fmt(it[1])}</span></div>`).join('')}
+        <div class="lrow total" style="animation-delay:${L.items.length * .12}s"><span>Take-home</span><span>₡ ${fmt(net)}</span></div>
       </div>
       <button class="btn primary big" type="button" data-home>Head home</button>
     </div>
@@ -481,14 +557,15 @@ function showLedger(res) {
   screen.querySelector('[data-home]').addEventListener('click', () => {
     Audio.sfx('confirm');
     screen.remove();
-    playCut('ending', { restoreMood: false }).then(() => {
+    playCut(a.ending, { restoreMood: false }).then(() => {
       state.bounties[res.id] = 'done';
       setFlag(res.id + '_done');
-      if (!state.flags.rep_init) { addRep({ office: 2 }); setFlag('rep_init'); }
+      if (res.id === 'velvet' && !state.flags.rep_init) { addRep({ office: 2 }); setFlag('rep_init'); }
       unblock();
       travel('ship', 'lounge');
       const ok = saveGame();
-      setTimeout(() => { toast(ok ? 'Track 01 complete. Game saved.' : 'Track 01 complete.'); Hud.refresh(); }, 800);
+      const label = res.id === 'ghost' ? 'Track 02' : 'Track 01';
+      setTimeout(() => { toast(ok ? `${label} complete. Game saved.` : `${label} complete.`); Hud.refresh(); }, 800);
     });
   });
 }

@@ -19,7 +19,8 @@ function blank() {
     items: { noodle: 2 },
     gear: [],              // ids from data/shop.js GEAR
     rep: { office: 0, docks: 0, helix: 0 },
-    bonds: { rook: 0, tam: 0, brushes: 0 },
+    bonds: { rook: 0, tam: 0, brushes: 0, rhea: 0 },
+    party: ['rook', 'tam', 'brushes'],   // who fights alongside the captain (up to 3)
     playtime: 0,
     savedAt: 0
   };
@@ -55,6 +56,7 @@ export function loadGame(slot) {
   state.rep = { ...b.rep, ...(data.rep || {}) };
   state.bonds = { ...b.bonds, ...(data.bonds || {}) };
   state.items = { ...(data.items || b.items) };
+  state.party = Array.isArray(data.party) && data.party.length ? data.party : b.party;
   // saves from before reputation existed
   if (state.flags.velvet_done && !state.flags.rep_init) { state.rep.office += 2; state.flags.rep_init = true; }
   return true;
