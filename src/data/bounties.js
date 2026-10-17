@@ -9,7 +9,7 @@ export const BOUNTIES = [
   {
     id: 'ghost', name: 'Ghost Frequency', sub: 'Missing crew · Relay K-17',
     reward: 24000, risk: 'B', portrait: 'unknown', track: 'Track 02',
-    client: 'Helix Salvage', wanted: 'Crew of 5 (missing)', unlock: 'Opens after Track 01',
+    client: 'Helix Salvage', wanted: 'Crew of 5 (missing)', requires: 'ghost_offered', unlock: 'Meet Helix Salvage on Cygnus Station',
     desc: 'An old relay station went dark three weeks ago. A faint transmission has been detected. Find the crew and work out what happened.'
   },
   {

@@ -78,6 +78,29 @@ const BUILD = {
     <g fill="${P.cream}" opacity=".85">${Array.from({ length: 18 }, () => `<rect x="${rnd(100, 1500).toFixed(0)}" y="${rnd(120, 620).toFixed(0)}" width="34" height="16" transform="rotate(${rnd(-40, 40).toFixed(0)} 800 400)"/>`).join('')}</g>
     <rect x="80" y="520" width="240" height="120" fill="#7a2a24" stroke="${P.ink}" stroke-width="5"/><rect x="1280" y="500" width="260" height="140" fill="#1f5f5c" stroke="${P.ink}" stroke-width="5"/></svg>`;
   },
+  station: () => {
+    let towers = '', windows = '';
+    const cols = ['#161a2c', '#1b2036', '#121626'];
+    for (let i = 0; i < 16; i++) {
+      const x = i * 104 - 20 + rnd(-10, 10), w = rnd(80, 130), h = rnd(260, 620), y = 900 - h;
+      towers += `<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="${w.toFixed(0)}" height="${h.toFixed(0)}" fill="${cols[i % 3]}"/>`;
+      for (let k = 0; k < 14; k++) if (Math.random() < .55) windows += `<rect x="${(x + 10 + (k % 4) * (w - 20) / 4).toFixed(0)}" y="${(y + 20 + Math.floor(k / 4) * 40).toFixed(0)}" width="8" height="14" fill="${Math.random() < .2 ? P.mustard : '#3a4a70'}" opacity=".8"/>`;
+    }
+    const sign = (x, y, w, h, c, t, fs) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#0b0d18" stroke="${c}" stroke-width="5"/><rect x="${x - 8}" y="${y - 8}" width="${w + 16}" height="${h + 16}" fill="${c}" opacity=".12"/>
+      <text x="${x + w / 2}" y="${y + h / 2 + fs * .35}" text-anchor="middle" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="${fs}" fill="${c}">${t}</text>`;
+    let rain = '';
+    for (let i = 0; i < 120; i++) { const x = rnd(0, 1700), y = rnd(0, 900); rain += `<path d="M${x.toFixed(0)} ${y.toFixed(0)} l-8 26" stroke="#9fc6e0" stroke-width="2" opacity=".25"/>`; }
+    return `${open}
+    <defs><linearGradient id="bdNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b0d1c"/><stop offset=".7" stop-color="#2a1838"/><stop offset="1" stop-color="#4a1f3a"/></linearGradient></defs>
+    <rect width="1600" height="900" fill="url(#bdNight)"/>${stars(60, 1600, 300)}
+    <path d="M-100 260 Q800 -60 1700 260" stroke="#3a4258" stroke-width="40" fill="none"/><path d="M-100 260 Q800 -60 1700 260" stroke="#5fe3d4" stroke-width="3" fill="none" opacity=".5"/>
+    ${towers}${windows}
+    ${sign(160, 420, 120, 220, '#ff5fa2', 'バー', 52)}
+    ${sign(620, 360, 360, 90, '#5fe3d4', 'シグナス', 56)}
+    ${sign(1240, 470, 150, 170, '#ffd34d', '麺', 96)}
+    <rect y="820" width="1600" height="80" fill="#0b0d18"/><rect y="820" width="1600" height="3" fill="#ff5fa2" opacity=".5"/>
+    ${rain}</svg>`;
+  },
   black: () => ''
 };
 

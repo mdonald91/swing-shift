@@ -96,6 +96,42 @@ export class WorldScene extends Phaser.Scene {
     this.scale.on('resize', this.fit, this);
     this.events.once('shutdown', () => this.scale.off('resize', this.fit, this));
 
+    // passers-by who stroll back and forth (no collision; just atmosphere)
+    this.walkers = [];
+    for (const wk of map.walkers || []) {
+      const key = 'npc-' + wk.look;
+      if (!this.textures.exists(key)) addSheet(this, key, characterSheet(NPC_LOOKS[wk.look]), 16, 24);
+      if (!this.anims.exists(key + '-walk-left')) this.makeAnims(key);
+      const y = wk.y * T + 8;
+      const spr = this.add.sprite(wk.x1 * T + 8, y, key, 0).setOrigin(0.5, 0.85);
+      const go = (from, to) => {
+        const dir = to > from ? 'right' : 'left';
+        spr.anims.play(key + '-walk-' + dir, true);
+        this.tweens.add({
+          targets: spr, x: to * T + 8, duration: Math.abs(to - from) * T / wk.speed * 1000,
+          onComplete: () => { spr.anims.stop(); spr.setFrame(0); this.time.delayedCall(800 + Math.random() * 2000, () => go(to, from)); }
+        });
+      };
+      this.time.delayedCall(Math.random() * 1500, () => go(wk.x1, wk.x2));
+      spr.setDepth(y);
+      this.walkers.push(spr);
+    }
+
+    // neon glow that flickers now and then
+    for (const g of map.glows || []) {
+      const glow = this.add.rectangle(g.x * T + (g.w * T) / 2, g.y * T + 22, g.w * T + 10, 12, g.c, 0.22).setDepth(1).setBlendMode(Phaser.BlendModes.ADD);
+      this.time.addEvent({ delay: 1800 + Math.random() * 2500, loop: true, callback: () => {
+        glow.setAlpha(0.05); this.time.delayedCall(70, () => glow.setAlpha(0.22)); this.time.delayedCall(140, () => glow.setAlpha(0.08)); this.time.delayedCall(210, () => glow.setAlpha(0.22));
+      } });
+    }
+
+    // rain
+    this.rain = null;
+    if (map.rain) {
+      this.rain = this.add.graphics().setDepth(9000);
+      this.drops = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), v: .5 + Math.random() * .5 }));
+    }
+
     this.hintText = null;
     const refresh = () => this.npcs.forEach(n => n.bubble.setVisible(chatAvailable(n.npcId, state.flags, state.location)));
     refresh();
@@ -152,6 +188,18 @@ export class WorldScene extends Phaser.Scene {
     const p = this.player;
     const k = this.keys;
     this.stars.tilePositionX += dt * 0.004;
+    if (this.rain) {
+      const v = this.cameras.main.worldView, w = v.width, h = v.height;
+      this.rain.clear();
+      this.rain.lineStyle(1, 0x9fc6e0, 0.35);
+      for (const d of this.drops) {
+        d.y += dt * 0.0011 * d.v; d.x -= dt * 0.0002 * d.v;
+        if (d.y > 1) { d.y = 0; d.x = Math.random(); }
+        if (d.x < 0) d.x += 1;
+        const x = v.x + d.x * w, y = v.y + d.y * h;
+        this.rain.lineBetween(x, y, x - 1.5, y + 5);
+      }
+    }
 
     if (Input.blocked > 0) {
       p.setVelocity(0, 0); p.anims.stop();

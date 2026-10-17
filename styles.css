@@ -606,3 +606,18 @@ body.touch-on .hud-hint { bottom: calc(118px + var(--safe-b)); }
   .shop-row .sr-price { grid-column: 2; grid-row: 1; }
   .shop-row .btn, .shop-row .sr-done { grid-column: 1 / -1; justify-self: end; }
 }
+
+/* ---------------- 0.5: busking ---------------- */
+.busk { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(4, 5, 10, .55); padding: 16px; animation: fade .2s ease-out; }
+.busk-box { width: min(100%, 420px); padding: 20px 22px 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.busk-title { margin: 0; font-family: var(--f-title); font-weight: 900; text-transform: uppercase; font-size: 30px; line-height: .95; }
+.busk-stage { position: relative; width: 100%; height: 150px; }
+.busk-stage .ring { position: absolute; inset: 0; }
+.busk-dots { display: flex; gap: 8px; }
+.busk-dots i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--smoke); }
+.busk-dots i.perfect { background: var(--mustard); border-color: var(--mustard); }
+.busk-dots i.good { background: var(--teal); border-color: var(--teal); }
+.busk-dots i.miss { background: var(--crimson); border-color: var(--crimson); }
+.busk-hint, .busk-verdict { margin: 0; font-size: 14px; color: var(--smoke); line-height: 1.45; }
+.busk-verdict { color: var(--cream); }
+.busk-pay { margin: 0; font-size: 18px; }

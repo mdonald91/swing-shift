@@ -36,12 +36,19 @@ export const UI = {
       if (id === 'board') return openBoard();
       if (id === 'jukebox') return openJukebox();
       if (id === 'supply') return openShop('supply');
+      if (id === 'outfitters') return openShop('outfitters');
+      if (id === 'stand') return openShop('stand');
+      if (id === 'bar_door') { Audio.sfx('confirm'); return travel('bar'); }
+      if (id === 'bar_exit') { Audio.sfx('back'); return travel('cygnus', 'bar'); }
       runDialogue(entry(id, state.flags, state.location));
     });
     bus.on('menu', () => { if (!modals.length && !document.querySelector('.dlg')) openPauseMenu(); });
     bus.on('hint', t => Hud.hint(t));
     bus.on('area', map => {
       Hud.area(map);
+      if (state.location === 'cygnus' && !flag('cygnus_arrived')) {
+        setTimeout(() => playCut('cygnus_arrive').then(() => { setFlag('cygnus_arrived'); Hud.refresh(); }), 400);
+      }
       if (state.location === 'docks' && !flag('docks_arrived')) {
         setTimeout(() => playCut('arrive').then(() => { setFlag('docks_arrived'); Hud.refresh(); }), 400);
       }
@@ -91,6 +98,7 @@ export function sceneLayer() { return layers['scene-layer']; }
 export function travel(location, spawn = 'default') {
   const m = MAPS[location]; if (!m) return;
   const s = m.spawns[spawn] || m.spawns.default;
+  if (state.location === 'ship' && location !== 'ship') delete state.flags.busked_visit;   // a fresh crowd each trip
   state.location = location;
   state.pos = { px: s.x * 16 + 8, py: s.y * 16 + 8 };
   if (game.scene.isActive('world') || game.scene.isPaused('world')) game.scene.stop('world');

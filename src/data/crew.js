@@ -8,7 +8,14 @@ export const CREW = {
     hp: 85, sp: 70, bio: 'Ship AI in a flying drum kit. Counts everyone in.', skills: ['Static Brush', 'Jam Signal'], skillKeys: ['static', 'jamsignal'] },
   velvet: { name: 'Velvet Moreau', short: 'Velvet', color: 'var(--violet)', blip: 360 },
   goon: { name: 'Dock Goon', short: 'Goon', color: 'var(--smoke)', blip: 180 },
-  ozzie: { name: 'Ozzie Banda', short: 'Ozzie', color: 'var(--mustard)', blip: 300 }
+  ozzie: { name: 'Ozzie Banda', short: 'Ozzie', color: 'var(--mustard)', blip: 300 },
+  sax: { name: 'Old Sol', short: 'Old Sol', color: 'var(--crimson)', blip: 200 },
+  mags: { name: 'Mags', short: 'Mags', color: 'var(--violet)', blip: 380 },
+  lou: { name: 'Lou', short: 'Lou', color: 'var(--teal)', blip: 280 },
+  rhea: { name: 'Rhea Vance', short: 'Rhea', color: 'var(--teal)', blip: 460 },
+  hale: { name: 'Director Hale', short: 'Hale', color: 'var(--cream)', blip: 330 },
+  chef: { name: 'Chef Ama', short: 'Chef Ama', color: 'var(--crimson)', blip: 400 },
+  kessler: { name: 'Kessler', short: 'Kessler', color: 'var(--mustard)', blip: 240 }
 };
 
 // What the captain brings to a fight, based on temperament.

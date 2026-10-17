@@ -7,12 +7,20 @@ export const TILE = {
   'B': 9, 'b': 10, 'g': 11, 'f': 12, 'p': 13, 'D': 14, 'j': 15, 'K': 16, 'e': 17,
   // Dock 9
   '_': 18, '=': 19, 'R': 20, 'T': 21, 'V': 22, 'x': 23, 'H': 24, 'G': 25, 'L': 26,
-  '~': 27, 'P': 28, 'v': 30, 'o': 31
+  '~': 27, 'P': 28, 'v': 30, 'o': 31,
+  // Cygnus Station and the Flat Ninth
+  's': 32, 'w': 33, 'S': 34, 'N': 35, 'M': 36, 'Y': 37, 'd': 38, 'Q': 39, 'u': 40, 'l': 41,
+  'k': 43, 'X': 44, 'F': 45, 'A': 46, 'z': 47, 'I': 48, 'J': 49, 'n': 50, 'U': 51, 'h': 52, 'E': 53
 };
 // Tiles you can't walk through.
-export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31];
+export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31,
+  34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 46, 48, 49, 50, 51, 52, 53];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
-export const TILE_LOOKS = { 20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse' };
+export const TILE_LOOKS = {
+  20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
+  34: 'storefront', 35: 'neon', 36: 'neon', 37: 'neon', 41: 'neonlamp', 43: 'planter', 44: 'railing',
+  48: 'piano', 49: 'bottles', 50: 'bartable', 51: 'booth'
+};
 
 export const MAPS = {
   ship: {
@@ -97,6 +105,80 @@ export const MAPS = {
       { id: 'drum', x: 27, y: 14, label: 'Look' },
       { id: 'crate', x: 2, y: 9, w: 2, h: 2, label: 'Look' },
       { id: 'ship', x: 5, y: 12, w: 5, h: 3, label: 'Board the Hi-Hat' }
+    ]
+  },
+
+  cygnus: {
+    name: 'Cygnus Station',
+    jp: 'シグナス・ステーション',
+    where: 'Upper ring plaza',
+    music: 'station',
+    rain: true,
+    glows: [
+      { x: 3, y: 1, w: 2, c: 0xff5fa2 }, { x: 13, y: 1, w: 2, c: 0x5fe3d4 }, { x: 27, y: 1, w: 2, c: 0xffd34d },
+      { x: 17, y: 1, w: 1, c: 0xff5fa2 }, { x: 24, y: 1, w: 1, c: 0x5fe3d4 }
+    ],
+    rows: [
+      '################################',
+      '#SSNNSSdSS#SSMMSSQSSS#SShSSYYSS#',
+      '#wwwwwwwwwwwwwwwwwwwwwwwwwwwwww#',
+      '#wlwwwwwwlwwwwwwwwlwwwwwwwlwwvw#',
+      '#ssssssssssssssssssssssssssssss#',
+      '#ssssssssssssssssssssssssssssss#',
+      '#ssssssssssssssssssssssssssssss#',
+      '#wwwwwwwwwwwwwwwwwwwwwwwwwwwwww#',
+      '#wkwwwuuuwwwwwwwwwwwwwwwwwwwkww#',
+      '#wwwwwwwwwwwwwwwwwwwwwwwwwwwwww#',
+      '#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#'
+    ],
+    spawns: { default: { x: 15, y: 8 }, bar: { x: 17, y: 2 } },
+    npcs: [
+      { id: 'sax', x: 12, y: 8, face: 'down' },
+      { id: 'chef', x: 7, y: 9, face: 'up' }
+    ],
+    walkers: [
+      { look: 'w1', y: 5, x1: 3, x2: 27, speed: 22 },
+      { look: 'w2', y: 4, x1: 25, x2: 6, speed: 18 },
+      { look: 'w3', y: 6, x1: 10, x2: 29, speed: 26 },
+      { look: 'w4', y: 2, x1: 20, x2: 4, speed: 16 }
+    ],
+    objects: [
+      { id: 'outfitters', x: 7, y: 1, label: "Kessler's Outfitters" },
+      { id: 'bar_door', x: 17, y: 1, label: 'The Flat Ninth' },
+      { id: 'helix', x: 24, y: 1, label: 'Helix Salvage' },
+      { id: 'stand', x: 6, y: 8, w: 3, label: 'Noodle stand' },
+      { id: 'vend_cygnus', x: 29, y: 3, label: 'Vending machine' },
+      { id: 'dockgate', x: 13, y: 10, w: 5, label: 'Docking bay' }
+    ]
+  },
+
+  bar: {
+    name: 'The Flat Ninth',
+    jp: 'フラット・ナインス',
+    where: 'A bar on Cygnus Station',
+    music: 'ship',
+    rows: [
+      '##################',
+      '#JJJJJJJJJJJJJJJJ#',
+      '#FFFFFFFFFFFFFIIF#',
+      '#AAAAAAAFFFFFFFFF#',
+      '#zzzzzzzFFFnFFFFF#',
+      '#FFFFFFFFFFFFFnFF#',
+      '#UUFFFFnFFFFFFFFF#',
+      '#UUFFFFFFFFFFFFjF#',
+      '#FFFFFFFFFFFFFFFF#',
+      '########E#########'
+    ],
+    spawns: { default: { x: 8, y: 8 } },
+    npcs: [
+      { id: 'mags', x: 4, y: 2, face: 'down' },
+      { id: 'lou', x: 15, y: 3, face: 'up' },
+      { id: 'rhea', x: 3, y: 6, face: 'left' }
+    ],
+    objects: [
+      { id: 'mags', x: 1, y: 3, w: 7, label: 'Talk to Mags' },
+      { id: 'jukebox', x: 15, y: 7, label: 'Jukebox' },
+      { id: 'bar_exit', x: 8, y: 9, label: 'Back to the plaza' }
     ]
   }
 };

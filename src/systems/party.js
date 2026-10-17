@@ -21,3 +21,8 @@ export function crewStats(key) {
 export function startingGroove() {
   return GEAR.filter(g => g.groove && ownsGear(g.id)).reduce((s, g) => s + g.groove, 0);
 }
+
+// Extra beat-window width from gear like the Pocket metronome.
+export function beatWindowBonus() {
+  return GEAR.filter(g => g.window && ownsGear(g.id)).reduce((s, g) => s + g.window, 0);
+}

@@ -6,7 +6,7 @@ import { temperament } from '../data/appearance.js';
 import { backdrop } from '../art/backdrops.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
 import { state, setFlag, saveGame, addRep } from '../state.js';
-import { crewStats, startingGroove } from '../systems/party.js';
+import { crewStats, startingGroove, beatWindowBonus } from '../systems/party.js';
 import { block, unblock } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
 import { el, esc, sceneLayer, toast, travel } from './ui.js';
@@ -206,7 +206,8 @@ async function run(a, act, target) {
   if (act.kind === 'item') {
     const it = ITEMS[act.key];
     state.items[act.key]--;
-    if (it.heal) healAlly(target, it.heal, false, `${a.name} hands ${target.name} a ${it.n}.`);
+    if (it.tgt === 'party') living(B.party).forEach((p, i) => setTimeout(() => healAlly(p, it.heal, false, `${a.name} shares a ${it.n}. Everyone feels braver.`), i * 120));
+    else if (it.heal) healAlly(target, it.heal, false, `${a.name} hands ${target.name} a ${it.n}.`);
     else if (it.revive) healAlly(target, Math.round(target.max * it.revive), true, `${a.name} patches ${target.name} up. Back in the band.`);
     else if (it.sp) { target.sp = Math.min(target.spMax, target.sp + it.sp); pop(cardOf(target), '+' + it.sp + ' SP', 'num heal'); Audio.sfx('heal'); log(`${target.name} downs a ${it.n}. Wide awake.`); update(); }
     cmd(''); endAction(600); return;
@@ -291,7 +292,7 @@ function rhythm(wide) {
 function rhythmPress() {
   if (!R || R.done || performance.now() < R.armedAt) return;
   const d = Math.abs(Audio.beatPos() - R.target);
-  const p = R.wide ? .28 : .2;
+  const p = (R.wide ? .28 : .2) + beatWindowBonus();
   finishRhythm(d <= p ? 'perfect' : d <= p * 2 ? 'good' : 'miss');
 }
 function finishRhythm(q) {

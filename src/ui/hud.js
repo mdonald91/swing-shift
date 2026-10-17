@@ -12,7 +12,10 @@ export function objective() {
   const met = ['met_rook', 'met_tam', 'met_brushes'].filter(k => f[k]).length;
   if (f.velvet_done) {
     const chats = ['rook', 'tam', 'brushes'].filter(k => f['chat_' + k]).length;
-    return chats < 3 ? `Catch up with your crew (${chats}/3)` : 'Ghost Frequency is coming. Spend those chits.';
+    if (!f.cygnus_arrived) return chats < 3 ? `Catch up with your crew (${chats}/3), then fly to Cygnus Station` : 'Fly to Cygnus Station from the cockpit';
+    if (!f.ghost_offered) return 'Visit Helix Salvage on the Cygnus plaza';
+    if (!f.bounty_ghost) return 'Accept Ghost Frequency on the bounty board';
+    return 'Ghost Frequency: Relay K-17 opens next build';
   }
   if (!f.bounty_velvet) return met < 3 ? `Talk to your crew (${met}/3)` : 'Check the bounty board';
   if (state.location === 'docks') {

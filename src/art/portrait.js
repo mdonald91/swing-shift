@@ -1,6 +1,6 @@
 // Cut-paper style character portraits, drawn as SVG.
 import { shade, PAL as P } from './color.js';
-import { resolveLook } from '../data/appearance.js';
+import { resolveLook, NPC_LOOKS } from '../data/appearance.js';
 
 const svg = body => `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${body}</svg>`;
 const INK = P.ink;
@@ -181,7 +181,9 @@ export function npcPortrait(id) {
       <g class="eyes"><circle cx="86" cy="114" r="4.5" fill="${INK}"/><circle cx="114" cy="114" r="4.5" fill="${INK}"/></g>
       <path d="M78 136 q22 18 44 0 q-4 18 -22 18 q-18 0 -22 -18Z" fill="#4a2e1e"/>
       <path class="mouth" d="M90 136 q10 6 20 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`);
-    default: return svg(`
+    default:
+      if (NPC_LOOKS[id]) return lookPortrait(NPC_LOOKS[id]);
+      return svg(`
       <path d="${SHOULDERS}" fill="#2a2e44"/>
       <ellipse cx="100" cy="108" rx="38" ry="46" fill="#2a2e44"/>
       <text x="100" y="128" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="64" fill="${P.smoke}">?</text>`);

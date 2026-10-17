@@ -40,6 +40,7 @@ Put MP3s in the `music/` folder with these names:
 | `title.mp3` | Title screen | 168 bpm |
 | `ship.mp3` | Aboard the Hi-Hat | 76 bpm |
 | `tense.mp3` | Stakeouts and standoffs | 100 bpm |
+| `station.mp3` | Cygnus Station plaza | 112 bpm |
 | `battle.mp3` | Combat | 192 bpm |
 | `victory.mp3` | Payday | 150 bpm |
 | `brushes.mp3` | Brushes' song (jukebox, after his side chat) | 120 bpm |
@@ -67,7 +68,7 @@ Saves are kept in the browser on each device (3 slots).
 - [x] **0.2 Foundation:** title, save slots, character creator, the Hi-Hat, crew dialogue with temperament choices, bounty board, ship menu, settings, jukebox, phone install
 - [x] **0.3 Track 01, Counterfeit Swing:** cutscenes, the Dock 9 mission map with clues to find, party combat (Attack / Skill / Item / Defend / Run, on-the-beat timing, Jam Session), captain skills by temperament, the payday ledger
 - [x] **0.4 Hub life:** supply terminal and Ozzie's stall, new items (Hot Coffee, Patch Kit), gear upgrades, faction standing, crew side chats with bond perks, Brushes' song
-- [ ] **0.5 Cygnus Station:** explore, bar, shops, rumours
-- [ ] **Track 02:** Ghost Frequency (Relay K-17)
+- [x] **0.5 Cygnus Station:** neon plaza in the rain, the Flat Ninth bar (rumours, Lou, Rhea), Kessler's Outfitters and Neon Noodle, busking with Old Sol, Helix Salvage offers Ghost Frequency
+- [ ] **0.6 Track 02, Ghost Frequency:** Relay K-17, Rhea joins, the four-bar mystery
 
 Built with [Phaser 3](https://phaser.io) (MIT licence), included in `vendor/`.

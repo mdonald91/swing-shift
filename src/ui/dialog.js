@@ -14,6 +14,7 @@ import { Hud } from './hud.js';
 import { playCut } from './cutscene.js';
 import { startBattle } from './battle.js';
 import { openShop } from './menus.js';
+import { busk } from './busk.js';
 
 // Things a conversation can trigger. Anything that changes scene waits until the box closes.
 let after = null;
@@ -25,6 +26,21 @@ const ACTIONS = {
   toShip() { after = () => travel('ship', 'cockpit'); },
   confront() { after = () => playCut('confront', { restoreMood: false }).then(() => startBattle('velvet')); },
   shop(id) { after = () => openShop(id); },
+  busk() { after = () => busk(); },
+  toCygnus() { after = () => travel('cygnus'); },
+  helixOffer() {
+    after = () => playCut('helix_offer').then(() => {
+      setFlag('ghost_offered');
+      showRep(addRep({ helix: 1 }));
+      toast('New contract on your bounty board: Ghost Frequency');
+      Hud.refresh();
+    });
+  },
+  drink() {
+    if (state.chits < 40) { toast('Not enough chits'); return; }
+    state.chits -= 40; Hud.refresh();
+    toast('The Blue Seventh tastes like cold brass and good decisions.');
+  },
   song() {
     state.flags.song_style = flag('song_bop') ? 'bop' : 'ballad';
     setFlag('song_done');

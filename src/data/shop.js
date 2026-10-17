@@ -7,7 +7,13 @@ export const GEAR = [
   { id: 'wrench', n: 'Titanium wrench', who: 'tam', atk: 3, price: 1200, d: '+3 ATK for Tam' },
   { id: 'carbon', n: 'Carbon-fibre brushes', who: 'brushes', atk: 3, price: 1100, d: '+3 ATK for Brushes' },
   { id: 'vests', n: 'Flak vests', who: 'all', def: 2, price: 2600, d: '+2 DEF for the whole crew' },
-  { id: 'amp', n: 'Pocket amp', who: 'all', groove: 25, price: 2200, d: 'Start every fight with 25 Groove' }
+  { id: 'amp', n: 'Pocket amp', who: 'all', groove: 25, price: 2200, d: 'Start every fight with 25 Groove' },
+  // Kessler's Outfitters on Cygnus Station
+  { id: 'coat', n: 'Armoured longcoat', who: 'captain', def: 3, price: 2200, d: '+3 DEF for the captain' },
+  { id: 'scope', n: 'Ricochet scope', who: 'rook', atk: 4, price: 2800, d: '+4 ATK for Rook' },
+  { id: 'servo', n: 'Servo wrench', who: 'tam', atk: 4, price: 2600, d: '+4 ATK for Tam' },
+  { id: 'tuner', n: 'Resonance tuner', who: 'brushes', atk: 4, price: 2400, d: '+4 ATK for Brushes' },
+  { id: 'metronome', n: 'Pocket metronome', who: 'all', window: .05, price: 3000, d: 'A more forgiving beat window for every attack' }
 ];
 
 export const SHOPS = {
@@ -23,6 +29,18 @@ export const SHOPS = {
     items: ['noodle', 'coffee', 'patch'],
     gear: [],
     discount: { rep: 'docks', min: 2, off: .2 }   // 20% off once the Dockworkers trust you
+  },
+  outfitters: {
+    name: "Kessler's Outfitters", jp: '装備屋', keeper: 'kessler',
+    greet: "Everything here is legal on at least one moon. Pay in chits, not stories.",
+    items: ['patch', 'curry'],
+    gear: ['coat', 'scope', 'servo', 'tuner', 'metronome', 'vests', 'amp']
+  },
+  stand: {
+    name: 'Neon Noodle', jp: 'ネオン麺', keeper: 'chef',
+    greet: 'Hot food for cold hunters. The curry is famous. The noodles are infamous.',
+    items: ['noodle', 'coffee', 'curry'],
+    gear: []
   }
 };
 

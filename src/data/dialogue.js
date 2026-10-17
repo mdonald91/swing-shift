@@ -24,9 +24,12 @@ export function entry(id, flags, location) {
     case 'brushes': return flags.velvet_done ? 'brushes_after' : flags.met_brushes ? 'brushes_idle' : 'brushes_first';
     case 'ozzie': return flags.met_ozzie ? 'ozzie_idle' : 'ozzie_first';
     case 'cockpit':
-      if (flags.velvet_done) return 'cockpit_done';
+      if (flags.velvet_done) return 'cockpit_nav';
       if (flags.velvet_course) return 'cockpit_return';
       return flags.bounty_velvet ? 'cockpit_go' : 'cockpit_none';
+    case 'sax': return flags.busked_visit ? 'sax_after' : 'sax';
+    case 'rhea': return flags.rhea_met ? 'rhea_idle' : 'rhea_first';
+    case 'helix': return flags.ghost_offered ? 'helix_again' : 'helix';
     case 'door': return flags.velvet_done ? 'door_done' : flags.door_open ? 'door_open' : 'door_locked';
     default: return id;
   }
@@ -168,6 +171,20 @@ export const DIALOGUE = {
     ] }
   ],
   cockpit_back: [{ do: 'toDocks' }],
+  cockpit_nav: [
+    { who: null, t: 'Ship systems. Fuel: 64%. Hull: patched with shoes. Where to, Captain?' },
+    { choices: [
+      { t: 'Cygnus Station', go: 'nav_cygnus' },
+      { t: 'Dock 9, Ganymede', go: 'cockpit_back' },
+      { t: 'Relay K-17', if: 'bounty_ghost', go: 'nav_k17' },
+      { t: 'Stay put' }
+    ] }
+  ],
+  nav_cygnus: [{ do: 'toCygnus' }],
+  nav_k17: [
+    { who: 'brushes', t: "Relay K-17 is a long, cold jump past the belt. I've plotted it. The four bars are getting louder." },
+    { who: null, t: 'Track 02 is still being recorded. Relay K-17 opens in the next build.' }
+  ],
   cockpit_done: [
     { who: null, t: 'Ship systems. Fuel: 64%. Hull: patched with shoes. New contracts arrive on the bounty board soon.' },
     { choices: [
@@ -175,6 +192,84 @@ export const DIALOGUE = {
       { t: 'Stay put' }
     ] }
   ],
+  // ---- Cygnus Station ----
+  sax: [
+    { who: 'sax', ifNot: 'met_sol', t: 'Evening, hunter. The plaza pays in loose change and bad weather. Care to sit in for a set?' },
+    { who: 'sax', if: 'met_sol', t: "Back for another set? The rain's keeping time for us." },
+    { set: 'met_sol' },
+    { choices: [
+      { t: "Let's play.", do: 'busk' },
+      { t: 'What are you playing?', go: 'sax_song' },
+      { t: 'Maybe later.' }
+    ] }
+  ],
+  sax_song: [
+    { who: 'sax', t: 'Something my teacher wrote on Titan. Four bars, round and round.' },
+    { who: 'sax', t: 'Funny thing. Lately I keep hearing it on the radio, between stations. Old relay frequency, sounds like.' },
+    { set: 'sax_clue' }
+  ],
+  sax_after: [{ who: 'sax', t: "Good set, hunter. Come back after your next jump. The crowd forgets. The rain doesn't." }],
+  mags: [
+    { who: 'mags', ifNot: 'met_mags', t: 'Welcome to the Flat Ninth. Drinks, rumours, or both? Both is cheaper.' },
+    { who: 'mags', if: 'met_mags', t: "What'll it be, hunter?" },
+    { set: 'met_mags' },
+    { choices: [
+      { t: "What's the word around the station?", go: 'mags_rumour' },
+      { t: 'A Blue Seventh, please. (₡ 40)', do: 'drink' },
+      { t: 'Nothing for now.' }
+    ] }
+  ],
+  mags_rumour: [{ ifNot: 'rumour1', go: 'rumour1' }, { ifNot: 'rumour2', go: 'rumour2' }, { ifNot: 'rumour3', go: 'rumour3' }, { go: 'rumour_none' }],
+  rumour1: [{ set: 'rumour1' }, { who: 'mags', t: "Relay K-17 went quiet the same night Helix Salvage's stock jumped twelve percent. Funny, that." }],
+  rumour2: [{ set: 'rumour2' }, { who: 'mags', t: "Someone's buying up old relay keycards in the lower ring. Paying in clean chits, which around here is suspicious." }],
+  rumour3: [{ set: 'rumour3' }, { who: 'mags', t: 'See the woman in the corner booth? Rhea. Used to run comms for Helix, out past the belt. Doesn\'t talk much. Tips well.' }],
+  rumour_none: [{ who: 'mags', t: "That's all I've got. Come back when the station does something stupid. Give it a day." }],
+  lou: [{ who: 'lou', pick: [
+    "Requests cost a tip. For you, it costs a smile. I'll take the tip anyway.",
+    "This piano has one broken key. I play around it. That's jazz, kid.",
+    "Old Sol out on the plaza taught me everything. Don't tell him. He'd be insufferable."
+  ] }],
+  rhea_first: [
+    { set: 'rhea_met' },
+    { who: 'rhea', t: "You're the crew that bagged Velvet Moreau. Congratulations. She owed me money." },
+    { choices: [
+      { t: 'Do you know anything about Relay K-17?', go: 'rhea_k17' },
+      { t: 'Sounds like there is a story there.', temp: 'Calm', go: 'rhea_k17' },
+      { t: 'Want us to collect for you?', temp: 'Sarcastic', go: 'rhea_sarc' },
+      { t: 'You look like someone who needs a crew.', temp: 'Idealistic', go: 'rhea_ideal' },
+      { t: "What's your price for information?", temp: 'Ruthless', go: 'rhea_ruth' },
+      { t: 'Enjoy your drink.' }
+    ] }
+  ],
+  rhea_sarc: [{ who: 'rhea', t: "Ha. No. I'd rather she owed me forever. It's leverage." }, { go: 'rhea_k17' }],
+  rhea_ideal: [{ who: 'rhea', t: 'Careful. I might say yes.' }, { go: 'rhea_k17' }],
+  rhea_ruth: [{ who: 'rhea', t: "First one's free. After that, I'm expensive." }, { go: 'rhea_k17' }],
+  rhea_k17: [
+    { who: 'rhea', t: 'I ran comms on Relay K-17 for two years. Helix cut the budget, then cut me.' },
+    { who: 'rhea', t: "If you take that job, come find me. You'll need someone who speaks relay. And someone who knows where the bodies are buried. Hopefully not literally." },
+    { set: 'rhea_k17' }
+  ],
+  rhea_idle: [
+    { who: 'rhea', if: 'bounty_ghost', t: "So you took the Helix job. Good. When you fly to K-17, I'm coming with you. Don't argue." },
+    { who: 'rhea', ifNot: 'bounty_ghost', t: "Talk to Hale at Helix Salvage, then come back. I'll be here. Not drinking this." }
+  ],
+  helix: [{ who: null, t: 'Helix Salvage. The lobby smells like money and lemon polish.' }, { do: 'helixOffer' }],
+  helix_again: [{ who: null, t: "Helix's receptionist smiles with slightly too many teeth. Director Hale is in a meeting. She is always in a meeting." }],
+  vend_cygnus: [{ who: null, t: "The machine sells 'Moon Cola: Now With Less Moon'. You decide not to ask." }],
+  dockgate: [
+    { who: null, t: 'The Hi-Hat sits in the docking bay below, dripping rainwater. Head back aboard?' },
+    { choices: [{ t: 'Board the Hi-Hat', go: 'ship_board' }, { t: 'Stay on the station' }] }
+  ],
+  storefront: [{ who: null, pick: ['A shop window full of second-hand cybernetics. A hand waves at you. You hope it is a display.', 'Closed. A sign says BACK IN 5 MIN. It has said that for a year.', 'A pachinko parlour. The noise alone could power the ship.'] }],
+  neon: [{ who: null, pick: ['A neon sign buzzes. You catch about half the kanji. The other half is a brand of noodle.', 'The sign flickers like it is trying to tell you something. Probably just bad wiring.'] }],
+  neonlamp: [{ who: null, t: 'A teal street lamp. The rain under it looks like static.' }],
+  planter: [{ who: null, t: "A planter of station-grown bamboo. Tam would want a cutting. Tam would also want you not to get caught." }],
+  railing: [{ who: null, t: 'Below the railing: the docking bay, and below that, a very long way down to nothing at all.' }],
+  piano: [{ who: null, t: "Lou's piano. One key is taped down. It's the one you'd want." }],
+  bottles: [{ who: null, t: 'Bottles from six moons. One is labelled DO NOT. Nobody knows what it does not do.' }],
+  bartable: [{ who: null, t: 'A table with a candle in a jar and initials carved in the edge. One set says R.V.' }],
+  booth: [{ who: null, t: 'A red booth, worn soft by a thousand bad decisions.' }],
+
   door_done: [{ who: null, t: 'Warehouse 9-C is wrapped in Bounty Office tape. Somebody has drawn a tiny hat on it.' }],
 
   // ---- crew side chats (after Track 01) ----
@@ -240,7 +335,10 @@ export const DIALOGUE = {
   // ---- after Track 01 ----
   rook_after: [{ who: 'rook', pick: ['Velvet had a mean right hook for someone in a hat that big.', 'Payday nap. The best kind of nap.', 'Tam took my shoes. I want that on the record.'] }],
   tam_after: [{ who: 'tam', pick: ['Hull patch is holding. Mostly shoe leather.', "I bought real noodles. Don't touch them. Any of you.", 'Gerald got a new pot. Gerald deserves it.'] }],
-  brushes_after: [{ who: 'brushes', pick: ['Fridge report: two eggs! Growth!', "I've started a file on Ghost Frequency. It's mostly static. Spooky static.", 'Excellent drumming in that fight, Captain. Very on the beat. Mostly.'] }],
+  brushes_after: [
+    { who: 'brushes', ifNot: 'cygnus_arrived', t: 'Helix Salvage has an office on Cygnus Station. The cockpit can take us there whenever you like.' },
+    { who: 'brushes', if: 'cygnus_arrived', pick: ['Fridge report: two eggs! Growth!', "I've started a file on Ghost Frequency. It's mostly static. Spooky static.", 'Excellent drumming in that fight, Captain. Very on the beat. Mostly.', 'Old Sol on Cygnus plays my four bars. I did not teach him. Nobody taught him. Spooky.'] }
+  ],
 
   // ---- Dock 9 ----
   rook_docks: [{ who: 'rook', pick: ["I'm guarding the ship. It's very safe. Look how safe it is.", 'Ozzie by the vending machine knows things. Dock workers always know things.', 'If you hear shooting, that was probably me. Probably.'] }],

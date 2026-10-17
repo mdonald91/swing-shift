@@ -34,7 +34,7 @@ export function openBoard() {
   wireClose(node, m);
   const listEl = node.querySelector('.b-list'), detailEl = node.querySelector('.b-detail');
 
-  const status = b => state.bounties[b.id] || (b.unlock ? 'locked' : 'open');
+  const status = b => state.bounties[b.id] || (b.requires ? (state.flags[b.requires] ? 'open' : 'locked') : b.unlock ? 'locked' : 'open');
   const inTab = b => {
     const s = status(b);
     return tab === 'available' ? (s === 'open' || s === 'locked') : s === tab;
@@ -63,8 +63,8 @@ export function openBoard() {
     const s = status(b);
     const anyActive = BOUNTIES.some(x => state.bounties[x.id] === 'active');
     let action;
-    if (s === 'locked') action = `<p class="lock">${esc(b.id === 'ghost' && state.flags.velvet_done ? 'Track 02 arrives in the next build' : b.unlock)}</p>`;
-    else if (s === 'active') action = `<p class="ok">In progress. Fly to the target from the cockpit.</p>`;
+    if (s === 'locked') action = `<p class="lock">${esc(b.unlock)}</p>`;
+    else if (s === 'active') action = `<p class="ok">${b.id === 'ghost' ? 'In progress. Relay K-17 opens in the next build.' : 'In progress. Fly to the target from the cockpit.'}</p>`;
     else if (s === 'done') action = `<p class="ok">Completed.</p>`;
     else if (anyActive) action = `<p class="lock">Finish your current contract first.</p>`;
     else action = `<button class="btn primary" type="button" data-accept>Accept contract</button>`;
