@@ -9,7 +9,7 @@ import { playCut } from './cutscene.js';
 import { Title } from './title.js';
 import { Hud } from './hud.js';
 import { runDialogue } from './dialog.js';
-import { openBoard, openPauseMenu, openJukebox } from './menus.js';
+import { openBoard, openPauseMenu, openJukebox, openShop } from './menus.js';
 
 export const $ = (s, root = document) => root.querySelector(s);
 export const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -35,6 +35,7 @@ export const UI = {
     bus.on('interact', id => {
       if (id === 'board') return openBoard();
       if (id === 'jukebox') return openJukebox();
+      if (id === 'supply') return openShop('supply');
       runDialogue(entry(id, state.flags, state.location));
     });
     bus.on('menu', () => { if (!modals.length && !document.querySelector('.dlg')) openPauseMenu(); });

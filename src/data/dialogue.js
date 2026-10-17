@@ -9,8 +9,15 @@
 // {name} is replaced with the captain's name.
 
 // Which conversation starts when you talk to someone or use something.
+// Crew with a new side chat waiting (shown as a speech bubble over their head).
+export function chatAvailable(id, flags, location) {
+  if (location !== 'ship' || !flags.velvet_done) return false;
+  return ['rook', 'tam', 'brushes'].includes(id) && !flags['chat_' + id];
+}
+
 export function entry(id, flags, location) {
   const docks = location === 'docks';
+  if (chatAvailable(id, flags, location)) return id + '_chat';
   switch (id) {
     case 'rook': return docks ? 'rook_docks' : flags.velvet_done ? 'rook_after' : flags.met_rook ? 'rook_idle' : 'rook_first';
     case 'tam': return docks ? 'tam_docks' : flags.velvet_done ? 'tam_after' : flags.met_tam ? 'tam_idle' : 'tam_first';
@@ -20,7 +27,7 @@ export function entry(id, flags, location) {
       if (flags.velvet_done) return 'cockpit_done';
       if (flags.velvet_course) return 'cockpit_return';
       return flags.bounty_velvet ? 'cockpit_go' : 'cockpit_none';
-    case 'door': return flags.door_open ? 'door_open' : 'door_locked';
+    case 'door': return flags.velvet_done ? 'door_done' : flags.door_open ? 'door_open' : 'door_locked';
     default: return id;
   }
 }
@@ -161,7 +168,74 @@ export const DIALOGUE = {
     ] }
   ],
   cockpit_back: [{ do: 'toDocks' }],
-  cockpit_done: [{ who: null, t: 'Ship systems. Fuel: 64%. Hull: patched with shoes. New contracts arrive on the bounty board soon.' }],
+  cockpit_done: [
+    { who: null, t: 'Ship systems. Fuel: 64%. Hull: patched with shoes. New contracts arrive on the bounty board soon.' },
+    { choices: [
+      { t: "Fly to Dock 9 (Ozzie's stall)", go: 'cockpit_back' },
+      { t: 'Stay put' }
+    ] }
+  ],
+  door_done: [{ who: null, t: 'Warehouse 9-C is wrapped in Bounty Office tape. Somebody has drawn a tiny hat on it.' }],
+
+  // ---- crew side chats (after Track 01) ----
+  rook_chat: [
+    { who: 'rook', t: 'Captain. Sit. The couch has room. Well, it has a corner.' },
+    { who: 'rook', t: 'Velvet asked me something back at the warehouse. Why a guy who shoots like me works for chits on a rust bucket.' },
+    { choices: [
+      { t: 'So why do you?', go: 'rook_story' },
+      { t: "You don't have to tell me.", temp: 'Calm', go: 'rook_story_calm' },
+      { t: 'For the couch, obviously.', temp: 'Sarcastic', go: 'rook_story_sarc' },
+      { t: "Because you're one of the good ones.", temp: 'Idealistic', go: 'rook_story_ideal' },
+      { t: 'Because nobody else would hire you.', temp: 'Ruthless', go: 'rook_story_ruth' }
+    ] }
+  ],
+  rook_story_calm: [{ who: 'rook', t: "I know. That's why I'm going to." }, { go: 'rook_story' }],
+  rook_story_sarc: [{ who: 'rook', t: 'Partly. Mostly. Okay, a lot. But not only.' }, { go: 'rook_story' }],
+  rook_story_ideal: [{ who: 'rook', t: "Don't spread that around. I have a reputation." }, { go: 'rook_story' }],
+  rook_story_ruth: [{ who: 'rook', t: '...Yeah. That too. Let me finish.' }, { go: 'rook_story' }],
+  rook_story: [
+    { who: 'rook', t: 'I rode security for a casino on Callisto. Great pay. My boss paid even better to look the other way.' },
+    { who: 'rook', t: "One night I didn't look away. Turns out honesty is expensive. The Hi-Hat was the only ship that'd take me." },
+    { who: 'rook', t: "Anyway. Thanks for not asking sooner. And for asking now." },
+    { set: 'chat_rook' }, { do: 'bond', arg: 'rook' }
+  ],
+  tam_chat: [
+    { who: 'tam', t: "Cap. Got a minute? Gerald's looking a bit peaky." },
+    { who: 'tam', t: 'My mum gave him to me when I left Io. Said if I could keep a ficus alive on a ship, I could keep the ship alive too.' },
+    { choices: [
+      { t: 'And you have. Both of them.', go: 'tam_end_kind' },
+      { t: "Let's get him a proper grow lamp. My treat. (₡ 300)", temp: 'Idealistic', do: 'lamp', go: 'tam_end_lamp' },
+      { t: "Talk me through what he needs.", temp: 'Calm', go: 'tam_end_calm' },
+      { t: 'Have you tried hitting Gerald with a wrench?', temp: 'Sarcastic', go: 'tam_end_sarc' },
+      { t: "It's a plant, Tam.", temp: 'Ruthless', go: 'tam_end_ruth' }
+    ] }
+  ],
+  tam_end_kind: [{ who: 'tam', t: 'Mostly. The ship complains more than Gerald does.' }, { go: 'tam_end' }],
+  tam_end_lamp: [{ who: 'tam', if: 'gerald_lamp', t: '...You mean it? Okay. Okay! Gerald, did you hear that?' }, { who: 'tam', ifNot: 'gerald_lamp', t: "That's sweet, Cap. Come back when the chits catch up with the sentiment." }, { go: 'tam_end' }],
+  tam_end_calm: [{ who: 'tam', t: 'Light, water, and someone who listens. Same as the rest of us, I suppose.' }, { go: 'tam_end' }],
+  tam_end_sarc: [{ who: 'tam', t: "That only works on engines, Captain. And you." }, { go: 'tam_end' }],
+  tam_end_ruth: [{ who: 'tam', t: "It's MY plant. And it has never once tried to sell me out. Can't say that about most people." }, { go: 'tam_end' }],
+  tam_end: [{ who: 'tam', t: 'Thanks for listening, Cap. Now get out of my galley.' }, { set: 'chat_tam' }, { do: 'bond', arg: 'tam' }],
+  brushes_chat: [
+    { who: 'brushes', t: 'Captain! I have been writing a song. Four bars. They are very good bars.' },
+    { who: 'brushes', t: "But I can't decide what kind of song it wants to be. Will you choose?" },
+    { choices: [
+      { t: 'A slow ballad, for the long jumps.', go: 'brushes_ballad' },
+      { t: 'Fast bebop, for the fights.', go: 'brushes_bop' },
+      { t: 'Something with fewer than four bars.', temp: 'Sarcastic', go: 'brushes_rude' },
+      { t: 'Whatever sells.', temp: 'Ruthless', go: 'brushes_sells' }
+    ] }
+  ],
+  brushes_ballad: [{ set: 'song_ballad' }, { who: 'brushes', t: 'A ballad! Moody. Mysterious. Like you, Captain.' }, { go: 'brushes_song_end' }],
+  brushes_bop: [{ set: 'song_bop' }, { who: 'brushes', t: 'Bebop! Hold on to something.' }, { go: 'brushes_song_end' }],
+  brushes_rude: [{ set: 'song_ballad' }, { who: 'brushes', t: 'Rude. A ballad, then. A sad one. About you.' }, { go: 'brushes_song_end' }],
+  brushes_sells: [{ set: 'song_bop' }, { who: 'brushes', t: 'Fast sells. Fast it is.' }, { go: 'brushes_song_end' }],
+  brushes_song_end: [
+    { do: 'song' },
+    { who: 'brushes', t: "It's on the jukebox now. Also: Helix Salvage pinged the bounty board about a dead relay. I've filed it under spooky." },
+    { rep: { helix: 1 } },
+    { set: 'chat_brushes' }, { do: 'bond', arg: 'brushes' }
+  ],
 
   // ---- after Track 01 ----
   rook_after: [{ who: 'rook', pick: ['Velvet had a mean right hook for someone in a hat that big.', 'Payday nap. The best kind of nap.', 'Tam took my shoes. I want that on the record.'] }],
@@ -179,10 +253,10 @@ export const DIALOGUE = {
     { who: 'ozzie', t: "Bounty hunters? Keep your voice down. The twins outside 9-C don't like visitors." },
     { choices: [
       { t: "What's inside 9-C?", go: 'ozzie_info' },
-      { t: "Thanks. We'll keep it quiet.", temp: 'Calm', go: 'ozzie_calm' },
+      { t: "Thanks. We'll keep it quiet.", temp: 'Calm', go: 'ozzie_calm', rep: { docks: 1 } },
       { t: 'Twins? How do you tell them apart?', temp: 'Sarcastic', go: 'ozzie_sarc' },
-      { t: "We'll get her off your dock for good.", temp: 'Idealistic', go: 'ozzie_ideal' },
-      { t: 'Talk, or I tell Velvet you were helpful.', temp: 'Ruthless', go: 'ozzie_ruth' },
+      { t: "We'll get her off your dock for good.", temp: 'Idealistic', go: 'ozzie_ideal', rep: { docks: 1 } },
+      { t: 'Talk, or I tell Velvet you were helpful.', temp: 'Ruthless', go: 'ozzie_ruth', rep: { docks: -1 } },
       { t: 'Never mind.' }
     ] }
   ],
@@ -195,9 +269,16 @@ export const DIALOGUE = {
   ozzie_ideal: [{ who: 'ozzie', t: "Do that and I'll buy you noodles. One cup. Each. Start with the east crates, the ink drums and the vending machine." }],
   ozzie_ruth: [{ who: 'ozzie', t: '...East crates. Ink drums. The vending machine took a dodgy chit. Please never tell her anything.' }],
   ozzie_idle: [
-    { who: 'ozzie', if: 'door_open', t: "Whatever you're about to do in there, I didn't see it." },
-    { who: 'ozzie', ifNot: 'door_open', pick: ['East crates, ink drums, vending machine. I am repeating myself because I am nervous.', 'Night shift on Ganymede. Minus 160 outside, and the coffee is somehow colder.'] }
+    { who: 'ozzie', if: 'velvet_done', t: "The whole dock's talking about you. Velvet in cuffs! First round of noodles is on me. Well, discounted." },
+    { who: 'ozzie', if: 'door_open', ifNot: 'velvet_done', t: "Whatever you're about to do in there, I didn't see it." },
+    { who: 'ozzie', ifNot: 'door_open', pick: ['East crates, ink drums, vending machine. I am repeating myself because I am nervous.', 'Night shift on Ganymede. Minus 160 outside, and the coffee is somehow colder.'] },
+    { choices: [
+      { t: 'Got anything for sale?', do: 'shop', arg: 'ozzie' },
+      { t: 'Thanks for the help, Ozzie.', ifNot: 'thanked_ozzie', set: 'thanked_ozzie', rep: { docks: 1 }, go: 'ozzie_thanks' },
+      { t: 'Just passing.' }
+    ] }
   ],
+  ozzie_thanks: [{ who: 'ozzie', t: "Nobody says thanks on this dock. You've made my week. Possibly my month." }],
   goon: [
     { who: 'goon', ifNot: 'door_open', pick: ['Move along. Nothing to see here. Definitely no printing.', 'Boss says no visitors. Boss also says no eye contact.', 'This is a decorative paper warehouse. Very decorative. Very paper.'] },
     { who: 'goon', if: 'door_open', t: "Hey, why's the door unlocked? ...Not my shift problem." }

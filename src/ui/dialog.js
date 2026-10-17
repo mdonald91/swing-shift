@@ -3,7 +3,9 @@ import { DIALOGUE } from '../data/dialogue.js';
 import { CREW } from '../data/crew.js';
 import { temperament } from '../data/appearance.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
-import { state, settings, flag, setFlag, saveGame } from '../state.js';
+import { state, settings, flag, setFlag, saveGame, addRep } from '../state.js';
+import { FACTIONS } from '../data/shop.js';
+import { BOND_HP, BOND_ATK } from '../systems/party.js';
 import { block, unblock } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
 import { bus } from '../bus.js';
@@ -11,6 +13,7 @@ import { el, esc, dialogLayer, toast, travel } from './ui.js';
 import { Hud } from './hud.js';
 import { playCut } from './cutscene.js';
 import { startBattle } from './battle.js';
+import { openShop } from './menus.js';
 
 // Things a conversation can trigger. Anything that changes scene waits until the box closes.
 let after = null;
@@ -21,6 +24,21 @@ const ACTIONS = {
   toDocks() { after = () => travel('docks'); },
   toShip() { after = () => travel('ship', 'cockpit'); },
   confront() { after = () => playCut('confront', { restoreMood: false }).then(() => startBattle('velvet')); },
+  shop(id) { after = () => openShop(id); },
+  song() {
+    state.flags.song_style = flag('song_bop') ? 'bop' : 'ballad';
+    setFlag('song_done');
+    toast("New on the jukebox: Brushes' song");
+  },
+  bond(id) {
+    state.bonds[id] = Math.min(3, (state.bonds[id] || 0) + 1);
+    Audio.sfx('save');
+    toast(`Bond with ${CREW[id].short} deepened: +${BOND_HP} HP, +${BOND_ATK} ATK`);
+  },
+  lamp() {
+    if (state.chits >= 300) { state.chits -= 300; setFlag('gerald_lamp'); toast('Bought Gerald a grow lamp (₡ 300)'); Hud.refresh(); }
+    else toast("Not enough chits for the grow lamp yet");
+  },
   noodle() {
     if (flag('noodle_given')) return;
     setFlag('noodle_given');
@@ -64,7 +82,8 @@ export async function runDialogue(id) {
         if (s.if && !flag(s.if)) continue;
         if (s.ifNot && flag(s.ifNot)) continue;
         if (s.set) setFlag(s.set);
-        if (s.do && ACTIONS[s.do]) ACTIONS[s.do]();
+        if (s.rep) showRep(addRep(s.rep));
+        if (s.do && ACTIONS[s.do]) ACTIONS[s.do](s.arg);
         if (s.t !== undefined || s.pick) {
           const text = s.pick ? s.pick[Math.floor(Math.random() * s.pick.length)] : s.t;
           await showLine(box, s.who, fill(text));
@@ -73,6 +92,8 @@ export async function runDialogue(id) {
           const opts = s.choices.filter(c => (!c.temp || c.temp === temperament(state.player)) && (!c.if || flag(c.if)) && (!c.ifNot || !flag(c.ifNot)));
           const c = await showChoices(box, opts);
           if (c.set) setFlag(c.set);
+          if (c.rep) showRep(addRep(c.rep));
+          if (c.do && ACTIONS[c.do]) ACTIONS[c.do](c.arg);
           node = c.go || null;
           break;
         }
@@ -86,6 +107,10 @@ export async function runDialogue(id) {
     const next = after; after = null;
     if (next) setTimeout(next, 60);
   }
+}
+
+function showRep(changes) {
+  changes.forEach(([k, v]) => toast(`${FACTIONS[k]?.n || k} standing ${v > 0 ? '+' : ''}${v}`));
 }
 
 function fill(t) { return t.replace(/\{name\}/g, state.player?.name || 'Captain'); }

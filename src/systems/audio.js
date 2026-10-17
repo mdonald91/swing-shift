@@ -1,6 +1,6 @@
 // Music and sound. A small generative jazz combo (walking bass, ride, piano, muted horn)
 // plays by default; your own Suno tracks from data/music.js take over when present.
-import { settings } from '../state.js';
+import { settings, state } from '../state.js';
 import { TRACKS } from '../data/music.js';
 
 const A = { ctx: null, master: null, gen: null, music: null, sfx: null, noise: null, step: 0, nextT: 0, mel: 69, comp: [] };
@@ -25,8 +25,13 @@ const MOODS = {
   ship: { bpm: 76, swing: .6, prog: [ch('Eb', 'maj7'), ch('C', 'm7'), ch('F', 'm7'), ch('Bb', 'dom7')], brush: 1, arp: 1, half: 1 },
   tense: { bpm: 100, swing: .62, prog: [ch('D', 'm7'), ch('D', 'm7'), ch('Eb', 'maj7'), ch('D', 'm7')], ride: 1, brush: 1, comp: 1, kick: .2, half: 1 },
   battle: { bpm: 192, swing: .62, prog: [ch('D', 'm7'), ch('D', 'm7'), ch('Eb', 'm7'), ch('Eb', 'm7'), ch('D', 'm7'), ch('D', 'm7'), ch('A', 'b9'), ch('A', 'b9')], ride: 1, horn: 1, comp: 1, stabs: 1, kick: .5, busy: 1 },
-  victory: { bpm: 150, swing: .66, prog: [ch('F', 'maj7'), ch('D', 'dom7'), ch('G', 'm7'), ch('C', 'dom7')], ride: 1, horn: 1, comp: 1, kick: .3, always: 1 }
+  victory: { bpm: 150, swing: .66, prog: [ch('F', 'maj7'), ch('D', 'dom7'), ch('G', 'm7'), ch('C', 'dom7')], ride: 1, horn: 1, comp: 1, kick: .3, always: 1 },
+  // Brushes' song: which version plays depends on what the captain picked
+  brushes_ballad: { bpm: 70, swing: .6, prog: [ch('Bb', 'maj7'), ch('G', 'm7'), ch('C', 'm7'), ch('F', 'dom7')], brush: 1, arp: 1, half: 1, horn: 1, always: 1 },
+  brushes_bop: { bpm: 210, swing: .62, prog: [ch('Bb', 'maj7'), ch('G', 'b9'), ch('C', 'm7'), ch('F', 'dom7')], ride: 1, horn: 1, comp: 1, kick: .4, busy: 1, always: 1 }
 };
+MOODS.brushes = MOODS.brushes_ballad;
+const resolveMood = name => name === 'brushes' ? MOODS[state.flags?.song_style === 'bop' ? 'brushes_bop' : 'brushes_ballad'] : MOODS[name];
 let mood = MOODS.title, moodName = 'title';
 
 function osc(type, f, t, dur, g, o = {}) {
@@ -167,7 +172,7 @@ export const Audio = {
   setMood(name, force) {
     if (!MOODS[name]) return;
     if (name === moodName && !force && A.ctx) return;
-    moodName = name; mood = MOODS[name];
+    moodName = name; mood = resolveMood(name);
     Clock.bpm = mood.bpm; Clock.swing = mood.swing; resetClock();
     if (A.ctx) trySuno(name);
   },

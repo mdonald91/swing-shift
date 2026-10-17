@@ -7,6 +7,7 @@ import { Input } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
 import { state } from '../state.js';
 import { bus } from '../bus.js';
+import { chatAvailable } from '../data/dialogue.js';
 
 const SPEED = 72;
 const T = 16;
@@ -51,7 +52,10 @@ export class WorldScene extends Phaser.Scene {
     // crew
     this.npcs = [];
     const blockers = this.physics.add.staticGroup();
+    if (!this.textures.exists('bubble')) this.textures.addCanvas('bubble', bubbleCanvas());
     for (const n of map.npcs) {
+      if (n.ifNot && state.flags[n.ifNot]) continue;
+      if (n.if && !state.flags[n.if]) continue;
       const lookId = n.look || n.id;
       const key = 'npc-' + lookId;
       const x = n.x * T + 8, y = n.y * T + 8;
@@ -66,6 +70,8 @@ export class WorldScene extends Phaser.Scene {
         spr = this.add.sprite(x, y, key, DIRS.indexOf(n.face || 'down') * 3).setOrigin(0.5, 0.85);
       }
       spr.npcId = n.id; spr.homeFace = n.face || 'down'; spr.footY = y + 4;
+      spr.bubble = this.add.image(x, y - (n.id === 'brushes' ? 22 : 24), 'bubble').setDepth(5000).setVisible(false);
+      this.tweens.add({ targets: spr.bubble, y: spr.bubble.y - 2, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
       const z = this.add.zone(x, y + 3, 12, 8);
       blockers.add(z);
       this.npcs.push(spr);
@@ -91,6 +97,10 @@ export class WorldScene extends Phaser.Scene {
     this.events.once('shutdown', () => this.scale.off('resize', this.fit, this));
 
     this.hintText = null;
+    const refresh = () => this.npcs.forEach(n => n.bubble.setVisible(chatAvailable(n.npcId, state.flags, state.location)));
+    refresh();
+    const off = bus.on('dialog-closed', refresh);
+    this.events.once('shutdown', off);
     Audio.setMood(map.music);
     bus.emit('area', map);
   }
@@ -196,4 +206,14 @@ export class WorldScene extends Phaser.Scene {
     }
     if (Input.menu || J(k.esc) || J(k.m)) { Input.menu = false; bus.emit('menu'); }
   }
+}
+
+// A small speech bubble with an exclamation mark, shown over crew with something to say.
+function bubbleCanvas() {
+  const cv = document.createElement('canvas'); cv.width = 11; cv.height = 12;
+  const c = cv.getContext('2d');
+  c.fillStyle = '#07080d'; c.fillRect(1, 0, 9, 1); c.fillRect(0, 1, 11, 8); c.fillRect(1, 9, 9, 1); c.fillRect(3, 10, 3, 1); c.fillRect(3, 11, 1, 1);
+  c.fillStyle = '#e9b23a'; c.fillRect(1, 1, 9, 8); c.fillRect(4, 9, 2, 1); c.fillRect(4, 10, 1, 1);
+  c.fillStyle = '#10121e'; c.fillRect(5, 2, 1, 4); c.fillRect(5, 7, 1, 1);
+  return cv;
 }

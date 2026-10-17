@@ -10,7 +10,10 @@ export function objective() {
   const f = state.flags;
   if (!f.intro_done) return '';
   const met = ['met_rook', 'met_tam', 'met_brushes'].filter(k => f[k]).length;
-  if (f.velvet_done) return 'Track 01 complete. Ghost Frequency is coming.';
+  if (f.velvet_done) {
+    const chats = ['rook', 'tam', 'brushes'].filter(k => f['chat_' + k]).length;
+    return chats < 3 ? `Catch up with your crew (${chats}/3)` : 'Ghost Frequency is coming. Spend those chits.';
+  }
   if (!f.bounty_velvet) return met < 3 ? `Talk to your crew (${met}/3)` : 'Check the bounty board';
   if (state.location === 'docks') {
     if (!f.door_open) return `Find proof of the press (${f.clues || 0}/3)`;

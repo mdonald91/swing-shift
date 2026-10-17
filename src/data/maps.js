@@ -42,7 +42,7 @@ export const MAPS = {
     objects: [
       { id: 'bed', x: 1, y: 2, w: 1, h: 2, label: 'Rest' },
       { id: 'fridge', x: 6, y: 1, label: 'Check the fridge' },
-      { id: 'galley', x: 7, y: 1, w: 3, label: 'Galley' },
+      { id: 'supply', x: 7, y: 1, w: 3, label: 'Supply terminal' },
       { id: 'cockpit', x: 17, y: 2, w: 4, label: 'Ship systems' },
       { id: 'board', x: 21, y: 4, label: 'Bounty board' },
       { id: 'jukebox', x: 4, y: 7, label: 'Jukebox' },
@@ -85,8 +85,8 @@ export const MAPS = {
       { id: 'rook', x: 3, y: 12, face: 'right' },
       { id: 'tam', x: 10, y: 13, face: 'left' },
       { id: 'ozzie', x: 22, y: 2, face: 'down' },
-      { id: 'goon', x: 11, y: 2, face: 'down', look: 'goon' },
-      { id: 'goon', x: 14, y: 2, face: 'down', look: 'goon2' }
+      { id: 'goon', x: 11, y: 2, face: 'down', look: 'goon', ifNot: 'velvet_done' },
+      { id: 'goon', x: 14, y: 2, face: 'down', look: 'goon2', ifNot: 'velvet_done' }
     ],
     objects: [
       { id: 'door', x: 12, y: 1, label: 'Warehouse 9-C' },

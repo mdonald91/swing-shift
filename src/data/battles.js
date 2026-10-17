@@ -43,8 +43,11 @@ export const SKILLS = {
   intimidate: { n: 'Intimidate', cost: 10, tgt: 'enemies', d: 'May stun every enemy', stun: .45, word: 'GLARE' }
 };
 
+// tgt: living (a standing crewmate) or downed (a knocked-out one)
 export const ITEMS = {
-  noodle: { n: 'Noodle Cup', d: 'Heals 45 HP', heal: 45 }
+  noodle: { n: 'Noodle Cup', d: 'Heals 45 HP', heal: 45, tgt: 'living', price: 60 },
+  coffee: { n: 'Hot Coffee', d: 'Restores 15 SP', sp: 15, tgt: 'living', price: 90 },
+  patch: { n: 'Patch Kit', d: 'Revives a downed crewmate at half HP', revive: .5, tgt: 'downed', price: 260 }
 };
 
 export const ENCOUNTERS = {

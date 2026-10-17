@@ -5,7 +5,8 @@ import { BOUNTIES } from '../data/bounties.js';
 import { temperament } from '../data/appearance.js';
 import { backdrop } from '../art/backdrops.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
-import { state, setFlag, saveGame } from '../state.js';
+import { state, setFlag, saveGame, addRep } from '../state.js';
+import { crewStats, startingGroove } from '../systems/party.js';
 import { block, unblock } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
 import { el, esc, sceneLayer, toast, travel } from './ui.js';
@@ -34,11 +35,11 @@ export function startBattle(id, { retry = false } = {}) {
   Audio.setMood('battle', true);
   const temp = temperament(state.player);
   const party = [
-    { key: 'captain', id: 'player', name: state.player.name, ...PARTY.captain, skills: CAPTAIN_SKILLS[temp] },
-    ...['rook', 'tam', 'brushes'].map(k => ({ key: k, id: k, name: CREW[k].short, ...PARTY[k] }))
+    { key: 'captain', id: 'player', name: state.player.name, ...crewStats('captain'), skills: CAPTAIN_SKILLS[temp] },
+    ...['rook', 'tam', 'brushes'].map(k => ({ key: k, id: k, name: CREW[k].short, ...crewStats(k) }))
   ].map(u => ({ ...u, max: u.hp, spMax: u.sp, sp: 14, ko: false, guard: false }));
   const enemies = enc.enemies.map((e, i) => ({ ...e, key: 'e' + i, max: e.hp, ko: false }));
-  B = { id, enc, party, enemies, groove: 0, turn: 0, overclock: 0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null };
+  B = { id, enc, party, enemies, groove: Math.min(100, startingGroove()), turn: 0, overclock: 0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null };
 
   root = el(`<div class="bt" role="dialog" aria-label="Combat">
     <div class="bt-bg">${backdrop(enc.bg)}</div>
@@ -128,11 +129,10 @@ function nextActor() {
 
 function showMenu(a) {
   log(`${a.name} takes the solo. What's the play?`);
-  const noodles = state.items.noodle || 0;
   cmd(`<p class="bt-who">${esc(a.name)}</p>
     <button type="button" data-c="attack">${esc(a.attack.n)}</button>
     <button type="button" data-c="skills">Skill</button>
-    <button type="button" data-c="items" ${noodles ? '' : 'disabled'}>Item</button>
+    <button type="button" data-c="items" ${Object.values(state.items).some(n => n > 0) ? '' : 'disabled'}>Item</button>
     <button type="button" data-c="guard">Defend <small>+6 SP</small></button>
     <button type="button" data-c="run">Run</button>
     ${B.groove >= 100 ? '<button type="button" class="jam" data-c="jam">Jam Session</button>' : ''}`);
@@ -152,7 +152,7 @@ function menuPick(a, c) {
   else if (c === 'skills') {
     cmd(`<p class="bt-who">${esc(a.name)} · Skills</p>` + a.skills.map(k => {
       const s = SKILLS[k];
-      return `<button type="button" data-s="${k}" ${a.sp < s.cost ? 'disabled' : ''}>${esc(s.n)} <small>${s.cost} SP · ${esc(s.d)}</small></button>`;
+      return `<button type="button" data-s="${k}" ${a.sp < s.cost ? 'disabled' : ''}>${esc(s.n)} <small>${s.cost} SP<span class="d"> · ${esc(s.d)}</span></small></button>`;
     }).join('') + backButton(a));
     root.querySelectorAll('.bt-cmd [data-s]').forEach(b => b.addEventListener('click', () => {
       Audio.sfx('tick'); const sk = SKILLS[b.dataset.s];
@@ -160,10 +160,11 @@ function menuPick(a, c) {
     }));
     wireBack(a);
   } else if (c === 'items') {
-    cmd(`<p class="bt-who">Items</p>` + Object.entries(state.items).filter(([, n]) => n > 0).map(([k, n]) =>
-      `<button type="button" data-i="${k}">${esc(ITEMS[k].n)} ×${n} <small>${esc(ITEMS[k].d)}</small></button>`).join('') + backButton(a));
+    const anyDown = B.party.some(p => p.ko);
+    cmd(`<p class="bt-who">Items</p>` + Object.entries(state.items).filter(([k, n]) => n > 0 && ITEMS[k]).map(([k, n]) =>
+      `<button type="button" data-i="${k}" ${ITEMS[k].tgt === 'downed' && !anyDown ? 'disabled' : ''}>${esc(ITEMS[k].n)} ×${n} <small>${esc(ITEMS[k].d)}</small></button>`).join('') + backButton(a));
     root.querySelectorAll('.bt-cmd [data-i]').forEach(b => b.addEventListener('click', () => {
-      Audio.sfx('tick'); choose(a, { kind: 'item', key: b.dataset.i }, 'living');
+      Audio.sfx('tick'); choose(a, { kind: 'item', key: b.dataset.i }, ITEMS[b.dataset.i].tgt);
     }));
     wireBack(a);
   } else if (c === 'guard') {
@@ -177,10 +178,10 @@ function menuPick(a, c) {
 
 function choose(a, act, tgt) {
   B.pending = { a, act };
-  if (tgt === 'enemy' || tgt === 'ally' || tgt === 'living') {
+  if (tgt === 'enemy' || tgt === 'ally' || tgt === 'living' || tgt === 'downed') {
     B.mode = 'target-' + tgt;
     clearMarks(); cardOf(a).classList.add('active');
-    const pool = tgt === 'enemy' ? living(B.enemies) : tgt === 'living' ? living(B.party) : B.party;
+    const pool = tgt === 'enemy' ? living(B.enemies) : tgt === 'living' ? living(B.party) : tgt === 'downed' ? B.party.filter(p => p.ko) : B.party;
     pool.forEach(u => cardOf(u).classList.add('targetable'));
     log(tgt === 'enemy' ? 'Pick a target.' : 'Pick a crewmate.');
     cmd(`<p class="bt-who">Choose a target</p>` + backButton(a));
@@ -196,6 +197,7 @@ function onCard(k) {
   if (m === 'target-enemy' && (u.ko || !B.enemies.includes(u))) return;
   if (m === 'target-ally' && !B.party.includes(u)) return;
   if (m === 'target-living' && (!B.party.includes(u) || u.ko)) return;
+  if (m === 'target-downed' && (!B.party.includes(u) || !u.ko)) return;
   run(B.pending.a, B.pending.act, u);
 }
 
@@ -204,7 +206,9 @@ async function run(a, act, target) {
   if (act.kind === 'item') {
     const it = ITEMS[act.key];
     state.items[act.key]--;
-    healAlly(target, it.heal, false, `${a.name} hands ${target.name} a ${it.n}.`);
+    if (it.heal) healAlly(target, it.heal, false, `${a.name} hands ${target.name} a ${it.n}.`);
+    else if (it.revive) healAlly(target, Math.round(target.max * it.revive), true, `${a.name} patches ${target.name} up. Back in the band.`);
+    else if (it.sp) { target.sp = Math.min(target.spMax, target.sp + it.sp); pop(cardOf(target), '+' + it.sp + ' SP', 'num heal'); Audio.sfx('heal'); log(`${target.name} downs a ${it.n}. Wide awake.`); update(); }
     cmd(''); endAction(600); return;
   }
   cmd('<p class="bt-who">Tap on the beat</p><p class="bt-hint">Tap anywhere, or press Space, as the ring closes.</p>');
@@ -479,6 +483,7 @@ function showLedger(res) {
     playCut('ending', { restoreMood: false }).then(() => {
       state.bounties[res.id] = 'done';
       setFlag(res.id + '_done');
+      if (!state.flags.rep_init) { addRep({ office: 2 }); setFlag('rep_init'); }
       unblock();
       travel('ship', 'lounge');
       const ok = saveGame();

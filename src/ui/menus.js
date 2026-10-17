@@ -5,6 +5,9 @@ import { TRACKS } from '../data/music.js';
 import { temperament, OUTFITS } from '../data/appearance.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
 import { state, settings, saveGame, saveSettings, setFlag, formatTime } from '../state.js';
+import { SHOPS, GEAR, FACTIONS, tier } from '../data/shop.js';
+import { ITEMS, SKILLS, CAPTAIN_SKILLS } from '../data/battles.js';
+import { crewStats, ownsGear, BOND_HP, BOND_ATK } from '../systems/party.js';
 import { Audio } from '../systems/audio.js';
 import { el, esc, openModal, toast, leaveWorld } from './ui.js';
 import { Hud } from './hud.js';
@@ -101,6 +104,8 @@ export function openPauseMenu() {
     <div class="sm-body">
       <nav class="sm-nav">
         <button type="button" data-go="crew" autofocus>Crew</button>
+        <button type="button" data-go="bag">Bag</button>
+        <button type="button" data-go="standing">Standing</button>
         <button type="button" data-go="bounties">Bounties</button>
         <button type="button" data-go="save">Save</button>
         <button type="button" data-go="settings">Settings</button>
@@ -126,6 +131,8 @@ export function openPauseMenu() {
   node.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
     const go = b.dataset.go;
     if (go === 'crew') openCrew();
+    else if (go === 'bag') openBag();
+    else if (go === 'standing') openStanding();
     else if (go === 'bounties') { m.close(true); openBoard(); }
     else if (go === 'save') { const ok = saveGame(); Audio.sfx('save'); toast(ok ? `Saved to slot ${state.slot + 1}` : "Couldn't save: this browser is blocking storage"); }
     else if (go === 'settings') openSettings();
@@ -143,11 +150,11 @@ function confirmTitle(btn) {
 /* ---------------- Crew ---------------- */
 function openCrew() {
   Audio.sfx('confirm');
-  const p = state.player, cap = CAPTAIN_ROLES[temperament(p)];
+  const p = state.player, temp = temperament(p), cap = CAPTAIN_ROLES[temp];
   const cards = [
-    { name: p.name, role: `Captain · ${cap.role}`, pt: playerPortrait(p), hp: 110, sp: 50, skills: cap.skills, bio: `${OUTFITS[p.outfit].n}. ${temperament(p)} under pressure.`, color: 'var(--mustard)' },
-    ...['rook', 'tam', 'brushes'].map(id => ({ name: CREW[id].name, role: CREW[id].role, pt: npcPortrait(id), hp: CREW[id].hp, sp: CREW[id].sp, skills: CREW[id].skills, bio: CREW[id].bio, color: CREW[id].color }))
-  ];
+    { key: 'captain', name: p.name, role: `Captain · ${cap.role}`, pt: playerPortrait(p), skills: CAPTAIN_SKILLS[temp], bio: `${OUTFITS[p.outfit].n}. ${temp} under pressure.`, color: 'var(--mustard)' },
+    ...['rook', 'tam', 'brushes'].map(id => ({ key: id, name: CREW[id].name, role: CREW[id].role, pt: npcPortrait(id), skills: CREW[id].skillKeys, bio: CREW[id].bio, color: CREW[id].color }))
+  ].map(c => ({ ...c, st: crewStats(c.key) }));
   const node = el(`<div class="panel crew">
     ${head('Crew', 'クルー')}
     <div class="crew-grid">${cards.map(c => `
@@ -155,15 +162,110 @@ function openCrew() {
         <span class="cc-pt">${c.pt}</span>
         <div class="cc-info">
           <b>${esc(c.name)}</b><small>${esc(c.role)}</small>
-          <div class="stat"><span>HP</span><i class="bar hp"><i style="width:100%"></i></i><em>${c.hp}</em></div>
-          <div class="stat"><span>SP</span><i class="bar sp"><i style="width:100%"></i></i><em>${c.sp}</em></div>
-          <p class="skills">${c.skills.map(s => `<span>${esc(s)}</span>`).join('')}</p>
+          <p class="cc-stats"><span>HP <b>${c.st.hp}</b></span><span>SP <b>${c.st.sp}</b></span><span>ATK <b>${c.st.atk}</b></span><span>DEF <b>${c.st.def}</b></span></p>
+          ${c.key === 'captain' ? '' : `<p class="bond" title="Bond">${[0, 1, 2].map(i => `<i class="${i < c.st.bond ? 'on' : ''}"></i>`).join('')}<span>Bond ${c.st.bond}</span></p>`}
+          <p class="skills">${(c.skills || []).map(k => `<span>${esc(SKILLS[k]?.n || k)}</span>`).join('')}</p>
           <p class="bio">${esc(c.bio)}</p>
         </div>
       </article>`).join('')}</div>
+    <p class="muted small panel-foot">Bond grows when you make time for your crew between jobs. Each level adds ${BOND_HP} HP and ${BOND_ATK} ATK.</p>
   </div>`);
   const m = openModal(node);
   wireClose(node, m);
+}
+
+/* ---------------- Bag ---------------- */
+function openBag() {
+  Audio.sfx('confirm');
+  const items = Object.entries(state.items).filter(([k, n]) => n > 0 && ITEMS[k]);
+  const gear = GEAR.filter(g => ownsGear(g.id));
+  const node = el(`<div class="panel bag">
+    ${head('Bag', '持ち物')}
+    <div class="bag-body">
+      <section><p class="eyebrow">Supplies</p>
+        ${items.length ? `<ul class="bag-list">${items.map(([k, n]) => `<li><b>${esc(ITEMS[k].n)}</b><span class="muted">${esc(ITEMS[k].d)}</span><em>×${n}</em></li>`).join('')}</ul>` : '<p class="muted">Nothing. Tam has hidden the noodles again.</p>'}
+      </section>
+      <section><p class="eyebrow">Gear</p>
+        ${gear.length ? `<ul class="bag-list">${gear.map(g => `<li><b>${esc(g.n)}</b><span class="muted">${esc(g.d)}</span><em>Equipped</em></li>`).join('')}</ul>` : '<p class="muted">No upgrades yet. The supply terminal in the galley sells them.</p>'}
+      </section>
+      <p class="chits-line">Chits: <b class="gold">${money(state.chits)}</b></p>
+    </div>
+  </div>`);
+  const m = openModal(node);
+  wireClose(node, m);
+}
+
+/* ---------------- Standing ---------------- */
+function openStanding() {
+  Audio.sfx('confirm');
+  const node = el(`<div class="panel standing">
+    ${head('Standing', '評判')}
+    <ul class="st-list">${Object.entries(FACTIONS).map(([k, f]) => {
+      const v = state.rep[k] || 0;
+      const pct = Math.max(0, Math.min(100, (v + 1) / 6 * 100));
+      return `<li><div class="st-top"><b>${esc(f.n)}</b><span class="st-tier">${tier(v)}</span></div>
+        <i class="bar st"><i style="width:${pct}%"></i></i><p class="muted small">${esc(f.d)}</p></li>`;
+    }).join('')}</ul>
+    <p class="muted small panel-foot">How you treat people changes how they treat you: prices, tips and the jobs they offer.</p>
+  </div>`);
+  const m = openModal(node);
+  wireClose(node, m);
+}
+
+/* ---------------- Shops ---------------- */
+export function openShop(id) {
+  const shop = SHOPS[id]; if (!shop) return;
+  Audio.sfx('confirm');
+  let tab = 'items';
+  const d = shop.discount;
+  const off = d && (state.rep[d.rep] || 0) >= d.min ? d.off : 0;
+  const price = p => Math.round(p * (1 - off));
+  const node = el(`<div class="panel shop">
+    ${head(esc(shop.name), shop.jp)}
+    <div class="shop-greet"><span class="shop-pt">${npcPortrait(shop.keeper)}</span><p>${esc(shop.greet)}${off ? ` <b class="gold">Friend price: ${Math.round(off * 100)}% off.</b>` : ''}</p></div>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="items">Supplies</button>
+      ${shop.gear.length ? '<button type="button" role="tab" data-tab="gear">Gear</button>' : ''}
+      <span class="shop-chits gold"></span>
+    </div>
+    <ul class="shop-list"></ul>
+  </div>`);
+  const m = openModal(node);
+  wireClose(node, m);
+  const list = node.querySelector('.shop-list');
+  function render() {
+    node.querySelectorAll('[data-tab]').forEach(t => t.setAttribute('aria-selected', t.dataset.tab === tab));
+    node.querySelector('.shop-chits').textContent = money(state.chits);
+    if (tab === 'items') {
+      list.innerHTML = shop.items.map(k => {
+        const it = ITEMS[k], cost = price(it.price);
+        return `<li class="shop-row"><div class="sr-main"><b>${esc(it.n)}</b><small>${esc(it.d)}</small></div>
+          <span class="sr-own">Have ${state.items[k] || 0}</span><span class="sr-price">${money(cost)}</span>
+          <button class="btn" type="button" data-buy="${k}" ${state.chits < cost ? 'disabled' : ''}>Buy</button></li>`;
+      }).join('');
+    } else {
+      list.innerHTML = shop.gear.map(gid => {
+        const g = GEAR.find(x => x.id === gid), cost = price(g.price), own = ownsGear(g.id);
+        return `<li class="shop-row"><div class="sr-main"><b>${esc(g.n)}</b><small>${esc(g.d)}</small></div>
+          <span class="sr-own">${own ? 'Owned' : ''}</span><span class="sr-price">${own ? '' : money(cost)}</span>
+          ${own ? '<span class="sr-done">✓</span>' : `<button class="btn" type="button" data-gear="${g.id}" ${state.chits < cost ? 'disabled' : ''}>Buy</button>`}</li>`;
+      }).join('');
+    }
+    list.querySelectorAll('[data-buy]').forEach(b => b.addEventListener('click', () => {
+      const k = b.dataset.buy, cost = price(ITEMS[k].price);
+      if (state.chits < cost) return;
+      state.chits -= cost; state.items[k] = (state.items[k] || 0) + 1;
+      Audio.sfx('save'); toast(`Bought a ${ITEMS[k].n}`); Hud.refresh(); render();
+    }));
+    list.querySelectorAll('[data-gear]').forEach(b => b.addEventListener('click', () => {
+      const g = GEAR.find(x => x.id === b.dataset.gear), cost = price(g.price);
+      if (state.chits < cost || ownsGear(g.id)) return;
+      state.chits -= cost; state.gear = [...(state.gear || []), g.id];
+      Audio.sfx('save'); toast(`${g.n} equipped`); Hud.refresh(); render();
+    }));
+  }
+  node.querySelectorAll('[data-tab]').forEach(t => t.addEventListener('click', () => { tab = t.dataset.tab; Audio.sfx('move'); render(); }));
+  render();
 }
 
 /* ---------------- Settings ---------------- */
@@ -206,7 +308,8 @@ export function openJukebox() {
   wireClose(node, m);
   const list = node.querySelector('.jb-list');
   const render = () => {
-    list.innerHTML = Object.entries(TRACKS).map(([k, t]) => `
+    const tracks = Object.entries(TRACKS).filter(([k, t]) => !t.unlock || state.flags[t.unlock]);
+    list.innerHTML = tracks.map(([k, t]) => `
       <li><button type="button" class="jb-row ${Audio.mood === k ? 'sel' : ''}" data-k="${k}">
         <span class="jb-disc" aria-hidden="true"></span>
         <span class="jb-main"><b>${esc(t.label)}</b><small>${Audio.isSuno(k) ? 'Your Suno track' : Audio.sunoMissing(k) || !settings.suno ? 'House band' : 'Suno track if present, else house band'}</small></span>

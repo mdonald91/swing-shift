@@ -17,6 +17,9 @@ function blank() {
     bounties: {},          // id -> 'active' | 'done'
     chits: 480,
     items: { noodle: 2 },
+    gear: [],              // ids from data/shop.js GEAR
+    rep: { office: 0, docks: 0, helix: 0 },
+    bonds: { rook: 0, tam: 0, brushes: 0 },
     playtime: 0,
     savedAt: 0
   };
@@ -24,6 +27,13 @@ function blank() {
 
 export function newGame(slot, player) {
   Object.assign(state, blank(), { slot, player });
+}
+
+// Change faction standing, e.g. addRep({ docks: 1 }). Returns a short description of the change.
+export function addRep(changes) {
+  const out = [];
+  for (const [k, v] of Object.entries(changes)) { state.rep[k] = (state.rep[k] || 0) + v; out.push([k, v]); }
+  return out;
 }
 
 export function flag(name) { return !!state.flags[name]; }
@@ -40,7 +50,13 @@ export function saveGame() {
 export function loadGame(slot) {
   const data = readSlot(slot);
   if (!data) return false;
-  Object.assign(state, blank(), data, { slot });
+  const b = blank();
+  Object.assign(state, b, data, { slot });
+  state.rep = { ...b.rep, ...(data.rep || {}) };
+  state.bonds = { ...b.bonds, ...(data.bonds || {}) };
+  state.items = { ...(data.items || b.items) };
+  // saves from before reputation existed
+  if (state.flags.velvet_done && !state.flags.rep_init) { state.rep.office += 2; state.flags.rep_init = true; }
   return true;
 }
 
