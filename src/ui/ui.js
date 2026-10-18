@@ -1,6 +1,6 @@
 // The HTML layer over the game canvas: screens, menus, dialogue, toasts.
 import { bus } from '../bus.js';
-import { state, flag, setFlag } from '../state.js';
+import { state, settings, flag, setFlag, saveGame } from '../state.js';
 import { block, unblock } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
 import { entry } from '../data/dialogue.js';
@@ -9,7 +9,9 @@ import { playCut } from './cutscene.js';
 import { Title } from './title.js';
 import { Hud } from './hud.js';
 import { runDialogue } from './dialog.js';
-import { openBoard, openPauseMenu, openJukebox, openShop } from './menus.js';
+import { openBoard, openPauseMenu, openJukebox, openShop, applyDisplay } from './menus.js';
+import { tip } from './tips.js';
+import { playFinale } from './recap.js';
 
 export const $ = (s, root = document) => root.querySelector(s);
 export const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -31,6 +33,7 @@ export const UI = {
     root.innerHTML = `<div id="screen"></div><div id="hud-layer"></div><div id="dialog-layer"></div><div id="scene-layer"></div><div id="modal-layer"></div><div id="toast-layer" aria-live="polite"></div>`;
     ['screen', 'hud-layer', 'dialog-layer', 'scene-layer', 'modal-layer', 'toast-layer'].forEach(id => layers[id] = document.getElementById(id));
     Hud.mount(layers['hud-layer']);
+    applyDisplay();
 
     bus.on('interact', id => {
       if (id === 'board') return openBoard();
@@ -52,6 +55,7 @@ export const UI = {
     bus.on('hint', t => Hud.hint(t));
     bus.on('area', map => {
       Hud.area(map);
+      autosave();
       if (state.location === 'vesta' && !flag('vesta_arrived')) {
         setTimeout(() => playCut('vesta_arrive').then(() => {
           setFlag('vesta_arrived');
@@ -65,6 +69,7 @@ export const UI = {
       if (state.location === 'cygnus' && !flag('cygnus_arrived')) {
         setTimeout(() => playCut('cygnus_arrive').then(() => { setFlag('cygnus_arrived'); Hud.refresh(); }), 400);
       }
+      if (state.location === 'ship' && flag('courier_done') && !flag('act1_done')) setTimeout(playFinale, 1200);
       if (state.location === 'docks' && !flag('docks_arrived')) {
         setTimeout(() => playCut('arrive').then(() => { setFlag('docks_arrived'); Hud.refresh(); }), 400);
       }
@@ -90,13 +95,25 @@ export function showScreen(node) {
   document.body.classList.toggle('on-screen', !!node);
 }
 
+// Autosave whenever a new area loads, unless it's switched off or a scene is mid-flow.
+let lastAuto = 0;
+function autosave() {
+  if (!settings.autosave || !state.player) return;
+  if (performance.now() - lastAuto < 1500) return;
+  lastAuto = performance.now();
+  setTimeout(() => { if (saveGame()) Hud.autosaved(); }, 250);
+}
+
 export function startWorld() {
   showScreen(null);
   document.body.classList.add('in-world');
   Hud.show();
   if (game.scene.isActive('world') || game.scene.isPaused('world')) game.scene.stop('world');
   game.scene.start('world');
-  if (!flag('intro_done')) setTimeout(() => runDialogue('intro'), 2600);
+  setTimeout(async () => {
+    await tip('controls');
+    if (!flag('intro_done')) setTimeout(() => runDialogue('intro'), 400);
+  }, flag('intro_done') ? 1400 : 2200);
   if (window.innerHeight > window.innerWidth && window.innerWidth < 700) setTimeout(() => toast('Tip: turn your phone sideways for the best view'), 600);
 }
 

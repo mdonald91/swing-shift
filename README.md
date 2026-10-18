@@ -45,6 +45,7 @@ Put MP3s in the `music/` folder with these names:
 | `battle.mp3` | Combat | 192 bpm |
 | `victory.mp3` | Payday | 150 bpm |
 | `brushes.mp3` | Brushes' song (jukebox, after his side chat) | 120 bpm |
+| `finale.mp3` | The Conductor's broadcast (Act 1 finale) | 66 bpm |
 
 Any file that's missing is covered by the built-in generated jazz combo. If a track's tempo is different, change its `bpm` in `src/data/music.js` so the combat beat timing lines up with the song. You can switch your tracks off under **Settings → Use my Suno tracks**, and audition every slot on the ship's jukebox.
 
@@ -75,6 +76,7 @@ Saves are kept in the browser on each device (3 slots).
 - [x] **0.6 Track 02, Ghost Frequency:** Relay K-17 (dark until you restore power, doors, keycard, minimap), Rhea joins with her own skills, party selection, drone skirmish, the Warden boss, a choice with real consequences
 - [x] **0.7 Track 03, The Missing Courier:** Vesta's market and mine tunnels, tailing a suspect using stalls as cover, the Sable and Vox duet boss, the first sign of the Conductor, what to do with the Helix tuning core
 - [x] **0.8 Levels and skills:** XP and levels to 30, a 5-tier skill tree per crew member, Shot/Blunt/Shock weaknesses, gunmen, hackers and heavy mechs, optional side fights on every map, Brushes' holo-rehearsal, rebalanced bosses
-- [ ] **0.9 Act 1 polish** (see the full roadmap doc)
+- [x] **0.9 Act 1 polish:** beat calibration, Relaxed and Auto rhythm modes, bigger text, less screen shake, tutorial tips, save anywhere plus autosave, the Act 1 finale and a Story so far screen
+- [ ] **0.10 Track 04, Iron Mantis** (see the full roadmap doc)
 
 Built with [Phaser 3](https://phaser.io) (MIT licence), included in `vendor/`.

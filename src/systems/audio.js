@@ -31,6 +31,8 @@ const MOODS = {
   station: { bpm: 112, swing: .56, prog: [ch('A', 'm7'), ch('D', 'dom7'), ch('G', 'maj7'), ch('C', 'maj7'), ch('Gb', 'm7b5'), ch('B', 'b9'), ch('E', 'm7'), ch('E', 'm7')], brush: 1, comp: 1, horn: 1, kick: .2 },
   // Vesta: a dusty, minor-key mining-town groove
   vesta: { bpm: 96, swing: .6, prog: [ch('D', 'm7'), ch('G', 'dom7'), ch('D', 'm7'), ch('G', 'dom7'), ch('C', 'm7'), ch('F', 'dom7'), ch('Bb', 'maj7'), ch('A', 'b9')], ride: 1, comp: 1, horn: 1, kick: .3 },
+  // The Conductor's broadcast: slow, minor, a little too grand
+  finale: { bpm: 66, swing: .58, prog: [ch('C', 'm7'), ch('C', 'm7'), ch('Ab', 'maj7'), ch('Ab', 'maj7'), ch('D', 'm7b5'), ch('G', 'b9'), ch('C', 'm7'), ch('G', 'b9')], ride: 1, comp: 1, horn: 1, half: 1, always: 1 },
   // Brushes' song: which version plays depends on what the captain picked
   brushes_ballad: { bpm: 70, swing: .6, prog: [ch('Bb', 'maj7'), ch('G', 'm7'), ch('C', 'm7'), ch('F', 'dom7')], brush: 1, arp: 1, half: 1, horn: 1, always: 1 },
   brushes_bop: { bpm: 210, swing: .62, prog: [ch('Bb', 'maj7'), ch('G', 'b9'), ch('C', 'm7'), ch('F', 'dom7')], ride: 1, horn: 1, comp: 1, kick: .4, busy: 1, always: 1 }
@@ -185,7 +187,14 @@ export const Audio = {
   isSuno(name) { return !!(suno.playing && suno.mood === name); },
   sunoMissing(name) { return !!suno.missing[name]; },
   // Where we are in the music, in beats. Allows for speaker/Bluetooth delay so taps line up with what you hear.
-  beatPos() { const lag = A.ctx ? (A.ctx.outputLatency || A.ctx.baseLatency || 0) : 0; return (now() - lag - Clock.origin) * Clock.bpm / 60; },
+  // The calibration offset from Settings covers whatever the browser can't measure (Bluetooth, TVs, slow touchscreens).
+  // Pass an input event's timeStamp to measure when the tap happened, not when the handler got to run.
+  beatPos(at) { return (now() - (at ? Math.max(0, performance.now() - at) / 1000 : 0) - Audio.lag() - (settings.calibration || 0) / 1000 - Clock.origin) * Clock.bpm / 60; },
+  lag() { return A.ctx ? (A.ctx.outputLatency || A.ctx.baseLatency || 0) : 0; },
+  time: at => now() - (at ? Math.max(0, performance.now() - at) / 1000 : 0),
+  // For the calibration test: a click at an exact audio-clock time, and the music turned down meanwhile.
+  click(t, accent) { if (!A.ctx) return; osc('square', accent ? 2000 : 1400, t, .045, accent ? .16 : .12, { dest: A.master }); noise(t, .03, .25, { f: 5000, q: 2, dest: A.master }); },
+  duck(on) { if (!A.ctx) return; const v = on ? .08 : 1; A.music.gain.setTargetAtTime(settings.music * .6 * v, now(), .08); if (suno.el) suno.el.volume = Math.min(1, settings.music) * v; },
   volumes() { applyVolumes(); if (!settings.suno) stopSuno(); else if (A.ctx) trySuno(moodName); },
   sfx(name, arg) {
     if (!A.ctx) return;

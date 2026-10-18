@@ -19,6 +19,12 @@ export const BOUNTIES = [
     desc: 'Wren Castillo, a courier, vanished on Vesta with a sealed case nobody will describe. Her sister wants her home.'
   },
   {
+    id: 'conductor', name: 'The Conductor', sub: 'Wanted · Whereabouts unknown',
+    reward: 250000, risk: 'S', portrait: 'conductor', track: 'Side B',
+    client: 'Bounty Office, system-wide', wanted: 'Alive, preferably', showIf: 'act1_done', unlock: 'The hunt continues on Side B',
+    desc: 'Hijacked every speaker in the system to introduce himself. Linked to the counterfeit chits, Relay K-17 and the Helix tuning core. Nobody has seen his face.'
+  },
+  {
     id: 'mantis', name: 'Iron Mantis', sub: 'Security mech · Targon',
     reward: 32000, risk: 'A', portrait: 'unknown', track: 'Track 04',
     client: 'Targon Mining Co.', wanted: 'Disabled', unlock: 'Track 04 arrives in a later build',

@@ -147,6 +147,37 @@ const BUILD = {
     <circle cx="800" cy="320" r="22" fill="#f3c860"/><circle cx="800" cy="320" r="120" fill="#f3c860" opacity=".08"/>
     <rect x="160" y="560" width="200" height="200" fill="#6b4a2a" stroke="#120e0c" stroke-width="6"/><rect x="1240" y="600" width="220" height="160" fill="#6b4a2a" stroke="#120e0c" stroke-width="6"/>
     <rect x="1300" y="520" width="90" height="80" fill="#4a5470" stroke="#120e0c" stroke-width="6"/><circle cx="1345" cy="560" r="10" fill="${P.crimson}"/></svg>`,
+  // The Conductor's broadcast: an empty concert hall on every screen in the system
+  broadcast: () => {
+    let seats = '', pipes = '';
+    for (let r = 0; r < 4; r++) for (let i = 0; i < 22; i++) {
+      const x = -20 + i * 78 + (r % 2) * 39, y = 760 + r * 42;
+      seats += `<path d="M${x} ${y} q34 -34 68 0 v40 h-68Z" fill="${r % 2 ? '#1a0f16' : '#22121b'}"/>`;
+    }
+    for (let i = 0; i < 15; i++) { const x = 560 + i * 34, h = 160 + Math.abs(7 - i) * -14 + 120; pipes += `<rect x="${x}" y="${300 - h / 2}" width="20" height="${h}" fill="#3b2c2a"/><rect x="${x}" y="${300 - h / 2}" width="20" height="10" fill="#6b5a3a"/>`; }
+    return `${open}<defs>
+        <linearGradient id="bdBcCone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1e8d4" stop-opacity=".5"/><stop offset="1" stop-color="#f1e8d4" stop-opacity="0"/></linearGradient>
+        <pattern id="bdBcScan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="2" fill="#000" opacity=".25"/></pattern>
+        <radialGradient id="bdBcVig" cx="50%" cy="50%" r="70%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".8"/></radialGradient>
+      </defs>
+      <rect width="1600" height="900" fill="#0c070b"/>
+      <path d="M200 900 V160 Q800 -40 1400 160 V900Z" fill="#170d13"/>
+      ${pipes}
+      <path d="M0 0 H360 Q300 300 330 900 H0Z" fill="#5a1414"/><path d="M1600 0 H1240 Q1300 300 1270 900 H1600Z" fill="#5a1414"/>
+      ${[40, 120, 200, 280].map(x => `<path d="M${x} 0 Q${x + 20} 450 ${x - 10} 900" stroke="#3d0c0c" stroke-width="16" fill="none"/>`).join('')}
+      ${[1320, 1400, 1480, 1560].map(x => `<path d="M${x} 0 Q${x - 20} 450 ${x + 10} 900" stroke="#3d0c0c" stroke-width="16" fill="none"/>`).join('')}
+      <path d="M0 0 H1600 V70 Q800 150 0 70Z" fill="#7a1a1a"/><path d="M0 70 Q800 150 1600 70" stroke="${P.mustard}" stroke-width="6" fill="none"/>
+      <path d="M260 640 H1340 L1440 720 H160Z" fill="#2a1a12"/><path d="M160 720 H1440 V760 H160Z" fill="#1a100b"/>
+      <path d="M720 0 L540 690 H1060 L880 0Z" fill="url(#bdBcCone)"/>
+      <ellipse cx="800" cy="680" rx="270" ry="34" fill="#f1e8d4" opacity=".2"/>
+      <path d="M760 690 L775 600 H825 L840 690Z" fill="#0c070b"/><rect x="755" y="592" width="90" height="12" fill="${P.mustard}"/>
+      <path d="M800 470 L774 600 M800 470 L826 600" stroke="#0c070b" stroke-width="6"/><rect x="770" y="456" width="60" height="20" fill="#0c070b" transform="rotate(-8 800 466)"/>
+      ${seats}
+      <g transform="translate(1180 120)"><rect width="200" height="64" fill="#12070a" stroke="${P.crimson}" stroke-width="4"/><circle cx="34" cy="32" r="11" fill="${P.crimson}"/>
+        <text x="118" y="44" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="38" fill="${P.crimson}">ON AIR</text></g>
+      <text x="800" y="230" text-anchor="middle" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="58" fill="${P.mustard}" opacity=".5">指揮者</text>
+      <rect width="1600" height="900" fill="url(#bdBcScan)"/><rect width="1600" height="900" fill="url(#bdBcVig)"/></svg>`;
+  },
   black: () => ''
 };
 

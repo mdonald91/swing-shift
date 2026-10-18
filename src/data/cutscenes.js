@@ -164,7 +164,37 @@ export const CUTSCENES = {
     { if: 'core_sold', who: 'brushes', line: 'Kessler paid well for the core. He asked no questions. I asked several. He did not answer them.' },
     { l: 'rhea', if: 'rhea_joined', r: 'brushes', who: 'rhea', line: 'The Conductor. Whoever they are, they know our names now.' },
     { l: 'player', who: 'player', line: "Then we'd better get stronger.",
-      byTemp: { Calm: 'Then we prepare. Rest up, everyone.', Sarcastic: 'Great. Fan mail.', Idealistic: "Then we'll be ready when they come.", Ruthless: 'Good. Let them come.' } },
-    { l: null, r: null, card: { track: 'Next session', name: 'Iron Mantis' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+      byTemp: { Calm: 'Then we prepare. Rest up, everyone.', Sarcastic: 'Great. Fan mail.', Idealistic: "Then we'll be ready when they come.", Ruthless: 'Good. Let them come.' } }
+  ],
+
+  // Act 1 finale: the Conductor takes over every speaker in the system. Plays once, on the ship, after Track 03.
+  act1_finale: [
+    { bg: 'lounge', mood: 'tense', l: 'brushes', r: 'tam', who: 'brushes', sfx: 'scratch', line: 'Captain. Every speaker on the ship just switched itself on. I did not do it. I would like that noted.' },
+    { r: 'rook', who: 'rook', line: "It's not just us. News feeds, dock radio, the noodle cart. Every channel's playing the same thing." },
+    { r: 'tam', who: 'tam', line: "Four bars. Juno's song. Except someone's... conducting it." },
+    { bg: 'broadcast', mood: 'finale', l: null, r: 'conductor', who: 'conductor', fx: 'flash', sfx: 'cymbal', line: "Good evening, Captain. Please, don't get up. I prefer an audience that stays in its seats." },
+    { who: 'conductor', line: "You have been playing my score all season without reading the programme. Allow me." },
+    { who: 'conductor', line: "Velvet Moreau's counterfeit chits came off my presses. A little noise in the economy, to see who was listening. You were." },
+    { who: 'conductor', line: 'Relay K-17 was to be my ear. Every call in the system, heard by one man.' },
+    { who: 'conductor', if: 'juno_protected', line: 'Your friend Juno closed that ear. Charming. I have others.' },
+    { who: 'conductor', if: 'juno_handed', line: 'Thanks to you and Director Hale, it hears beautifully. Juno sends her regards. Well. She would.' },
+    { who: 'conductor', line: 'And the tuning core your courier carried? The last string on my instrument.' },
+    { who: 'conductor', if: 'core_kept', line: 'Which is sitting in your cargo bay, humming. Do tell Kevin I said hello. I will be along to collect him.' },
+    { who: 'conductor', if: 'core_office', line: 'Evidence lockers are such trusting places. It was back in my hands by breakfast.' },
+    { who: 'conductor', if: 'core_helix', line: 'Mr Quill delivered it personally. You have been very helpful, Captain. I will remember that.' },
+    { who: 'conductor', if: 'core_sold', line: 'Kessler sold it to me for twice what he paid you. Business is business. You taught me that.' },
+    { l: 'player', who: 'player', line: "What's the instrument for?",
+      byTemp: { Calm: 'What are you building?', Sarcastic: 'Let me guess. A really big kazoo.', Idealistic: "Whatever you're planning, we'll stop it.", Ruthless: "Skip the speech. What's your bounty worth?" } },
+    { who: 'conductor', line: 'Harmony. Every relay, every screen, every radio in the system, in tune. One song. Mine.' },
+    { who: 'conductor', fx: 'shake', line: 'The Bounty Office has just put a price on my head. Do try to collect it. I will be listening.' },
+    { bg: 'lounge', mood: 'tense', l: 'rhea', if: 'rhea_joined', r: 'brushes', who: 'rhea', line: "That signal didn't come through Helix. Helix comes through him. Hale was only ever the front desk." },
+    { if: 'juno_protected', l: 'player', r: 'juno', who: 'juno', line: "Captain, it's Juno. I traced the broadcast. It bounced off every relay in the belt and came from... nowhere. I'll keep digging." },
+    { if: 'core_kept', l: 'brushes', r: 'tam', who: 'brushes', line: 'Kevin has stopped humming. I do not like it when Kevin stops humming.' },
+    { bg: 'lounge', mood: 'ship', l: 'tam', r: 'rook', who: 'tam', line: 'So the bad guy has a radio show now. Love that for us.' },
+    { who: 'rook', line: "Quarter of a million chits on his head. I'd get off the couch for that." },
+    { l: 'brushes', r: 'tam', who: 'brushes', line: 'Captain, I believe this is what musicians call the end of Side A.' },
+    { l: 'player', who: 'player', line: "Then let's flip the record.",
+      byTemp: { Calm: "Then let's flip the record. Carefully.", Sarcastic: 'Great. I always hated the B-sides.', Idealistic: 'Then Side B is ours.', Ruthless: "Then let's go collect." } },
+    { l: null, r: null, card: { track: 'End of', name: 'Side A' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
   ]
 };

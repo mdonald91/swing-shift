@@ -197,6 +197,24 @@ export function npcPortrait(id) {
       <rect x="52" y="76" width="96" height="12" fill="#5a1d19"/>
       <g class="eyes"><rect x="62" y="100" width="76" height="14" rx="4" fill="${INK}"/></g>
       <path class="mouth" d="M84 132 h32" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`);
+    case 'conductor': return svg(`
+      <defs><radialGradient id="ptCondSpot" cx="50%" cy="35%" r="60%"><stop offset="0" stop-color="#f1e8d4" stop-opacity=".22"/><stop offset="1" stop-color="#f1e8d4" stop-opacity="0"/></radialGradient></defs>
+      <rect width="200" height="240" fill="url(#ptCondSpot)"/>
+      <path d="M8 240 C18 182 60 164 100 164 C140 164 182 182 192 240Z" fill="#0d0f1a"/>
+      <path d="M62 176 L100 240 L84 240 L50 190Z M138 176 L100 240 L116 240 L150 190Z" fill="#1b1e30"/>
+      <path d="M84 168 L100 224 L116 168 Q100 176 84 168Z" fill="${P.cream}"/>
+      <path d="M86 176 L100 184 L86 192Z M114 176 L100 184 L114 192Z" fill="${P.crimson}"/><circle cx="100" cy="184" r="4" fill="#8a2a22"/>
+      <rect x="89" y="136" width="22" height="34" fill="#151826"/>
+      <ellipse cx="100" cy="104" rx="36" ry="45" fill="#171a2a"/>
+      <path d="M62 96 C60 52 140 52 138 96 C130 74 112 66 100 66 C86 66 70 74 62 96Z" fill="#05060c"/>
+      <path d="M64 100 L136 100" stroke="#05060c" stroke-width="3" opacity=".6"/>
+      <g class="eyes"><rect x="74" y="102" width="20" height="9" rx="2" fill="${P.crimson}"/><rect x="106" y="102" width="20" height="9" rx="2" fill="${P.crimson}"/>
+        <rect x="77" y="104" width="6" height="2" fill="#ffd1c8"/><rect x="109" y="104" width="6" height="2" fill="#ffd1c8"/></g>
+      <path d="M94 106 H106" stroke="${P.crimson}" stroke-width="2"/>
+      <path class="mouth" d="M86 132 q14 6 28 0" stroke="${P.crimson}" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".8"/>
+      <path d="M162 240 L168 172 C168 162 178 158 182 166 L184 176" fill="${P.cream}" stroke="${INK}" stroke-width="2"/>
+      <path d="M170 168 L128 34" stroke="${P.cream}" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="128" cy="34" r="3" fill="#fff"/>`);
     case 'ozzie': return svg(`
       <path d="${SHOULDERS}" fill="#d39a2a"/>
       <path d="M40 200 L160 200 M30 222 L170 222" stroke="${P.cream}" stroke-width="7"/>

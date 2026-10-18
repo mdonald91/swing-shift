@@ -5,7 +5,7 @@ import { BOUNTIES } from '../data/bounties.js';
 import { backdrop } from '../art/backdrops.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
 import { state, setFlag, saveGame, addRep } from '../state.js';
-import { crewStats, startingGroove, beatWindowBonus, activeParty, addXp, available, level, partyAverageLevel, CREW_KEYS } from '../systems/party.js';
+import { crewStats, startingGroove, rhythmWindow, autoRhythm, pendingPicks, activeParty, addXp, available, level, partyAverageLevel, CREW_KEYS } from '../systems/party.js';
 import { MAPS } from '../data/maps.js';
 import { bus } from '../bus.js';
 import { block, unblock } from '../systems/input.js';
@@ -14,6 +14,7 @@ import { el, esc, sceneLayer, toast, travel } from './ui.js';
 import { playCut } from './cutscene.js';
 import { runDialogue } from './dialog.js';
 import { Hud } from './hud.js';
+import { tip } from './tips.js';
 
 const RHY = {
   perfect: { mult: 1.5, g: 24, label: 'On the beat!' },
@@ -70,12 +71,17 @@ export function startBattle(id, { retry = false } = {}) {
   </div>`);
   sceneLayer().append(root);
   root.querySelectorAll('.bt-card').forEach(c => c.addEventListener('click', () => onCard(c.dataset.k)));
-  root.addEventListener('pointerdown', () => rhythmPress());
+  root.addEventListener('pointerdown', e => rhythmPress(e.timeStamp));
   document.addEventListener('keydown', onKey);
   update();
   log(enc.intro || 'Here they come.');
   raf = requestAnimationFrame(frame);
-  setTimeout(nextActor, 900);
+  setTimeout(async () => {
+    if (!root) return;
+    await tip('battle', root);
+    if (root && enemies.some(e => e.weakTo || e.resists)) await tip('types', root);
+    nextActor();
+  }, 900);
 }
 
 function cleanup() {
@@ -86,7 +92,7 @@ function cleanup() {
 }
 
 function onKey(e) {
-  if ((e.key === ' ' || e.key === 'Enter') && R) { e.preventDefault(); rhythmPress(); }
+  if ((e.key === ' ' || e.key === 'Enter') && R) { e.preventDefault(); rhythmPress(e.timeStamp); }
 }
 
 const $ = s => root.querySelector(s);
@@ -146,6 +152,7 @@ function showMenu(a) {
     ${B.groove >= 100 ? '<button type="button" class="jam" data-c="jam">Jam Session</button>' : ''}`);
   $('.bt-cmd button')?.focus({ preventScroll: true });
   root.querySelectorAll('.bt-cmd [data-c]').forEach(b => b.addEventListener('click', () => { Audio.sfx('tick'); menuPick(a, b.dataset.c); }));
+  if (B.groove >= 100) tip('jam', root);
 }
 
 function backButton(a) {
@@ -305,20 +312,23 @@ function endAction(wait = 500) {
 }
 
 /* ---------------- rhythm ---------------- */
-function rhythm(wide) {
+async function rhythm(wide) {
+  await tip('rhythm', root);
+  if (!root) return 'miss';
   return new Promise(res => {
     const target = Math.ceil(Audio.beatPos() + .8);
     R = { target, res, wide, armedAt: performance.now() + 140, done: false };
     const ring = $('.ring');
     ring.classList.remove('perfect');
-    $('.ring-label').textContent = 'Tap on the beat';
+    $('.ring-label').textContent = autoRhythm() ? 'Auto rhythm' : 'Tap on the beat';
     ring.hidden = false;
   });
 }
-function rhythmPress() {
-  if (!R || R.done || performance.now() < R.armedAt) return;
-  const d = Math.abs(Audio.beatPos() - R.target);
-  const p = (R.wide ? .28 : .2) + beatWindowBonus();
+const perfectWindow = () => rhythmWindow(R.wide ? .28 : .2);
+function rhythmPress(at) {
+  if (!R || R.done || autoRhythm() || performance.now() < R.armedAt) return;
+  const d = Math.abs(Audio.beatPos(at) - R.target);
+  const p = perfectWindow();
   finishRhythm(d <= p ? 'perfect' : d <= p * 2 ? 'good' : 'miss');
 }
 function finishRhythm(q) {
@@ -339,7 +349,8 @@ function frame() {
   if (R && !R.done) {
     const left = R.target - bp;
     $('.ring .shrink').style.transform = `scale(${(1 + Math.max(0, left) * 1.7).toFixed(3)})`;
-    if (left < -.42) finishRhythm('late');
+    if (autoRhythm() && left <= 0) finishRhythm('good');
+    else if (left < -Math.max(.42, perfectWindow() * 2 + .04)) finishRhythm('late');
   }
   raf = requestAnimationFrame(frame);
 }
@@ -583,7 +594,11 @@ function showResults(res, rw) {
     root.append(o);
     const ok = o.querySelector('[data-ok]');
     ok.focus({ preventScroll: true });
-    ok.addEventListener('click', () => { Audio.sfx('confirm'); o.remove(); resolve(); });
+    ok.addEventListener('click', async () => {
+      Audio.sfx('confirm'); o.remove();
+      if (rows.some(r => r.newPicks)) await tip('skills', root);
+      resolve();
+    });
     if (rows.some(r => r.newPicks)) setTimeout(() => toast('New skills to learn: Menu, Crew'), 400);
   });
 }

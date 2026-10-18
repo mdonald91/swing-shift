@@ -15,7 +15,8 @@ export function objective() {
     if (!f.cygnus_arrived) return chats < 3 ? `Catch up with your crew (${chats}/3), then fly to Cygnus Station` : 'Fly to Cygnus Station from the cockpit';
     if (!f.ghost_offered) return 'Visit Helix Salvage on the Cygnus plaza';
     if (!f.bounty_ghost) return 'Accept Ghost Frequency on the bounty board';
-    if (f.courier_done) return 'Track 03 complete. Levels and skills arrive next build.';
+    if (f.act1_done) return 'Side A complete. Side B, starting with Iron Mantis, arrives in a later build.';
+    if (f.courier_done) return 'Head back to the Hi-Hat';
     if (f.ghost_done) {
       if (!f.bounty_courier) return 'Accept The Missing Courier on the bounty board';
       if (state.location === 'vesta') {
@@ -64,6 +65,7 @@ export const Hud = {
       <div class="hud-hint" id="hud-hint" hidden><kbd class="k-key">Space</kbd><kbd class="k-touch">A</kbd><span></span></div>
       <div class="stick-zone" id="stick-zone"><div class="stick" id="stick" hidden><i class="knob" id="knob"></i></div></div>
       <button class="btn-a" id="btn-a" type="button" aria-label="Interact">A</button>
+      <div class="hud-autosave" id="hud-autosave" aria-live="polite">Autosaving</div>
       <div class="areacard" id="areacard" hidden><span class="ac-jp"></span><b class="ac-name"></b><span class="ac-where"></span></div>`;
     layer.append(root);
     hintEl = root.querySelector('#hud-hint');
@@ -128,6 +130,11 @@ export const Hud = {
     objEl.hidden = !o;
     objEl.querySelector('span').textContent = o;
     chitsEl.textContent = '₡ ' + state.chits.toLocaleString('en-AU');
+  },
+  autosaved() {
+    const a = root.querySelector('#hud-autosave');
+    a.classList.add('on'); clearTimeout(Hud._as);
+    Hud._as = setTimeout(() => a.classList.remove('on'), 1500);
   },
   hint(text) {
     hintEl.hidden = !text;

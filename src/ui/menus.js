@@ -4,7 +4,9 @@ import { CREW, CAPTAIN_ROLES } from '../data/crew.js';
 import { TRACKS } from '../data/music.js';
 import { temperament, OUTFITS } from '../data/appearance.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
-import { state, settings, saveGame, saveSettings, setFlag, formatTime } from '../state.js';
+import { state, settings, saveGame, saveSettings, setFlag, formatTime, allSlots, SLOT_COUNT } from '../state.js';
+import { MAPS } from '../data/maps.js';
+import { openRecap } from './recap.js';
 import { SHOPS, GEAR, FACTIONS, tier } from '../data/shop.js';
 import { ITEMS, SKILLS, TREES, TIERS, TYPES, RELEARN_COST, xpToNext, MAX_LEVEL } from '../data/battles.js';
 import { crewStats, ownsGear, BOND_HP, BOND_ATK, available, activeParty, level, pendingPicks, learn } from '../systems/party.js';
@@ -36,6 +38,7 @@ export function openBoard() {
 
   const status = b => state.bounties[b.id] || (b.requires ? (state.flags[b.requires] ? 'open' : 'locked') : b.unlock ? 'locked' : 'open');
   const inTab = b => {
+    if (b.showIf && !state.flags[b.showIf]) return false;
     const s = status(b);
     return tab === 'available' ? (s === 'open' || s === 'locked') : s === tab;
   };
@@ -107,6 +110,7 @@ export function openPauseMenu() {
         <button type="button" data-go="bag">Bag</button>
         <button type="button" data-go="standing">Standing</button>
         <button type="button" data-go="bounties">Bounties</button>
+        <button type="button" data-go="story">Story so far</button>
         <button type="button" data-go="save">Save</button>
         <button type="button" data-go="settings">Settings</button>
         <button type="button" data-go="title">Title screen</button>
@@ -134,16 +138,55 @@ export function openPauseMenu() {
     else if (go === 'bag') openBag();
     else if (go === 'standing') openStanding();
     else if (go === 'bounties') { m.close(true); openBoard(); }
-    else if (go === 'save') { const ok = saveGame(); Audio.sfx('save'); toast(ok ? `Saved to slot ${state.slot + 1}` : "Couldn't save: this browser is blocking storage"); }
+    else if (go === 'save') openSavePicker(m);
+    else if (go === 'story') openRecap();
     else if (go === 'settings') openSettings();
     else if (go === 'title') confirmTitle(b);
   }));
 }
 
+/* ---------------- Save anywhere ---------------- */
+function openSavePicker(menu) {
+  Audio.sfx('confirm');
+  const slots = allSlots();
+  const node = el(`<div class="panel savepick">
+    ${head('Save', 'セーブ')}
+    <div class="sp-body">
+      <p class="muted small">You can save anywhere. You're playing in slot ${state.slot + 1}; autosave writes there too.</p>
+      <div class="slot-list">${Array.from({ length: SLOT_COUNT }, (_, i) => {
+        const sv = slots[i];
+        return `<button type="button" class="slot ${sv ? '' : 'empty'} ${i === state.slot ? 'current' : ''}" data-i="${i}">
+          <span class="slot-n">${i + 1}</span>
+          ${sv ? `<span class="slot-pt">${playerPortrait(sv.player)}</span>
+            <span class="slot-main"><b>${esc(sv.player.name)}${i === state.slot ? ' <em class="dot">This game</em>' : ''}</b><small>${esc((MAPS[sv.location] || MAPS.ship).name)} · ${formatTime(sv.playtime)} played</small>
+            <small class="when">${new Date(sv.savedAt).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' })}</small></span>`
+            : '<span class="slot-main"><b>Empty</b><small>Save a copy here</small></span>'}
+        </button>`;
+      }).join('')}</div>
+    </div>
+  </div>`);
+  const m = openModal(node);
+  wireClose(node, m);
+  node.querySelectorAll('.slot').forEach(b => b.addEventListener('click', () => {
+    const i = +b.dataset.i, sv = slots[i];
+    // overwriting a different captain's save needs a second tap
+    if (sv && i !== state.slot && !b.dataset.armed) {
+      b.dataset.armed = '1';
+      b.querySelector('.slot-main small').textContent = `Tap again to overwrite ${sv.player.name}`;
+      Audio.sfx('tick'); return;
+    }
+    const ok = saveGame(i);
+    Audio.sfx(ok ? 'save' : 'clam');
+    toast(ok ? `Saved to slot ${i + 1}` : "Couldn't save: this browser is blocking storage");
+    m.close(true); menu?.close(true);
+  }));
+  setTimeout(() => node.querySelector('.slot.current')?.focus({ preventScroll: true }), 40);
+}
+
 function confirmTitle(btn) {
   if (btn.dataset.armed) { leaveWorld(); Title.show(); return; }
   btn.dataset.armed = '1';
-  btn.textContent = 'Tap again (unsaved progress is lost)';
+  btn.textContent = 'Tap again (progress since your last save is lost)';
   setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = 'Title screen'; } }, 3000);
 }
 
@@ -330,30 +373,157 @@ export function openShop(id) {
 }
 
 /* ---------------- Settings ---------------- */
+// Body classes for the display options, applied at start-up and whenever they change.
+export function applyDisplay() {
+  const b = document.body.classList;
+  b.toggle('ts-1', settings.textSize === 1); b.toggle('ts-2', settings.textSize >= 2);
+  b.toggle('calm-fx', !!settings.reduceShake);
+}
+
+const msText = ms => ms === 0 ? '0 ms' : `${ms > 0 ? '+' : '−'}${Math.abs(ms)} ms`;
+
 export function openSettings({ fromTitle } = {}) {
   Audio.sfx('confirm');
+  const opt = (v, cur, label) => `<option value="${v}" ${String(v) === String(cur) ? 'selected' : ''}>${label}</option>`;
   const node = el(`<div class="panel settings">
     ${head('Settings', '設定')}
     <div class="set-body">
+      <h4 class="set-h">Sound</h4>
       <label class="set-row" for="set-music"><span>Music</span><input id="set-music" type="range" min="0" max="1" step="0.05" value="${settings.music}"></label>
       <label class="set-row" for="set-sfx"><span>Sound effects</span><input id="set-sfx" type="range" min="0" max="1" step="0.05" value="${settings.sfx}"></label>
       <label class="set-row" for="set-suno"><span>Use my Suno tracks</span><input id="set-suno" type="checkbox" ${settings.suno ? 'checked' : ''}></label>
+
+      <h4 class="set-h">Rhythm</h4>
+      <div class="set-row"><span>Beat offset<small>Lines your taps up with your speaker or headphones</small></span>
+        <span class="set-cal"><button type="button" class="stepper" data-cal="-10" aria-label="Earlier">−</button><b class="cal-v">${msText(settings.calibration)}</b><button type="button" class="stepper" data-cal="10" aria-label="Later">+</button></span></div>
+      <div class="set-row set-row-end"><button class="btn ghost small-btn" type="button" data-calibrate>Calibrate by tapping</button></div>
+      <label class="set-row" for="set-rhythm"><span>Rhythm mode<small class="rh-note"></small></span>
+        <select id="set-rhythm">${opt('normal', settings.rhythm, 'Normal')}${opt('relaxed', settings.rhythm, 'Relaxed')}${opt('auto', settings.rhythm, 'Auto')}</select></label>
+
+      <h4 class="set-h">Display</h4>
+      <label class="set-row" for="set-size"><span>Text size</span>
+        <select id="set-size">${opt(0, settings.textSize, 'Normal')}${opt(1, settings.textSize, 'Large')}${opt(2, settings.textSize, 'Largest')}</select></label>
       <label class="set-row" for="set-text"><span>Text speed</span>
-        <select id="set-text"><option value="1" ${settings.textSpeed < 2 ? 'selected' : ''}>Normal</option><option value="2" ${settings.textSpeed >= 2 ? 'selected' : ''}>Fast</option></select></label>
+        <select id="set-text">${opt(1, settings.textSpeed < 2 ? 1 : 2, 'Normal')}${opt(2, settings.textSpeed < 2 ? 1 : 2, 'Fast')}</select></label>
+      <label class="set-row" for="set-shake"><span>Less screen shake<small>Softer hits and flashes</small></span><input id="set-shake" type="checkbox" ${settings.reduceShake ? 'checked' : ''}></label>
+
+      <h4 class="set-h">Help</h4>
+      <label class="set-row" for="set-tut"><span>Tutorial tips</span><input id="set-tut" type="checkbox" ${settings.tutorials ? 'checked' : ''}></label>
+      <label class="set-row" for="set-auto"><span>Autosave<small>Saves to your slot each time you enter a new area</small></span><input id="set-auto" type="checkbox" ${settings.autosave ? 'checked' : ''}></label>
+      ${fromTitle ? '' : '<div class="set-row set-row-end"><button class="btn ghost small-btn" type="button" data-retips>Show tutorial tips again</button></div>'}
       <p class="muted small">Suno tracks go in the game's music folder as title.mp3, ship.mp3, tense.mp3, battle.mp3 and victory.mp3. Any that are missing are played by the house band.</p>
     </div>
   </div>`);
   const m = openModal(node);
   wireClose(node, m);
+  const RH = { normal: 'Tap on the beat', relaxed: 'Wider timing for every beat', auto: 'The band taps for you (steady, never perfect)' };
+  const note = () => { node.querySelector('.rh-note').textContent = RH[settings.rhythm]; };
+  note();
   const upd = () => {
     settings.music = +node.querySelector('#set-music').value;
     settings.sfx = +node.querySelector('#set-sfx').value;
     settings.suno = node.querySelector('#set-suno').checked;
     settings.textSpeed = +node.querySelector('#set-text').value;
-    saveSettings(); Audio.volumes();
+    settings.textSize = +node.querySelector('#set-size').value;
+    settings.reduceShake = node.querySelector('#set-shake').checked;
+    settings.rhythm = node.querySelector('#set-rhythm').value;
+    settings.tutorials = node.querySelector('#set-tut').checked;
+    settings.autosave = node.querySelector('#set-auto').checked;
+    saveSettings(); Audio.volumes(); applyDisplay(); note();
   };
   node.querySelectorAll('input,select').forEach(i => i.addEventListener('input', upd));
+  node.querySelectorAll('input[type=checkbox],select').forEach(i => i.addEventListener('change', upd));
   node.querySelector('#set-sfx').addEventListener('change', () => Audio.sfx('tick'));
+  const showCal = () => { node.querySelector('.cal-v').textContent = msText(settings.calibration); };
+  node.querySelectorAll('[data-cal]').forEach(b => b.addEventListener('click', () => {
+    settings.calibration = Math.max(-250, Math.min(400, settings.calibration + +b.dataset.cal));
+    saveSettings(); showCal(); Audio.sfx('tick');
+  }));
+  node.querySelector('[data-calibrate]').addEventListener('click', () => openCalibrate(showCal));
+  node.querySelector('[data-retips]')?.addEventListener('click', e => {
+    Object.keys(state.flags).filter(k => k.startsWith('tut_')).forEach(k => delete state.flags[k]);
+    settings.tutorials = true; saveSettings(); node.querySelector('#set-tut').checked = true;
+    e.currentTarget.textContent = 'Tips will show again'; e.currentTarget.disabled = true; Audio.sfx('confirm');
+  });
+  return m;
+}
+
+/* ---------------- Beat calibration ---------------- */
+// Clicks at 100 BPM on the audio clock; the player taps along to what they hear.
+// The median gap between taps and clicks becomes the beat offset.
+function openCalibrate(done) {
+  Audio.init();
+  const SPB = .6, COUNT = 4, TAPS = 12;
+  const node = el(`<div class="panel calib">
+    ${head('Calibrate', '調整')}
+    <div class="cal-body">
+      <p>Four clicks count you in. Then tap along to the next ${TAPS} clicks: anywhere on the pad, or Space.</p>
+      <p class="muted small">Tap to what you <b>hear</b>, not what you see. If you play through Bluetooth, use it now.</p>
+      <button class="cal-pad" type="button" aria-label="Tap pad"><i class="cal-dot"></i><span class="cal-msg">Press start</span></button>
+      <div class="cal-dots">${Array.from({ length: TAPS }, () => '<i></i>').join('')}</div>
+      <div class="cal-btns"><button class="btn primary" type="button" data-start>Start</button></div>
+    </div>
+  </div>`);
+  let run = null, raf = 0;
+  const m = openModal(node, { onClose: () => { stop(); done(); } });
+  wireClose(node, m);
+  const $ = q => node.querySelector(q);
+  const dots = [...node.querySelectorAll('.cal-dots i')];
+  function stop() {
+    cancelAnimationFrame(raf);
+    document.removeEventListener('keydown', onKey, true);
+    if (run) { Audio.duck(false); run = null; }
+  }
+  function start() {
+    stop();
+    const t0 = Audio.time() + 1;
+    run = { clicks: Array.from({ length: COUNT + TAPS }, (_, i) => t0 + i * SPB), taps: [], end: t0 + (COUNT + TAPS) * SPB + .3 };
+    run.clicks.forEach((t, i) => Audio.click(t, i < COUNT));
+    Audio.duck(true);
+    dots.forEach(d => d.className = '');
+    $('[data-start]').hidden = true;
+    $('.cal-msg').textContent = 'Listen...';
+    document.addEventListener('keydown', onKey, true);
+    raf = requestAnimationFrame(frame);
+  }
+  function tap(at) {
+    if (!run) return;
+    const t = Audio.time(at) - Audio.lag();
+    const targets = run.clicks.slice(COUNT);
+    let best = -1, bd = 9;
+    targets.forEach((c, i) => { const d = t - c; if (Math.abs(d) < Math.abs(bd)) { bd = d; best = i; } });
+    if (best < 0 || Math.abs(bd) > SPB * .45 || run.taps.some(x => x.i === best)) return;
+    run.taps.push({ i: best, d: bd });
+    dots[best].className = 'hit';
+    $('.cal-pad').classList.remove('tap'); void $('.cal-pad').offsetWidth; $('.cal-pad').classList.add('tap');
+  }
+  function frame() {
+    if (!run) return;
+    const t = Audio.time() - Audio.lag();
+    const i = run.clicks.findIndex(c => t >= c && t < c + .12);
+    $('.cal-dot').classList.toggle('on', i >= 0);
+    if (i >= 0) $('.cal-msg').textContent = i < COUNT ? String(i + 1) : 'Tap!';
+    if (t > run.end) return finish();
+    raf = requestAnimationFrame(frame);
+  }
+  function finish() {
+    const taps = run.taps.map(x => x.d).sort((a, b) => a - b);
+    stop();
+    $('[data-start]').hidden = false; $('[data-start]').textContent = 'Try again';
+    $('.cal-dot').classList.remove('on');
+    if (taps.length < 6) { $('.cal-msg').textContent = 'Not enough taps. Try again?'; Audio.sfx('clam'); return; }
+    const mid = taps.length >> 1, med = taps.length % 2 ? taps[mid] : (taps[mid - 1] + taps[mid]) / 2;
+    const ms = Math.max(-250, Math.min(400, Math.round(med * 1000 / 5) * 5));
+    settings.calibration = ms; saveSettings(); done();
+    $('.cal-msg').textContent = `Offset set to ${msText(ms)}`;
+    Audio.sfx('save');
+    if (!$('.cal-result')) $('.cal-btns').insertAdjacentHTML('beforebegin', '<p class="cal-result muted small"></p>');
+    $('.cal-result').textContent = Math.abs(ms) < 25 ? 'Your taps were right on the click. Nice ears.'
+      : ms > 0 ? `You heard the clicks about ${ms} ms late, so the beat now waits for your speaker.` : `You tapped about ${-ms} ms early, so the beat now comes a little sooner.`;
+  }
+  const onKey = e => { if (e.key === ' ' || e.key === 'Enter') { if (run) { e.preventDefault(); e.stopPropagation(); tap(e.timeStamp); } } };
+  $('.cal-pad').addEventListener('pointerdown', e => { e.preventDefault(); tap(e.timeStamp); });
+  $('[data-start]').addEventListener('click', () => { Audio.sfx('tick'); setTimeout(start, 50); });
   return m;
 }
 

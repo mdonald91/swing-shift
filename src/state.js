@@ -3,7 +3,15 @@ const SLOT_KEY = 'swingshift.slot.';
 const SETTINGS_KEY = 'swingshift.settings';
 export const SLOT_COUNT = 3;
 
-export const settings = { music: 0.8, sfx: 0.8, suno: true, textSpeed: 1 };
+export const settings = {
+  music: 0.8, sfx: 0.8, suno: true, textSpeed: 1,
+  calibration: 0,        // ms to shift the beat by, for phone speakers and Bluetooth delay
+  rhythm: 'normal',      // 'normal' | 'relaxed' (wider timing) | 'auto' (the band taps for you)
+  textSize: 0,           // 0 normal, 1 large, 2 largest
+  reduceShake: false,
+  tutorials: true,
+  autosave: true
+};
 
 export const state = blank();
 
@@ -42,10 +50,11 @@ export function addRep(changes) {
 export function flag(name) { return !!state.flags[name]; }
 export function setFlag(name, v = true) { state.flags[name] = v; }
 
-export function saveGame() {
+export function saveGame(slot = state.slot) {
   state.savedAt = Date.now();
+  state.slot = slot;
   try {
-    localStorage.setItem(SLOT_KEY + state.slot, JSON.stringify(state));
+    localStorage.setItem(SLOT_KEY + slot, JSON.stringify(state));
     return true;
   } catch (e) { return false; }
 }
@@ -67,6 +76,8 @@ export function loadGame(slot) {
     const lv = f.courier_done ? 8 : f.ghost_done ? 6 : f.velvet_done ? 4 : 1;
     for (const k of ['captain', 'rook', 'tam', 'brushes', 'rhea']) state.levels[k] = { lv, xp: 0 };
   }
+  // players from before 0.9 already know how to fight: skip the basic tutorials
+  if (state.flags.velvet_done) for (const t of ['controls', 'battle', 'rhythm', 'types']) state.flags['tut_' + t] ??= true;
   // saves from before reputation existed
   if (state.flags.velvet_done && !state.flags.rep_init) { state.rep.office += 2; state.flags.rep_init = true; }
   return true;
@@ -91,6 +102,8 @@ export function latestSlot() {
 
 export function loadSettings() {
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch (e) {}
+  settings.calibration = Math.max(-250, Math.min(400, +settings.calibration || 0));
+  if (!['normal', 'relaxed', 'auto'].includes(settings.rhythm)) settings.rhythm = 'normal';
 }
 export function saveSettings() {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}

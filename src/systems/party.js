@@ -2,7 +2,7 @@
 import { PARTY, ROSTER, GROWTH, MAX_LEVEL, xpToNext, CAPTAIN_SKILLS, TREES, TIERS } from '../data/battles.js';
 import { temperament } from '../data/appearance.js';
 import { GEAR } from '../data/shop.js';
-import { state } from '../state.js';
+import { state, settings } from '../state.js';
 
 export const BOND_HP = 10, BOND_ATK = 1;
 export const CREW_KEYS = ['captain', 'rook', 'tam', 'brushes', 'rhea'];
@@ -69,6 +69,12 @@ export function startingGroove() {
 export function beatWindowBonus() {
   return GEAR.filter(g => g.window && ownsGear(g.id)).reduce((s, g) => s + g.window, 0);
 }
+
+// Perfect-hit window in beats: base width, plus gear, wider still in Relaxed rhythm mode.
+export function rhythmWindow(base = .2) {
+  return (base + beatWindowBonus()) * (settings.rhythm === 'relaxed' ? 1.6 : 1);
+}
+export const autoRhythm = () => settings.rhythm === 'auto';
 
 // Crew who are aboard right now.
 export function available(id) {

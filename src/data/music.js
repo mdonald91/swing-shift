@@ -11,5 +11,6 @@ export const TRACKS = {
   vesta:   { file: 'music/vesta.mp3',   bpm: 96,  label: 'Vesta market' },
   battle:  { file: 'music/battle.mp3',  bpm: 192, label: 'Big band brawl' },
   victory: { file: 'music/victory.mp3', bpm: 150, label: 'Payday' },
-  brushes: { file: 'music/brushes.mp3', bpm: 120, label: "Brushes' song", unlock: 'song_done' }
+  brushes: { file: 'music/brushes.mp3', bpm: 120, label: "Brushes' song", unlock: 'song_done' },
+  finale:  { file: 'music/finale.mp3',  bpm: 66,  label: "The Conductor's broadcast", unlock: 'act1_done' }
 };

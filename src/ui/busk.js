@@ -2,13 +2,15 @@
 import { state, setFlag } from '../state.js';
 import { block, unblock } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
-import { beatWindowBonus } from '../systems/party.js';
+import { rhythmWindow, autoRhythm } from '../systems/party.js';
+import { tip } from './tips.js';
 import { el, sceneLayer, toast } from './ui.js';
 import { Hud } from './hud.js';
 
 const BEATS = 8;
 
-export function busk() {
+export async function busk() {
+  await tip('busk');
   return new Promise(resolve => {
     block();
     const root = el(`<div class="busk" role="dialog" aria-label="Busking">
@@ -19,13 +21,13 @@ export function busk() {
           <div class="ring"><i class="target"></i><i class="shrink"></i><span class="ring-label">Count in...</span></div>
         </div>
         <div class="busk-dots">${Array.from({ length: BEATS }, () => '<i></i>').join('')}</div>
-        <p class="busk-hint">Tap anywhere or press Space as the ring closes.</p>
+        <p class="busk-hint">${autoRhythm() ? 'Auto rhythm is on. Sit back and enjoy the set.' : 'Tap anywhere or press Space as the ring closes.'}</p>
       </div>
     </div>`);
     sceneLayer().append(root);
     const $ = s => root.querySelector(s);
     const dots = [...root.querySelectorAll('.busk-dots i')];
-    const window = .2 + beatWindowBonus();
+    const window = rhythmWindow(.2), late = Math.max(.45, window * 2 + .04);
     const start = Math.ceil(Audio.beatPos()) + 4;     // four beats of count-in
     const targets = Array.from({ length: BEATS }, (_, i) => ({ beat: start + i, q: null }));
     let raf = 0, done = false, counted = -1;
@@ -38,10 +40,10 @@ export function busk() {
       Audio.sfx(q === 'perfect' ? 'perfect' : q === 'good' ? 'tok' : 'clam');
       $('.ring').classList.toggle('perfect', q === 'perfect');
     }
-    function press() {
-      if (done) return;
-      const bp = Audio.beatPos();
-      const t = targets.find(x => !x.q && Math.abs(bp - x.beat) <= .45);
+    function press(at) {
+      if (done || autoRhythm()) return;
+      const bp = Audio.beatPos(at);
+      const t = targets.find(x => !x.q && Math.abs(bp - x.beat) <= late);
       if (!t) return;
       const d = Math.abs(bp - t.beat);
       judge(t, d <= window ? 'perfect' : d <= window * 2 ? 'good' : 'miss');
@@ -52,7 +54,11 @@ export function busk() {
         const n = Math.floor(start - bp);
         if (n !== counted && n >= 1 && n <= 4) { counted = n; $('.ring-label').textContent = String(5 - n); Audio.sfx('tick'); }
       }
-      targets.forEach(t => { if (!t.q && bp > t.beat + .45) judge(t, 'miss'); });
+      targets.forEach(t => {
+        if (t.q) return;
+        if (autoRhythm() && bp >= t.beat) judge(t, 'good');
+        else if (bp > t.beat + late) judge(t, 'miss');
+      });
       const next = targets.find(t => !t.q);
       if (next) {
         const left = next.beat - bp;
@@ -83,8 +89,8 @@ export function busk() {
         resolve(pay);
       });
     }
-    const onKey = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); press(); } };
-    root.addEventListener('pointerdown', e => { if (!e.target.closest('button')) press(); });
+    const onKey = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); press(e.timeStamp); } };
+    root.addEventListener('pointerdown', e => { if (!e.target.closest('button')) press(e.timeStamp); });
     document.addEventListener('keydown', onKey);
     raf = requestAnimationFrame(frame);
   });
