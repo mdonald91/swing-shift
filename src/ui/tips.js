@@ -10,7 +10,7 @@ export const TIPS = {
   controls: () => ({
     title: 'Getting around',
     lines: touch()
-      ? ['Drag the stick on the left to walk.', 'Tap <b>A</b> to talk to people and examine things. A <b>!</b> shows what you can use.', 'The <b>Menu</b> button has your crew, bag, saves and settings.']
+      ? ['Drag the stick on the left to walk.', 'Tap <b>A</b> to talk to people and examine things. A prompt appears when you are close enough.', 'The <b>Menu</b> button has your crew, bag, saves and settings.']
       : ['Walk with <b>WASD</b> or the arrow keys.', 'Press <b>Space</b> or <b>E</b> to talk to people and examine things.', 'Press <b>Esc</b> or <b>M</b> for your crew, bag, saves and settings.']
   }),
   battle: () => ({

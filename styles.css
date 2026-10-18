@@ -770,7 +770,7 @@ body.calm-fx .cs-name { animation: fade .4s; }
 .ln-n { font-family: var(--f-title); font-weight: 900; font-size: 28px; line-height: 1; color: var(--crimson); width: 34px; flex: none; }
 .ln-tracks b { font-size: 16px; letter-spacing: .02em; text-transform: uppercase; }
 .ln-tracks small { font-size: 12px; color: #5a5c6c; margin-left: 4px; }
-.liner ul { margin: 4px 0 0; padding-left: 18px; }
+.liner ul { margin: 4px 0 0; padding-left: 18px; list-style: disc; }
 .liner ul li { font-size: 14px; line-height: 1.45; margin: 2px 0; }
 .ln-wait { margin: 4px 0 0; font-size: 13px; font-style: italic; color: #6a6c7c; }
 .ln-tracks > li.todo { opacity: .55; }
