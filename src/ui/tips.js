@@ -41,6 +41,14 @@ export const TIPS = {
       ? ['The follow-spots move with the beat of the show: two beats on, two beats off. A light flickers just before it switches on.', 'Wait in the dark between lights, then move on the dark beats. If a light catches you, you start that stretch again.']
       : ['The follow-spots move with the beat of the show. A light flickers just before it switches on.', 'Your rhythm setting is easier, so each light only stays on for one beat. Wait in the dark, then move.']
   }),
+  patrols: () => ({
+    title: 'Collectors on patrol',
+    lines: ['Bounty hunters walk the plaza. The red cone in front of each one is what they can see. Walls and boards block their view.', 'Wait until they turn away, then move. If one spots you, you fight that group. Win, and they stop patrolling.']
+  }),
+  metronome: () => ({
+    title: 'The Metronome',
+    lines: ['Crane counts down on his card: <b>Count-in 4, 3, 2</b>... On the downbeat he hits the whole crew at once.', 'Choose <b>Defend</b> just before the downbeat to halve it. Hitting Crane <b>on the beat</b> throws his count back by one, once a round.']
+  }),
   echo: () => ({
     title: 'Echo lock',
     lines: ['Someone sings a short phrase on the four pads. Watch and listen, then tap the same pads in the same order.', 'Each pad has its own colour, shape and number (keys 1 to 4), so you can follow it without sound too. A wrong note just plays the phrase again.']

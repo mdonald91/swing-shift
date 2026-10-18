@@ -75,6 +75,20 @@ function tracks() {
         f.piano_kept && 'Kept the Halcyon aboard the Hi-Hat. Old Sol taught Brushes the fifth bar.',
         f.piano_sold && 'Sold the Halcyon. The Conductor was the buyer.'
       ]
+    },
+    {
+      n: '07', side: 'C', name: 'The Conductor', where: 'Cygnus Station, Helix Salvage', done: flag('metronome_done'), started: f.bounty_conductor,
+      notes: [
+        'Crossed Cygnus Station under lockdown, with a price on every face in the crew.',
+        f.gate_open && (f.std_office ? 'Marshal Okoro of the Bounty Office opened the checkpoint for you.' : 'Cass Marlowe talked the checkpoint open.'),
+        f.hatch_open && "Benny Banda, Ozzie's cousin, opened the service run under the plaza.",
+        f.shutter_open && 'Ferro and the Iron Mantis tore open the east shutter.',
+        'Beat Silas Crane, the Metronome, in Director Hale\'s office.',
+        'Learned the Conductor is Ambrose Hale: Helix\'s founder, Hale\'s father and the student Mae Halloway sent away before the fifth bar.',
+        f.hale_ally && 'Took Director Hale aboard the Hi-Hat. She brought the Blue Note docking codes.',
+        f.hale_office && 'Handed Director Hale to the Bounty Office. She gave you the Blue Note docking codes first.',
+        f.hale_free && 'Let Director Hale walk away. She left you the Blue Note docking codes.'
+      ]
     }
   ].map(t => ({ ...t, notes: t.notes.filter(Boolean) }));
 }
@@ -96,14 +110,14 @@ function offClock() {
 function html({ finale, side }) {
   const p = state.player, temp = temperament(p);
   const crew = CREW_KEYS.filter(k => k !== 'captain' && available(k));
-  side ||= flag('act1_done') ? 'B' : 'A';
-  const all = tracks(), sideB = side === 'B' && !(finale && side === 'A');
-  const ts = all.filter(t => (t.side === 'B') === sideB);
+  side ||= flag('act3_open') ? 'C' : flag('act1_done') ? 'B' : 'A';
+  const all = tracks(), sideB = side === 'B', sideC = side === 'C';
+  const ts = all.filter(t => (t.side || 'A') === side);
   const off = offClock();
   const sideA = all.filter(t => !t.side);
   return `<div class="liner">
     <header class="ln-head">
-      <p class="ln-side">${sideB ? 'Side B' : 'Side A'}</p>
+      <p class="ln-side">${sideC ? 'The Encore' : sideB ? 'Side B' : 'Side A'}</p>
       <h2>The story so far</h2>
       <p class="ln-cap"><b>${esc(p.name)}</b> · ${esc(temp)} ${esc(CAPTAIN_ROLES[temp].role)} · Lv ${level('captain')} · ${formatTime(state.playtime)} played</p>
     </header>
@@ -125,7 +139,10 @@ function html({ finale, side }) {
         <li><b>${esc(fa.n)}</b> <span>${esc(tier(state.rep[k] || 0))}</span></li>`).join('')}
       </ul></section>
     </div>
-    ${sideB && finale ? `<section class="ln-sec ln-next"><h3>Coming up: the Encore</h3>
+    ${sideC ? `<section class="ln-sec ln-next"><h3>Sides A and B, in short</h3>
+      <p>${esc(all.filter(t => t.side !== 'C' && t.done).map(t => `${t.n} ${t.name}`).join(' · '))}. ${flag('fifth_bar') ? 'You know the fifth bar.' : 'You never heard the fifth bar.'}</p></section>
+      <section class="ln-sec ln-next"><h3>Still to come in the Encore</h3><p>${flag('metronome_done') ? '' : '07 · The Conductor &nbsp; '}08 · Blue Note &nbsp; 09 · Last Set</p></section>`
+      : sideB && finale ? `<section class="ln-sec ln-next"><h3>Coming up: the Encore</h3>
       <p>07 · The Conductor &nbsp; 08 · Blue Note &nbsp; 09 · Last Set. ${flag('fifth_bar') ? 'And you know something he does not: the fifth bar.' : 'And he knows exactly where you are.'}</p></section>`
       : sideB ? `<section class="ln-sec ln-next"><h3>Side A, in short</h3>
       <p>${sideA.map(t => `${t.n} · ${esc(t.name)}`).join(' &nbsp; ')}: ${esc(sideA.flatMap(t => t.notes).filter(n => /Juno|core|Rhea/.test(n)).join(' '))}</p></section>
@@ -197,5 +214,19 @@ export async function playFinale2() {
   Hud.refresh();
   playing2 = false;
   setTimeout(() => toast(ok ? 'Side B complete. Game saved.' : 'Side B complete.'), 300);
-  setTimeout(() => toast('The Encore, Act 3, arrives in later builds'), 2900);
+  setTimeout(playAct3Open, 2600);
+}
+
+// Act 3 opens: the Conductor puts a price on the crew. Plays once per save, on the ship.
+let playing3 = false;
+export async function playAct3Open() {
+  if (playing3 || flag('act3_open') || !flag('act2_done') || state.location !== 'ship') return;
+  playing3 = true;
+  await playCut('hunted', { restoreMood: false });
+  setFlag('act3_open');
+  Audio.setMood('ship');
+  saveGame();
+  Hud.refresh();
+  playing3 = false;
+  setTimeout(() => toast('New on the bounty board: The Conductor'), 400);
 }

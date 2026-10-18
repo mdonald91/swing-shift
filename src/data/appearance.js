@@ -154,5 +154,20 @@ export const NPC_LOOKS = {
   w3: { face: 0, skin: '#c99272', hair: '#d9b25a', style: 'swept', acc: 'Scarf', outfit: { main: '#2c3b5a', shade: '#1e2940', acc: '#e9b23a', style: 'suit' } },
   w4: { face: 2, skin: '#5c3620', hair: '#6a4a8e', style: 'curls', acc: 'Earring', outfit: { main: '#d39a2a', shade: '#a5741a', acc: '#10121e', style: 'bomber' } },
   goon2: { face: 3, skin: '#93725e', hair: '#7a2a24', style: 'buzz', acc: 'Shades',
-    outfit: { main: '#2f3346', shade: '#1f2232', acc: '#7a2a24', style: 'hoodie' } }
+    outfit: { main: '#2f3346', shade: '#1f2232', acc: '#7a2a24', style: 'hoodie' } },
+  // Act 3
+  crane: { face: 0, skin: '#e3b38f', hair: '#c9ccd6', style: 'swept', acc: 'None', pants: '#10121e',
+    outfit: { main: '#3a1a24', shade: '#24101a', acc: '#e9b23a', style: 'coat' } },
+  collector: { face: 3, skin: '#a8714f', hair: '#1d2230', style: 'buzz', acc: 'Goggles', pants: '#2f3346',
+    outfit: { main: '#7a2a24', shade: '#5a1d19', acc: '#8d90a8', style: 'bomber' } },
+  collector2: { face: 2, skin: '#f2cdb4', hair: '#c23a30', style: 'topknot', acc: 'Shades', pants: '#2f3346',
+    outfit: { main: '#46516a', shade: '#2f3346', acc: '#d5473b', style: 'coat' } },
+  helixsec: { face: 0, skin: '#c99272', hair: '#1d2230', style: 'buzz', acc: 'Shades', pants: '#46516a',
+    outfit: { main: '#8d90a8', shade: '#5d6a80', acc: '#2b8f8a', style: 'suit' } },
+  marshal: { face: 3, skin: '#5c3620', hair: '#1d2230', style: 'buzz', acc: 'None', pants: '#1e2940',
+    outfit: { main: '#2c3b5a', shade: '#1e2940', acc: '#e9b23a', style: 'coat' } },
+  benny: { face: 1, skin: '#a8714f', hair: '#e9b23a', style: 'curls', acc: 'Headband', pants: '#3a4258',
+    outfit: { main: '#d39a2a', shade: '#a5741a', acc: '#f1e8d4', style: 'flight' } },
+  receptionist: { face: 2, skin: '#f2cdb4', hair: '#d9b25a', style: 'long', acc: 'Earring',
+    outfit: { main: '#e8e0cc', shade: '#bdb3a0', acc: '#2b8f8a', style: 'suit' } }
 };

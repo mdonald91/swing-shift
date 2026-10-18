@@ -6,7 +6,8 @@ import { state } from '../src/state.js';
 import { crewStats } from '../src/systems/party.js';
 
 const STUN = .35;   // how often the party stuns the Mantis mid-drill
-const SMART = process.argv.includes('--smart');   // players who switch attackers to match the Mantis's weak spot
+const SMART = process.argv.includes('--smart');
+const DEFEND = .35;   // how often the crew braces for Crane's downbeat   // players who switch attackers to match the Mantis's weak spot
 const TIMING = [[1.5, .3], [1.2, .4], [1.0, .2], [.85, .1]];   // perfect, good, late, miss
 const TIMING_RUBATO = [[1.5, .18], [1.2, .45], [1.0, .25], [.85, .12]];   // Nocturne's rubato: the perfect window shrinks
 const timing = (rub) => { let r = Math.random(); for (const [m, p] of (rub ? TIMING_RUBATO : TIMING)) { if ((r -= p) <= 0) return m; } return 1; };
@@ -53,6 +54,17 @@ function fight(encId, lv, crew) {
         if (e.hp < e.max * .5 && !e.o) { e.o = 1; e.atk += 5; }
         if (alive(foes).length === 1 && e.summons < 2) { e.summons++; const d = { ...ENEMIES.labdrone, hp: 170, max: 170, ko: false }; foes.push(d); continue; }
         if (Math.random() < .3) alive(party).forEach(() => alive(party).length && hitParty(e, .55)); else hitParty(e, 1.1);
+        continue;
+      }
+      if (e.ai === 'metronome') {
+        e.count = (e.count ?? 4) - 1;
+        if (e.count <= 0) {   // a third of players remember to Defend: half damage for them
+          alive(party).forEach(() => { if (!alive(party).length) return; const t = alive(party); const p = t[Math.floor(Math.random() * t.length)]; const v = Math.max(1, Math.round(e.atk * 1.2 * rnd(.9, 1.1) - p.def) * (Math.random() < DEFEND ? .5 : 1)); p.hp -= v; if (p.hp <= 0) { p.hp = 0; p.ko = true; } });
+          e.count = e.hp < e.max * .5 ? 3 : 4;
+        } else if (e.count === 1) hitParty(e, .8);
+        else if (Math.random() < .5) hitParty(e, 1.05);
+        else { hitParty(e, .62); if (alive(party).length) hitParty(e, .62); }
+        if (Math.random() < .35 && e.count < 4) e.count++;     // a hit on the beat throws his count
         continue;
       }
       if (e.ai === 'nocturne') {
@@ -104,7 +116,11 @@ const plan = [
   ['sentinel', [12], ['rook', 'brushes', 'tam']],
   ['ushers', [12, 13, 14], ['rook', 'rhea', 'tam']],
   ['nocturne', [12, 13, 14, 15, 16], ['rook', 'rhea', 'tam']],
-  ['nocturne', [14], ['rhea', 'brushes', 'lyra']]
+  ['nocturne', [14], ['rhea', 'brushes', 'lyra']],
+  ['collectors', [14, 15, 16], ['rook', 'rhea', 'tam']],
+  ['helixsec', [14, 15, 16], ['rook', 'rhea', 'tam']],
+  ['metronome', [14, 15, 16, 17, 18], ['rook', 'rhea', 'tam']],
+  ['metronome', [16], ['rhea', 'brushes', 'lyra']]
 ];
 const N = 600;
 console.log('fight       lvl  win%  rounds  HP left');

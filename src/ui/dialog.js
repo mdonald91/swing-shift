@@ -31,7 +31,11 @@ const ACTIONS = {
   confront() { after = () => playCut('confront', { restoreMood: false }).then(() => startBattle('velvet')); },
   shop(id) { after = () => openShop(id); },
   busk() { after = () => busk(); },
-  toCygnus() { after = () => travel('cygnus'); },
+  toCygnus() {
+    after = () => (flag('bounty_conductor') && !flag('metronome_done') && !flag('lock_arrived')
+      ? playCut('conductor_depart', { restoreMood: false }).then(() => travel('cygnus'))
+      : travel('cygnus'));
+  },
   helixOffer() {
     after = () => playCut('helix_offer').then(() => {
       setFlag('ghost_offered');
@@ -72,6 +76,19 @@ const ACTIONS = {
     setTimeout(() => toast(flag('cass_jailed') ? `Cass handed in: ₡ 5,000. Bond with Rook deepened.` : 'Cass is gone, with a head start. Bond with Rook deepened.'), 300);
     after = () => bus.emit('dialog-closed');
   },
+  // ---- Act 3: Cygnus under lockdown ----
+  gateOpen() { Audio.sfx('confirm'); setTimeout(() => toast('The checkpoint gate is open'), 300); },
+  hatchOpen() { Audio.sfx('clank'); setTimeout(() => toast('The maintenance hatches are open'), 300); },
+  mantisDrill() {
+    after = () => {
+      Audio.sfx('bang'); bus.emit('shake');
+      setTimeout(() => { Audio.sfx('clank'); setFlag('shutter_open'); bus.emit('dialog-closed'); toast('The Mantis tore the shutter open'); }, 500);
+    };
+  },
+  toHelixHQ() { after = () => { Audio.sfx('confirm'); travel('helix_hq'); }; },
+  fromHelixHQ() { after = () => travel('cygnus', 'helix'); },
+  lockToShip() { after = () => travel('ship', 'cockpit'); },
+  craneFight() { after = () => playCut('crane_ambush', { restoreMood: false }).then(() => startBattle('metronome')); },
   // ---- Titan ----
   departTitan() { after = () => playCut('nocturne_depart', { restoreMood: false }).then(() => travel('titan')); },
   toTitan() { after = () => travel('titan'); },

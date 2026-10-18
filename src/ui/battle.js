@@ -38,7 +38,7 @@ const STANCES = {
   drill: { label: 'Drill', weakTo: ['shot'], resists: [], def: -4, next: 'guard' }
 };
 
-export function startBattle(id, { retry = false } = {}) {
+export function startBattle(id, { retry = false, flag = null, retreatTo = null } = {}) {
   const enc = ENCOUNTERS[id];
   if (!enc) return;
   if (!retry) block();
@@ -59,7 +59,34 @@ export function startBattle(id, { retry = false } = {}) {
     e.baseDef = e.def - (state.flags.core_kept ? 3 : 0);
     setStance(e, 'guard');
   }
-  B = { jam: JAM_STYLES[state.jamStyle] ? state.jamStyle : 'bigband', id, enc, party, enemies, groove: Math.min(100, startingGroove()), turn: 0, overclock: 0, shield: 0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null };
+  // who stands with you (Track 07): old friends and choices change the fight before it starts
+  const assists = [];
+  let groove0 = startingGroove(), shield0 = 0;
+  if (enc.assists) {
+    const f = state.flags;
+    if (f.cass_free) {
+      const i = enemies.findIndex(e => !e.boss);
+      if (i >= 0) { enemies.splice(i, 1); assists.push('Cass Marlowe steps out of the lift and lays the nearest collector out cold. "Hi, Rook. Miss me?"'); }
+    }
+    if (f.std_helix_bad) {
+      enemies.push({ ...ENEMIES.helixguard, key: 'e' + enemies.length, ko: false, max: ENEMIES.helixguard.hp });
+      assists.push("Hale's own guard steps in beside Crane. Helix remembers who crossed it.");
+    }
+    if (f.juno_protected) { enemies.forEach(e => { if (!e.boss) e.weak = 3; }); assists.push("Juno is in the tower's systems. The hunters' visors fizz: they hit softer for a while."); }
+    const crane = enemies.find(e => e.ai === 'metronome');
+    if (crane) {
+      crane.count = crane.countMax = (f.proto_free || f.lyra_joined) ? 6 : 4;
+      if (f.proto_free) assists.push('On every speaker in the tower, one wrong note. Lyra, somewhere in the network. Crane loses his count.');
+      else if (f.lyra_joined) assists.push('Lyra hums a counter-rhythm under her breath. Crane frowns and starts his count again.');
+    }
+    if (f.proto_returned) { shield0 = 2; assists.push("Dr Sato's security patch boots on your comms: the crew takes less damage for 2 rounds."); }
+    if (f.fifth_bar) { groove0 += 40; assists.push('Brushes hums the fifth bar. The whole band hears it. +40 Groove.'); }
+    const bonded = party.filter(u => u.key !== 'captain' && (state.bonds[u.key] || 0) >= 2);
+    bonded.forEach(u => { u.atk = Math.round(u.atk * 1.15); u.inspired = true; });
+    if (bonded.length) assists.push(`${bonded.map(u => u.name).join(' and ')} ${bonded.length > 1 ? 'look' : 'looks'} at you and ${bonded.length > 1 ? 'nod' : 'nods'}. Inspired: they hit harder this fight.`);
+  }
+  enemies.forEach((e, i) => { e.key = 'e' + i; });
+  B = { jam: JAM_STYLES[state.jamStyle] ? state.jamStyle : 'bigband', id, enc, party, enemies, groove: Math.min(100, groove0), assists, turn: 0, overclock: 0, shield: shield0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null, xflag: flag, retreatTo };
 
   root = el(`<div class="bt" role="dialog" aria-label="Combat">
     <div class="bt-bg">${backdrop(enc.bg)}</div>
@@ -94,7 +121,9 @@ export function startBattle(id, { retry = false } = {}) {
     if (!root) return;
     await tip('battle', root);
     if (root && enemies.some(e => e.weakTo || e.resists)) await tip('types', root);
-    nextActor();
+    for (const line of B.assists) { if (!root) return; log(line); Audio.sfx('confirm'); update(); await sleep(2300); }
+    if (root && enemies.some(e => e.ai === 'metronome')) { await tip('metronome', root); log(`Crane starts counting: "${['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'][enemies.find(e => e.ai === 'metronome').count]}..."`); await sleep(1400); }
+    if (root) nextActor();
   }, 900);
 }
 
@@ -170,6 +199,8 @@ function update() {
     if (u.drillPending && !u.ko) tags.push('Spinning up');
     if (u.shielded && !u.ko) tags.push('Shield up');
     if (u.ai === 'nocturne' && !u.ko && B.enemies.some(x => x.accomp && !x.ko)) tags.push('Accompanied');
+    if (u.ai === 'metronome' && !u.ko) tags.push(u.count <= 1 ? 'Downbeat next!' : `Count-in ${u.count}`);
+    if (u.inspired && !u.ko) tags.push('Inspired');
     if (u.spMax && B.overclock > 0 && !u.ko) tags.push('Overclocked');
     if (u.spMax && B.shield > 0 && !u.ko) tags.push('Shielded');
     c.querySelector('.bt-tags').innerHTML = tags.map(t => `<em>${t}</em>`).join('');
@@ -237,7 +268,9 @@ function menuPick(a, c) {
     log(`${a.name} lays out a bar and steadies their nerve.`); update(); endAction(300);
   } else if (c === 'run') {
     if (B.enc.noRun) { log(B.enc.noRun); Audio.sfx('back'); return; }
-    Audio.sfx('back'); cleanup(); unblock(); backToWorld(); toast(B.enc.scale ? 'Rehearsal over. Brushes looks disappointed.' : 'You slip away. They will still be there.');
+    Audio.sfx('back'); cleanup(); unblock();
+    if (B.retreatTo) { travel(state.location, B.retreatTo); toast('You fall back the way you came. They are still out there.'); return; }
+    backToWorld(); toast(B.enc.scale ? 'Rehearsal over. Brushes looks disappointed.' : 'You slip away. They will still be there.');
   } else if (c === 'jam') doJam(a);
 }
 
@@ -433,6 +466,10 @@ function hitEnemy(a, e, mult, word, snd, { type, pierce } = {}) {
   e.hp = Math.max(0, e.hp - v);
   const c = cardOf(e); pop(c, weak ? 'WEAK!' : resist ? 'RESIST' : word, weak ? 'weak' : resist ? 'resist' : ''); pop(c, '-' + v, 'num'); shake(c);
   if (weak) B.groove = Math.min(100, B.groove + 6);
+  if (e.ai === 'metronome' && mult >= 1.5 && e.hp > 0 && !e.pushed && e.count < e.countMax) {
+    e.pushed = true; e.count++;
+    setTimeout(() => { if (!root) return; pop(c, 'OFF BEAT', 'weak'); log(`Right on the beat. Crane loses his place and counts again from ${e.count}.`); update(); }, 300);
+  }
   Audio.sfx(snd);
   if (e.shielded && type === 'shock' && e.hp > 0) {
     e.shielded = false; e.shieldT = 3;
@@ -564,6 +601,28 @@ async function enemyPhase() {
       } else {
         const p = pick(targets); const v = hitParty(e, p, 1.1, 'BWOOM!');
         log(`Vox swings his bass like a club at ${p.name}. ${v} damage.`);
+      }
+    } else if (e.ai === 'metronome') {
+      e.pushed = false;
+      e.count--;
+      const words = ['', 'One', 'Two', 'Three', 'Four', 'Five'];
+      if (e.count <= 0) {
+        pop(cardOf(e), 'DOWNBEAT!'); Audio.sfx('cymbal');
+        log('DOWNBEAT. Crane fires on the one, and every shot lands at once.');
+        targets.forEach((p, i) => setTimeout(() => root && hitParty(e, p, 1.2, 'BANG!'), i * 140));
+        e.count = e.hp < e.max * .5 ? 3 : 4;
+        await sleep(800);
+      } else if (e.count === 1) {
+        pop(cardOf(e), 'ONE...'); Audio.sfx('tick');
+        const p = pick(targets); const v = hitParty(e, p, .8, 'TICK');
+        log(`"One." Crane clips ${p.name} for ${v}. Defend now, or hit him on the beat to throw his count.`);
+      } else if (Math.random() < .5) {
+        const p = pick(targets); const v = hitParty(e, p, 1.05, 'TICK');
+        log(`"${words[e.count]}." Crane's shot finds ${p.name}, perfectly on time. ${v} damage.`);
+      } else {
+        const a2 = pick(targets), b2 = pick(targets);
+        hitParty(e, a2, .62, 'TICK'); await sleep(260); if (!root) return; if (!b2.ko) hitParty(e, b2, .62, 'TOCK');
+        log(`"${words[e.count]}." Two shots, tick and tock, at ${a2.name}${b2 !== a2 ? ' and ' + b2.name : ' twice'}.`);
       }
     } else if (e.ai === 'nocturne') {
       B.nround = (B.nround || 0) + 1;
@@ -705,6 +764,7 @@ function checkEnd() {
       // collect skirmish spoils now; bounty money comes in the ledger later
       const rw = res.enc.bounty ? {} : (res.enc.reward || {});
       if (res.enc.flag) setFlag(res.enc.flag);
+      if (res.xflag) setFlag(res.xflag);
       if (rw.chits) state.chits += rw.chits;
       Object.entries(rw.items || {}).forEach(([k, n]) => { state.items[k] = (state.items[k] || 0) + n; });
       // salvage from anything mechanical (bosses give more)
@@ -737,12 +797,12 @@ function showDefeat() {
     <div class="bt-over-btns"><button class="btn primary" type="button" data-retry>Take it from the top</button><button class="btn ghost" type="button" data-leave>Back to the ship</button></div>
   </div>`;
   o.hidden = false;
-  o.querySelector('[data-retry]').addEventListener('click', () => { Audio.sfx('confirm'); startBattle(B.id, { retry: true }); });
+  o.querySelector('[data-retry]').addEventListener('click', () => { Audio.sfx('confirm'); startBattle(B.id, { retry: true, flag: B.xflag, retreatTo: B.retreatTo }); });
   o.querySelector('[data-leave]').addEventListener('click', () => { Audio.sfx('back'); cleanup(); unblock(); travel('ship', 'lounge'); });
   if (!B.enc.bounty) {
     o.querySelector('[data-leave]').textContent = 'Retreat';
     o.querySelector('[data-leave]').replaceWith(o.querySelector('[data-leave]').cloneNode(true));
-    o.querySelector('[data-leave]').addEventListener('click', () => { Audio.sfx('back'); cleanup(); unblock(); backToWorld(); });
+    o.querySelector('[data-leave]').addEventListener('click', () => { Audio.sfx('back'); cleanup(); unblock(); if (B.retreatTo) travel(state.location, B.retreatTo); else backToWorld(); });
   }
   o.querySelector('[data-retry]').focus({ preventScroll: true });
 }
@@ -801,7 +861,8 @@ const AFTER = {
   courier: { cut: 'duet_victory', choice: 'case_choice', ending: 'courier_ending', title: 'Track 03 · The Missing Courier' },
   nocturne: { cut: 'nocturne_victory', choice: 'halcyon_choice', ending: 'nocturne_ending', title: 'Track 06 · Mister Nocturne' },
   proto: { cut: 'sentinel_victory', choice: 'proto_choice', ending: 'proto_ending', title: 'Track 05 · Runaway Prototype' },
-  mantis: { cut: 'mantis_victory', choice: 'mantis_choice', ending: 'mantis_ending', title: 'Track 04 · Iron Mantis' }
+  mantis: { cut: 'mantis_victory', choice: 'mantis_choice', ending: 'mantis_ending', title: 'Track 04 · Iron Mantis' },
+  metronome: { cut: 'metronome_victory', choice: 'hale_choice', ending: 'conductor_ending', title: 'Track 07 · The Conductor' }
 };
 
 async function finishBounty(res) {
@@ -815,6 +876,23 @@ async function finishBounty(res) {
 function ledgerFor(res) {
   const b = BOUNTIES.find(x => x.id === res.id) || { name: 'Bounty', reward: 0 };
   const style = [`Style bonus: ${res.perfects} ${res.perfects === 1 ? 'hit' : 'hits'} on the beat`, res.perfects * 150];
+  if (res.id === 'metronome') {
+    const f = state.flags;
+    return {
+      outcome: 'Silas Crane delivered alive. The Hi-Hat is off the board.',
+      extra: f.hale_ally ? 'Director Hale is aboard the Hi-Hat' : f.hale_office ? 'Director Hale is in Bounty Office custody' : 'Director Hale walked away',
+      items: [
+        ['Bounty: Silas Crane, the Metronome, alive (Bounty Office)', 48000],
+        ...(f.hale_office ? [['Bounty Office bonus: Director Hale, in custody', 15000]] : []),
+        ...(f.hale_ally ? [["Hale's down payment: the Blue Note docking codes", 0]] : []),
+        ...(f.hale_free ? [["Hale's goodbye: she paid for her own lobby", 3600]] : []),
+        style,
+        ['Fuel to Cygnus, the long way round', -1800],
+        ["Helix lobby (the glass, the fountain, the receptionist's nerves)", -3600],
+        ["Collectors' hospital bills (the Office insists)", -2200]
+      ]
+    };
+  }
   if (res.id === 'nocturne') {
     const f = state.flags;
     return {
@@ -944,7 +1022,7 @@ function showLedger(res) {
       unblock();
       travel('ship', 'lounge');
       const ok = saveGame();
-      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04', proto: 'Track 05', nocturne: 'Track 06' }[res.id] || 'Track';
+      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04', proto: 'Track 05', nocturne: 'Track 06', metronome: 'Track 07' }[res.id] || 'Track';
       setTimeout(() => { toast(ok ? `${label} complete. Game saved.` : `${label} complete.`); Hud.refresh(); }, 800);
     });
   });

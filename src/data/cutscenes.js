@@ -369,6 +369,81 @@ export const CUTSCENES = {
     { l: 'player', who: 'player', line: 'Then we play it loud.',
       byTemp: { Calm: "Then we'll be ready for it.", Sarcastic: 'Great. I love audience participation.', Idealistic: "Then the encore's ours.", Ruthless: 'Then he can come and collect.' } },
     { l: null, r: null, card: { track: 'End of', name: 'Side B' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+  // ---- Act 3 opens: the Conductor puts a price on the crew ----
+  hunted: [
+    { bg: 'lounge', mood: 'tense', l: 'brushes', r: 'rook', who: 'brushes', sfx: 'scratch', line: 'Captain. Every bounty board in the system just updated at once. We are on all of them.' },
+    { who: 'rook', line: "A hundred thousand chits a head. Alive. They've done a drawing of each of us. Tam, they've done one of Gerald." },
+    { r: 'tam', who: 'tam', line: "Gerald is a PLANT." },
+    { who: 'rook', line: "It says 'accessory'." },
+    { r: 'rhea', if: 'rhea_joined', who: 'rhea', line: "Posted through a Helix shell account. Cygnus Station office. That's Hale's floor." },
+    { r: 'brushes', ifNot: 'rhea_joined', who: 'brushes', line: 'The money came from a Helix account on Cygnus Station. Director Hale\'s office.' },
+    { r: 'lyra', if: 'lyra_joined', who: 'lyra', line: 'He is not trying to catch us. He is trying to make every hunter in the system listen for us. It is the same thing he always does.' },
+    { r: 'brushes', who: 'brushes', line: 'And Cygnus has locked down its plaza "for public safety". The public is mostly bounty hunters now.' },
+    { l: 'player', who: 'player', line: "Then we go to Cygnus and ask Helix who's paying.",
+      byTemp: { Calm: "Then we go to Cygnus, quietly, and ask Helix who's paying.", Sarcastic: 'A hundred thousand? I am honestly a little insulted.', Idealistic: "He wants us scared. We go to Cygnus instead.", Ruthless: "A quarter of a million on him, a hundred on us. I like those odds." } },
+    { l: null, r: null, card: { track: 'Act 3', name: 'The Encore' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+  conductor_depart: [
+    { bg: 'lounge', mood: 'ship', l: 'player', r: 'tam', who: 'tam', line: "I painted over the Hi-Hat's name for the docking log. Now it says the Hi-Hut. Nobody will suspect a thing." },
+    { r: 'rook', if: 'std_office', who: 'rook', line: "Marshal Okoro's running the Cygnus checkpoint. The Office owes us. She might owe us enough." },
+    { r: 'rook', if: 'cass_free', who: 'rook', line: "Cass sent a message. She's already on Cygnus. It just says 'Don't be late'. She was always early." },
+    { r: 'tam', if: 'std_docks', who: 'tam', line: "Ozzie's cousin Benny works the Cygnus cargo hatches. He says there's a way under the plaza." },
+    { r: 'tam', if: 'mantis_spared', who: 'tam', line: "Ferro's meeting us there with the Mantis. Her message says, and I quote, 'Nobody puts a price on my apprentice.'" },
+    { r: 'brushes', who: 'brushes', sfx: 'countin', line: 'Cygnus Station, locked in. One... two... one, two, three, four.' },
+    { l: null, r: null, card: { track: 'Track 07', name: 'The Conductor' }, mood: 'title', sfx: 'cymbal', fx: 'flash' },
+    { bg: 'lockdown', mood: 'lockdown', caption: 'Cygnus Station. The rain has not stopped. Neither have the collectors.' }
+  ],
+  // in Hale's office: the Metronome, and who stands with you
+  crane_ambush: [
+    { bg: 'helix', mood: 'tense', l: 'player', r: 'hale', who: 'hale', line: 'Captain. You came in the front door. Brave or stupid. I never could tell with you.' },
+    { r: 'crane', who: 'crane', fx: 'shake', sfx: 'bang', line: "Both, I'd say. Good evening, Director. Good evening, Captain." },
+    { who: 'crane', line: 'Silas Crane. Twenty years with the Bounty Office. Four hundred collections. Never late, never early. They call me the Metronome.' },
+    { l: 'player', who: 'player', line: 'Never heard of you.',
+      byTemp: { Calm: "Who's paying you, Crane?", Sarcastic: 'The Metronome. Do you also do weddings?', Idealistic: 'You used to bring people in for the Office. What happened?', Ruthless: "Four hundred and one, then. Let's see how you count." } },
+    { r: 'hale', who: 'hale', line: 'Crane, this is my office.' },
+    { r: 'crane', who: 'crane', line: "It's his office, Director. It always was." },
+    { l: 'cass', if: 'cass_free', who: 'cass', line: 'Room for one more? Hi, Rook.' },
+    { l: 'juno', if: 'juno_protected', who: 'juno', line: "Juno, on your comms. I'm in the tower's systems. Say the word and his hunters go half blind." },
+    { l: 'lyra', if: 'proto_free', who: 'lyra', line: '...Hello, big brother. I am in the speakers. When he counts, I will play the wrong note.' },
+    { l: 'lyra', if: 'lyra_joined', who: 'lyra', line: 'He counts in fours, Captain. I can count in sevens. Let us see how he likes that.' },
+    { l: 'brushes', if: 'fifth_bar', who: 'brushes', line: 'Captain, I have the fifth bar ready. Just say when.' },
+    { l: 'rook', if: 'bonded_rook', who: 'rook', line: "I've got your back, Cap. Always have. Don't tell anyone." },
+    { l: 'tam', if: 'bonded_tam', who: 'tam', line: 'Nobody collects my captain. Nobody.' },
+    { l: 'rhea', if: 'bonded_rhea', who: 'rhea', line: "I'm not leaving you alone in a room with Helix. Not again." },
+    { l: 'brushes', if: 'bonded_brushes', who: 'brushes', line: 'One... two... We are with you, Captain. All of us.' },
+    { l: 'player', r: 'crane', who: 'crane', line: 'Four bars, Captain. Then I collect.' }
+  ],
+  // Crane is down. Hale tells you who the Conductor is.
+  metronome_victory: [
+    { bg: 'helix', mood: 'finale', l: 'player', r: 'crane', who: 'crane', line: 'Four... bars... I never... miss... the one.' },
+    { r: 'hale', who: 'hale', line: "Enough, Silas. Captain, put that away. I didn't post your bounty. I've been paying for it." },
+    { who: 'hale', line: 'The Conductor is my father. Ambrose Hale. He founded Helix Salvage forty years ago, and he died twelve years ago. I signed the certificate myself.' },
+    { who: 'hale', line: 'Before Helix, he studied piano with a teacher on Titan. Mae Halloway. She sent him away before the last lesson.' },
+    { l: 'brushes', who: 'brushes', line: 'Before the fifth bar.' },
+    { who: 'hale', line: "She told him: you want to own the music, Ambrose, and you can't play what you own. He has spent fifty years trying to buy the end of her song." },
+    { l: 'rhea', if: 'rhea_joined', who: 'rhea', line: "The Listening Network. Every relay, every tuning core. It was never for listening to people. It's listening for one tune." },
+    { who: 'hale', line: 'When the whole system plays all five bars at once, every relay locks to his tuning. Every comm, every ship, every door. One song. His.' },
+    { who: 'hale', line: "He lives inside it now. The listening array past Saturn. Helix calls it Blue Note station. I keep the lights on." },
+    { if: 'fifth_bar', who: 'hale', line: "And you know the fifth bar. Nobody else alive does. That's why your faces are on every board." },
+    { ifNot: 'fifth_bar', who: 'hale', line: "You've cost him his Mantis, his conductor and his piano. You're the last loose ends he has. That's why your faces are on every board." },
+    { if: 'piano_sold', l: 'tam', who: 'tam', line: '...We sold him the Halcyon.' },
+    { if: 'piano_sold', who: 'hale', line: "And it won't play the ending for him. He thinks you can find it. He thinks you're the last people who could." },
+    { l: 'player', who: 'player', line: 'Why tell us any of this?',
+      byTemp: { Calm: 'Why tell us any of this, Director?', Sarcastic: 'And you thought you would mention it now. Over a body.', Idealistic: "He's your father. Why help us?", Ruthless: "What's in it for you?" } },
+    { who: 'hale', line: "Because after you, I'm his next loose end. He told me so at dinner. He always was a terrible father." }
+  ],
+  conductor_ending: [
+    { bg: 'lounge', mood: 'ship', l: 'brushes', r: 'tam', who: 'brushes', line: 'Captain, the Bounty Office has taken our faces off every board. Silas Crane testified. Very slowly. Exactly in time.' },
+    { if: 'hale_ally', r: 'tam', who: 'tam', line: "Hale's in the spare bunk. I gave her the one by the noisy pipe. She's named the pipe 'Father'." },
+    { if: 'hale_office', l: 'rook', r: 'tam', who: 'rook', line: "Hale's in an Office cell on Cygnus. She asked for a piano. They said no. She said that was fair." },
+    { if: 'hale_free', l: 'rook', r: 'tam', who: 'rook', line: "Hale took a shuttle out an hour ago. She left the docking codes and a note. It says 'Play it loud'." },
+    { if: 'juno_protected', l: 'brushes', r: 'juno', who: 'juno', line: "Captain, it's Juno. I'm in Blue Note's maintenance channel. It's real, it's enormous, and it's... humming. I'll be your eyes." },
+    { if: 'lyra_joined', l: 'brushes', r: 'lyra', who: 'lyra', line: 'Blue Note station. That name is in my training data, Captain. It is where they were going to send me.' },
+    { if: 'piano_kept', l: 'brushes', r: 'tam', who: 'brushes', line: 'The Halcyon is very quiet tonight. I think it knows where we are going.' },
+    { l: 'player', r: 'brushes', who: 'player', line: 'Set a course for Saturn.',
+      byTemp: { Calm: 'Rest up, everyone. Then we set a course for Saturn.', Sarcastic: 'A secret station full of speakers. What could go wrong?', Idealistic: "He wants one song. We're going to give him a band.", Ruthless: 'Set a course for Saturn. I want my quarter of a million.' } },
+    { l: null, r: null, card: { track: 'Next session', name: 'Blue Note' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
   ]
 
 };

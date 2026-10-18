@@ -283,6 +283,42 @@ const BUILD = {
       <path d="M0 760 H1600 V900 H0Z" fill="#1c1410"/>${[460, 600, 740, 880, 1020, 1140].map(x => `<ellipse cx="${x}" cy="748" rx="26" ry="8" fill="#f3c860" opacity=".8"/>`).join('')}
       <text x="1540" y="90" text-anchor="end" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="44" fill="#f3c860" opacity=".6">舞台裏</text></svg>`;
   },
+  // Cygnus under lockdown: the plaza in red and blue, barricades, every screen showing the crew's faces
+  lockdown: () => {
+    let rain = '', shops = '';
+    for (let i = 0; i < 90; i++) { const x = (i * 197) % 1600, y = (i * 113) % 900; rain += `<path d="M${x} ${y} l-8 26" stroke="#9fc6e0" stroke-width="2" opacity=".35"/>`; }
+    [[0, 260], [270, 230], [520, 250], [1060, 240], [1320, 280]].forEach(([x, w], i) => {
+      shops += `<rect x="${x}" y="120" width="${w}" height="460" fill="${i % 2 ? '#1d2133' : '#171b2c'}"/><rect x="${x + 30}" y="380" width="${w - 60}" height="200" fill="#0d1424"/>`;
+      shops += `<rect x="${x + 30}" y="380" width="${w - 60}" height="200" fill="#4a5470" opacity=".85"/>${Array.from({ length: 10 }, (_, k) => `<rect x="${x + 30}" y="${384 + k * 20}" width="${w - 60}" height="3" fill="#2c3346"/>`).join('')}`;
+    });
+    const face = (x, y, c) => `<g transform="translate(${x} ${y})"><rect width="84" height="104" fill="#0d1424"/><circle cx="42" cy="40" r="22" fill="${c}"/><path d="M10 104 C14 74 70 74 74 104Z" fill="${c}"/></g>`;
+    return `${open}<defs><linearGradient id="bdLkSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a0b16"/><stop offset="1" stop-color="#1b1430"/></linearGradient>
+        <radialGradient id="bdLkRed" cx="15%" cy="70%" r="45%"><stop offset="0" stop-color="#ff3a3a" stop-opacity=".35"/><stop offset="1" stop-color="#ff3a3a" stop-opacity="0"/></radialGradient>
+        <radialGradient id="bdLkBlue" cx="85%" cy="70%" r="45%"><stop offset="0" stop-color="#3a6aff" stop-opacity=".3"/><stop offset="1" stop-color="#3a6aff" stop-opacity="0"/></radialGradient></defs>
+      <rect width="1600" height="900" fill="url(#bdLkSky)"/>
+      ${shops}
+      <g transform="translate(790 150)"><rect width="300" height="200" fill="#0b0d18" stroke="#5fe3d4" stroke-width="6"/><rect x="0" y="0" width="300" height="44" fill="#d5473b"/>
+        <text x="150" y="33" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="34" fill="#f1e8d4">WANTED · ₡ 100,000</text>
+        ${face(12, 70, '#2b8f8a')}${face(108, 70, '#d5473b')}${face(204, 70, '#e9b23a')}</g>
+      <rect width="1600" height="900" fill="url(#bdLkRed)"/><rect width="1600" height="900" fill="url(#bdLkBlue)"/>
+      <path d="M0 640 H1600 V900 H0Z" fill="#171b2c"/><path d="M0 640 H1600" stroke="#343a52" stroke-width="6"/>
+      ${[80, 420, 1180].map(x => `<g transform="translate(${x} 600)"><rect width="300" height="70" fill="#e9b23a"/>${Array.from({ length: 8 }, (_, k) => `<rect x="${k * 40}" width="20" height="70" fill="#10121e"/>`).join('')}<rect x="20" y="70" width="14" height="80" fill="#3a4258"/><rect x="266" y="70" width="14" height="80" fill="#3a4258"/><circle cx="150" cy="-14" r="14" fill="#ff3a3a"/></g>`).join('')}
+      ${rain}
+      <text x="1540" y="90" text-anchor="end" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="48" fill="#ff5f5f" opacity=".75">封鎖中</text></svg>`;
+  },
+  // Helix Salvage, top floor: white marble, a wall of glass, the ring of Cygnus outside
+  helix: () => `${open}<defs><linearGradient id="bdHxFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8ecf4"/><stop offset="1" stop-color="#b8bfcc"/></linearGradient></defs>
+    <rect width="1600" height="900" fill="#2c3346"/>
+    <rect x="80" y="60" width="1440" height="560" fill="#060a18"/>${stars(140, 1600, 560).replace(/<circle /g, '<circle transform="translate(80 60) scale(.9 1)" ')}
+    <path d="M80 470 Q800 330 1520 470 L1520 520 Q800 380 80 520Z" fill="#3a2a48"/>
+    ${Array.from({ length: 16 }, (_, i) => `<rect x="${130 + i * 86}" y="${430 - Math.abs(8 - i) * 9}" width="10" height="6" fill="${['#ff5fa2', '#5fe3d4', '#ffd34d'][i % 3]}"/>`).join('')}
+    <circle cx="1270" cy="200" r="90" fill="#c9a46a" opacity=".55"/><circle cx="1240" cy="180" r="90" fill="#060a18" opacity=".6"/>
+    ${[80, 440, 800, 1160, 1520].map(x => `<rect x="${x - 10}" y="60" width="20" height="560" fill="#46516a"/>`).join('')}
+    <rect x="0" y="0" width="1600" height="60" fill="#1b1e30"/><rect x="0" y="52" width="1600" height="8" fill="#2b8f8a"/>
+    <path d="M0 620 H1600 V900 H0Z" fill="url(#bdHxFloor)"/>${Array.from({ length: 9 }, (_, i) => `<path d="M${i * 200} 620 L${i * 260 - 400} 900" stroke="#c9ced8" stroke-width="3"/>`).join('')}
+    <path d="M520 690 H1080 L1120 760 H480Z" fill="#3a2418"/><path d="M480 760 H1120 V790 H480Z" fill="#24160e"/><rect x="560" y="660" width="60" height="30" fill="#e9b23a"/><rect x="900" y="672" width="90" height="18" fill="#f1e8d4"/>
+    <g transform="translate(220 640)"><rect x="-40" y="140" width="80" height="40" fill="#2c3346"/><path d="M-30 140 L-12 -40 M30 140 L12 -40" stroke="#5fe3d4" stroke-width="10" opacity=".7"/>${[0, 40, 80, 120].map(y => `<path d="M-24 ${y} H24" stroke="#5fe3d4" stroke-width="6" opacity=".5"/>`).join('')}</g>
+    <text x="1540" y="870" text-anchor="end" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="40" fill="#2b8f8a" opacity=".7">ヘリックス社</text></svg>`,
   black: () => ''
 };
 

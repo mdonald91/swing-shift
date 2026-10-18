@@ -58,6 +58,13 @@ export const CREW = {
   fitz: { name: 'Fitz', short: 'Fitz', color: 'var(--mustard)', blip: 360 },
   tickets: { name: 'Box office', short: 'Box office', color: 'var(--cream)', blip: 500 },
   ushers: { name: "Nocturne's ushers", short: 'Usher', color: 'var(--smoke)', blip: 190 },
+  // 0.14: Act 3
+  crane: { name: 'Silas Crane', short: 'Crane', color: 'var(--crimson)', blip: 160 },
+  marshal: { name: 'Marshal Okoro', short: 'Marshal', color: 'var(--mustard)', blip: 230 },
+  benny: { name: 'Benny Banda', short: 'Benny', color: 'var(--mustard)', blip: 320 },
+  helixsec: { name: 'Helix security', short: 'Helix guard', color: 'var(--smoke)', blip: 180 },
+  collector: { name: 'Collector', short: 'Collector', color: 'var(--crimson)', blip: 210 },
+  receptionist: { name: 'Receptionist', short: 'Receptionist', color: 'var(--cream)', blip: 600 },
   clockwork: { name: 'Clockwork player', short: 'Clockwork player', color: 'var(--mustard)', blip: 700 }
 };
 

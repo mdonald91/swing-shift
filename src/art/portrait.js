@@ -216,6 +216,24 @@ export function npcPortrait(id) {
       <path d="M162 240 L168 172 C168 162 178 158 182 166 L184 176" fill="${P.cream}" stroke="${INK}" stroke-width="2"/>
       <path d="M170 168 L128 34" stroke="${P.cream}" stroke-width="3.5" stroke-linecap="round"/>
       <circle cx="128" cy="34" r="3" fill="#fff"/>`);
+    case 'crane': return svg(`
+      <defs><radialGradient id="ptCraneBg" cx="50%" cy="35%" r="60%"><stop offset="0" stop-color="#d5473b" stop-opacity=".22"/><stop offset="1" stop-color="#d5473b" stop-opacity="0"/></radialGradient></defs>
+      <rect width="200" height="240" fill="url(#ptCraneBg)"/>
+      <path d="M100 18 L74 120 M100 18 L126 120" stroke="#8d90a8" stroke-width="2" opacity=".35"/><path d="M100 18 L132 96" stroke="#e9b23a" stroke-width="3" opacity=".5"/><circle cx="132" cy="96" r="5" fill="#e9b23a" opacity=".6"/>
+      <path d="M6 240 C16 182 58 162 100 162 C142 162 184 182 194 240Z" fill="#3a1a24"/>
+      <path d="M58 172 L100 240 L84 240 L44 188Z M142 172 L100 240 L116 240 L156 188Z" fill="#24101a"/>
+      <path d="M86 166 L100 206 L114 166Z" fill="#e8e0cc"/><path d="M95 172 h10 v26 h-10Z" fill="#10121e"/>
+      <circle cx="68" cy="206" r="4" fill="${P.mustard}"/><circle cx="68" cy="222" r="4" fill="${P.mustard}"/>
+      <rect x="89" y="136" width="22" height="32" fill="#d9a888"/>
+      <ellipse cx="100" cy="104" rx="35" ry="44" fill="#e3b38f"/>
+      <path d="M64 96 C60 52 140 50 136 96 C128 72 112 64 98 66 C84 66 70 76 64 96Z" fill="#c9ccd6"/>
+      <path d="M66 92 L60 118 M134 92 L140 118" stroke="#c9ccd6" stroke-width="6" stroke-linecap="round"/>
+      <path d="M76 94 h18 M106 94 h18" stroke="#8d90a8" stroke-width="3" stroke-linecap="round"/>
+      <g class="eyes"><ellipse cx="86" cy="104" rx="5" ry="3" fill="${INK}"/><ellipse cx="114" cy="104" rx="5" ry="3" fill="${INK}"/></g>
+      <circle cx="114" cy="104" r="11" fill="none" stroke="${P.mustard}" stroke-width="2"/><path d="M125 104 L132 128" stroke="${P.mustard}" stroke-width="1.5"/>
+      <path d="M84 128 q16 4 32 0" stroke="#a87858" stroke-width="3" fill="none"/>
+      <path class="mouth" d="M90 136 h20" stroke="#7a3a3a" stroke-width="3" stroke-linecap="round"/>
+      <path d="M150 240 L158 196 L188 190 L190 200 L168 206 L164 240Z" fill="#262a40"/><rect x="176" y="186" width="16" height="6" fill="#46516a"/>`);
     case 'nocturne': return svg(`
       <defs><radialGradient id="ptNocSpot" cx="50%" cy="30%" r="60%"><stop offset="0" stop-color="#f3c860" stop-opacity=".3"/><stop offset="1" stop-color="#f3c860" stop-opacity="0"/></radialGradient></defs>
       <rect width="200" height="240" fill="url(#ptNocSpot)"/>

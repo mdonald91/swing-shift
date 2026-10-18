@@ -193,6 +193,20 @@ export class WorldScene extends Phaser.Scene {
       this.spotGrace = this.time.now + 1200;
     }
 
+    // patrols: people walking a beat who see a short cone in front of them
+    this.patrols = [];
+    this.patrolGrace = this.time.now + 1500;
+    for (const pt of map.patrols || []) if (this.patrolHere(pt)) this.addPatrol(pt);
+    const offPatrol = bus.on('dialog-closed', () => {
+      this.patrols = this.patrols.filter(pt => {
+        if (this.patrolHere(pt.def)) return true;
+        pt.spr.destroy(); pt.cone.destroy(); pt.warn.destroy(); return false;
+      });
+      this.patrols.forEach(pt => { if (pt.wait > 90000) { pt.wait = 1500; pt.warn.setVisible(false); } });
+      this.patrolGrace = this.time.now + 2000;
+    });
+    this.events.once('shutdown', offPatrol);
+
     // tailing a suspect (see the map's "tail" route)
     this.tail = null;
     const offShake = bus.on('shake', () => this.cameras.main.shake(settings.reduceShake ? 250 : 500, settings.reduceShake ? .002 : .012));
@@ -218,6 +232,76 @@ export class WorldScene extends Phaser.Scene {
       lost: state.flags.juno_protected ? 12 : 9      // Juno watches the market cameras for you
     };
     spr.anims.play(key + '-walk-right', true);
+  }
+
+  patrolHere(pt) {
+    const f = state.flags;
+    return !(pt.if && !f[pt.if]) && !(pt.ifNot && f[pt.ifNot]) && !f['patrol_' + state.location + '_' + pt.id];
+  }
+
+  addPatrol(def) {
+    const key = 'npc-' + def.look;
+    if (!this.textures.exists(key)) addSheet(this, key, characterSheet(NPC_LOOKS[def.look]), 16, 24);
+    if (!this.anims.exists(key + '-walk-left')) this.makeAnims(key);
+    const [x0, y0] = def.path[0];
+    const spr = this.add.sprite(x0 * T + 8, y0 * T + 8, key, 0).setOrigin(0.5, 0.85);
+    const cone = this.add.graphics().setDepth(8400);
+    const warn = this.add.image(spr.x, spr.y - 24, 'bubble').setDepth(5001).setVisible(false);
+    const [x1, y1] = def.path[1] || def.path[0];
+    const face = [Math.sign(x1 - x0), Math.sign(y1 - y0)];
+    this.patrols.push({ def, key, spr, cone, warn, i: 1, step: 1, wait: 400 + Math.random() * 800, face });
+  }
+
+  // Patrols walk back and forth along their path, pausing at each end. Returns true if one saw the captain.
+  updatePatrols(time, dt) {
+    const p = this.player, range = (state.flags.juno_protected ? 2.5 : 3.5) * T, spread = 0.7;
+    let seen = null;
+    for (const pt of this.patrols) {
+      const s = pt.spr, path = pt.def.path;
+      if (pt.wait > 0) {
+        pt.wait -= dt;
+        if (pt.wait <= 0) {     // turn round and set off again
+          if (pt.i + pt.step < 0 || pt.i + pt.step >= path.length) pt.step = -pt.step;
+          pt.i += pt.step;
+        }
+      } else {
+        const [tx, ty] = path[pt.i], gx = tx * T + 8, gy = ty * T + 8;
+        const dx = gx - s.x, dy = gy - s.y, d = Math.hypot(dx, dy), stepPx = pt.def.speed * dt / 1000;
+        if (d <= stepPx) {
+          s.setPosition(gx, gy); s.anims.stop();
+          pt.wait = pt.def.pause || 1100;
+        } else {
+          pt.face = [Math.sign(dx), Math.sign(dy)];
+          s.setPosition(s.x + dx / d * stepPx, s.y + dy / d * stepPx);
+        }
+      }
+      const dir = pt.face[0] ? (pt.face[0] < 0 ? 'left' : 'right') : pt.face[1] < 0 ? 'up' : 'down';
+      if (pt.wait > 0) { s.anims.stop(); s.setFrame(DIRS.indexOf(dir) * 3); } else s.anims.play(pt.key + '-walk-' + dir, true);
+      s.setDepth(s.y); pt.warn.setPosition(s.x, s.y - 24);
+      // the cone of sight
+      const ang = Math.atan2(pt.face[1], pt.face[0]), half = Math.acos(spread), ex = s.x, ey = s.y - 4;
+      const g = pt.cone; g.clear();
+      g.fillStyle(0xff5f5f, pt.wait > 0 ? 0.1 : 0.16);
+      const pts = [{ x: ex, y: ey }];
+      for (let k = 0; k <= 10; k++) {     // each ray stops at the first wall, so the cone shows what they can really see
+        const a = ang - half + (2 * half * k / 10), cx = Math.cos(a), cy = Math.sin(a);
+        let d = 6;
+        while (d < range) { const t = this.layer.getTileAtWorldXY(ex + cx * (d + 4), ey + cy * (d + 4)); if (!t || SOLID.includes(t.index)) break; d += 4; }
+        pts.push({ x: ex + cx * Math.min(d + 4, range), y: ey + cy * Math.min(d + 4, range) });
+      }
+      g.fillPoints(pts, true);
+      g.lineStyle(1, 0xff8a8a, 0.35).strokePoints(pts, true);
+      const vx = p.x - ex, vy = p.y - 6 - ey, l = Math.hypot(vx, vy);
+      if (!seen && l < range && (l < 10 || (vx * pt.face[0] + vy * pt.face[1]) / l > spread) && !this.blocked(ex, ey, p.x, p.y - 6)) seen = pt;
+    }
+    if (seen && time > this.patrolGrace) {
+      this.patrolGrace = time + 99999;
+      p.setVelocity(0, 0); p.anims.stop();
+      seen.warn.setVisible(true); seen.wait = 99999;
+      bus.emit('patrol-seen', { id: seen.def.id, fight: seen.def.fight });
+      return true;
+    }
+    return false;
   }
 
   // Lights on, lights off, in time with the show. Returns true if the player was caught.
@@ -432,6 +516,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.dark) this.dark.setPosition(p.x, p.y - 6);
     if (this.tail) { this.updateTail(dt); if (!this.scene.isActive()) return; }
     if (this.spots && this.updateSpots(time)) return;
+    if (this.patrols.length && this.updatePatrols(time, dt)) return;
     if (this.mapDef.minimap && (!this._mm || time - this._mm > 150)) { this._mm = time; bus.emit('minimap-pos', p.x / T, p.y / T); }
 
     // tiles that start a conversation the first time you step on them

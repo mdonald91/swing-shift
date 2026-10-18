@@ -20,9 +20,9 @@ export const BOUNTIES = [
   },
   {
     id: 'conductor', name: 'The Conductor', sub: 'Wanted · Whereabouts unknown',
-    reward: 250000, risk: 'S', portrait: 'conductor', track: 'Side B',
-    client: 'Bounty Office, system-wide', wanted: 'Alive, preferably', showIf: 'act1_done', unlock: 'The hunt continues on Side B', lockedText: 'Hunted in the Encore, Act 3',
-    desc: 'Hijacked every speaker in the system to introduce himself. Linked to the counterfeit chits, Relay K-17 and the Helix tuning core. Nobody has seen his face.'
+    reward: 250000, risk: 'S', portrait: 'conductor', track: 'Track 07 · The Encore',
+    client: 'Bounty Office, system-wide', wanted: 'Alive, preferably', showIf: 'act1_done', requires: 'act3_open', unlock: 'The hunt continues in the Encore, after Side B',
+    desc: 'Hijacked every speaker in the system to introduce himself. Linked to the counterfeit chits, Relay K-17 and the Helix tuning core. Nobody has seen his face. Since this morning, he has put a price on yours.'
   },
   {
     id: 'nocturne', name: 'Mister Nocturne', sub: 'Instrument thief · Titan',

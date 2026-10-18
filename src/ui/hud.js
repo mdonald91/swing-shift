@@ -12,7 +12,14 @@ export function objective() {
   if (!f.intro_done) return '';
   const met = ['met_rook', 'met_tam', 'met_brushes'].filter(k => f[k]).length;
   if (f.act1_done) {
-    if (f.act2_done) return 'Side B complete. The Encore (Track 07, The Conductor) arrives in a later build.';
+    if (f.metronome_done) return 'Track 07 complete. Track 08, Blue Note, arrives in a later build.';
+    if (f.act3_open) {
+      if (!f.bounty_conductor) return 'Accept The Conductor on the bounty board';
+      if (state.location === 'helix_hq') return 'Find Director Hale on the top floor';
+      if (state.location === 'cygnus_lock') return "Reach Helix Salvage at the top of the plaza. Stay out of the collectors' sight";
+      return 'Fly to Cygnus Station and find out who posted the bounty';
+    }
+    if (f.act2_done) return 'Side B complete. Rest up aboard the Hi-Hat.';
     if (f.nocturne_done) return 'Head back to the Hi-Hat';
     if (f.proto_done) {
       if (!f.bounty_nocturne) return 'Accept Mister Nocturne on the bounty board';

@@ -200,7 +200,12 @@ export const ENEMIES = {
   moth: { id: 'holo', name: 'Frost moth', hp: 150, atk: 31, def: 5, xp: 48, weakTo: ['shot'], resists: ['blunt'], word: 'FWSSH', verb: 'beats frozen wings at' },
   usher: { id: 'goon', name: 'Usher', hp: 260, atk: 38, def: 9, xp: 70, weakTo: ['blunt'], word: 'SHHH!', verb: 'escorts' },
   clockwork: { id: 'holo', name: 'Clockwork player', hp: 260, atk: 30, def: 10, xp: 80, weakTo: ['shock'], resists: ['shot'], machine: true, accomp: true, word: 'TICK-TOCK', verb: 'plays a sharp at' },
-  holo: { id: 'holo', name: 'Holo-player', hp: 75, atk: 14, def: 2, xp: 20, weakTo: ['shock'], machine: true, word: 'BLIP!' }
+  holo: { id: 'holo', name: 'Holo-player', hp: 75, atk: 14, def: 2, xp: 20, weakTo: ['shock'], machine: true, word: 'BLIP!' },
+  // Act 3: bounty hunters out for the Hi-Hat's crew, and Helix's own security
+  collector: { id: 'collector', name: 'Collector', hp: 250, atk: 36, def: 8, xp: 72, weakTo: ['shock'], word: 'GOTCHA!', verb: 'swings a stun baton at' },
+  sharpshooter: { id: 'collector2', name: 'Collector sharpshooter', hp: 210, atk: 40, def: 6, xp: 72, weakTo: ['blunt'], resists: ['shot'], word: 'BLAM!', verb: 'takes a shot at' },
+  bruiser: { id: 'collector', name: 'Collector bruiser', hp: 300, atk: 34, def: 10, xp: 80, weakTo: ['shot'], resists: ['blunt'], word: 'THWACK!', verb: 'tackles' },
+  helixguard: { id: 'helixsec', name: 'Helix security', hp: 300, atk: 37, def: 10, xp: 80, weakTo: ['shock'], resists: ['shot'], word: 'HALT!', verb: 'fires a tagging dart at' }
 };
 const E = (key, over = {}) => ({ ...ENEMIES[key], ...over });
 
@@ -356,6 +361,34 @@ export const ENCOUNTERS = {
     bg: 'titan', intro: "Nocturne's ushers. Velvet ropes, velvet jackets, brass knuckles. 'Tickets, please.'",
     flag: 'ushers_cleared', reward: { chits: 1300, items: { curry: 1, coffee: 1 } },
     enemies: [E('usher'), E('usher', { name: 'Head usher', hp: 320, atk: 41 }), E('usher')]
+  },
+  // ---- Act 3: Cygnus under lockdown ----
+  collectors: {
+    bg: 'lockdown', intro: "Collectors. Three of them, and the Hi-Hat's whole crew is on their shopping list.",
+    reward: { chits: 900, items: { curry: 1 } },
+    enemies: [E('collector'), E('sharpshooter'), E('bruiser')]
+  },
+  helixsec: {
+    bg: 'helix', intro: "Helix security in pressed grey uniforms. 'The Director is not taking visitors. Or prisoners.'",
+    flag: 'helixsec_cleared', reward: { chits: 1100, items: { patch: 1 } },
+    enemies: [E('helixguard'), E('helixguard', { name: 'Helix shift lead', hp: 340, atk: 40 })]
+  },
+  helixpatrol: {
+    bg: 'helix', intro: 'A Helix security patrol. Their tagging darts are already loaded.',
+    reward: { chits: 800, items: { coffee: 1 } },
+    enemies: [E('helixguard'), E('helixguard')]
+  },
+  // Silas Crane, the Metronome: he counts in, then lands a downbeat on everyone. Hits on the beat throw his count off.
+  // "assists": who stands with you changes the fight (see ui/battle.js).
+  metronome: {
+    bg: 'helix', bounty: 'metronome', assists: true,
+    intro: "Silas Crane taps his pistol against his leg: tick, tick, tick. 'Four bars, Captain. Then I collect.'",
+    noRun: "Crane has the lift and the stairs covered. There's only one way out, and it's through him.",
+    enemies: [
+      E('collector', { name: 'Collector' }),
+      { id: 'crane', name: 'Silas Crane', hp: 1250, atk: 41, def: 12, boss: true, ai: 'metronome', xp: 450, weakTo: ['blunt'], resists: ['shot'] },
+      E('sharpshooter')
+    ]
   },
   // Brushes' holo-rehearsal on the Hi-Hat: repeatable, grows with the crew, XP only.
   rehearsal: {

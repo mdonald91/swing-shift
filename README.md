@@ -49,6 +49,8 @@ Put MP3s in the `music/` folder with these names:
 | `nyx.mp3` | Nyx labs and the garden dome | 88 bpm |
 | `titan.mp3` | Titan, Lyceum Square | 116 bpm |
 | `nocturne.mp3` | Mister Nocturne's show, backstage (the spotlights follow its beat) | 84 bpm |
+| `lockdown.mp3` | Cygnus Station under lockdown (Act 3) | 100 bpm |
+| `helix.mp3` | Helix Salvage, the top floor | 92 bpm |
 | `finale.mp3` | The Conductor's broadcasts (Act 1 and Act 2 finales) | 66 bpm |
 
 Any file that's missing is covered by the built-in generated jazz combo. If a track's tempo is different, change its `bpm` in `src/data/music.js` so the combat beat timing lines up with the song. You can switch your tracks off under **Settings → Use my Suno tracks**, and audition every slot on the ship's jukebox.
@@ -85,6 +87,7 @@ Saves are kept in the browser on each device (3 slots).
 - [x] **0.11 Hi-Hat upgrades and side jobs:** an upgrades terminal (Tam's workshop for crafting with scrap, a recording booth with new Jam Session styles, a bigger engine), odd jobs on the bounty board, Rook's old partner, the Flat Ninth's regulars and new rumours
 - [x] **0.12 Track 05, Runaway Prototype:** Nyx's labs and the frozen garden dome, the echo lock, Lyra and Brushes' origin, the Sentinel boss, and Lyra joining as a fifth crew member with her own skill tree
 - [x] **0.13 Track 06, Mister Nocturne:** Titan's Lyceum Square, a backstage heist timed to the show's beat, Old Sol's teacher and the fifth bar, the Mister Nocturne boss, the Halcyon choice, and the end of Act 2
-- [ ] **0.14 and on: the Encore** (see the full roadmap doc)
+- [x] **0.14 Track 07, The Conductor:** Act 3 opens with a bounty on the crew, Cygnus Station under lockdown with collectors on patrol, shortcuts opened by your standing and old friends, the Metronome boss, who stands with you in the fight, and the Conductor's name
+- [ ] **0.15 and on: Blue Note and Last Set** (see the full roadmap doc)
 
 Built with [Phaser 3](https://phaser.io) (MIT licence), included in `vendor/`.

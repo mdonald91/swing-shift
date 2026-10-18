@@ -192,7 +192,7 @@ export function droneSheet(hostile = false) {
 
 // ---- Ship tiles (16x16), in the order used by data/maps.js TILE ----
 export function tileSheet() {
-  const T = 16, cols = 8, count = 136;   // room to grow: 0-135
+  const T = 16, cols = 8, count = 152;   // room to grow: 0-151
   const cv = document.createElement('canvas');
   cv.width = T * cols; cv.height = T * Math.ceil(count / cols);
   const ctx = cv.getContext('2d');
@@ -495,6 +495,41 @@ export function tileSheet() {
   // the stage itself (lit boards, out of reach)
   r = at(133); r(0, 0, 16, 16, '#7a4e2c'); for (let y = 0; y < 16; y += 4) r(0, y, 16, 1, '#6a4024'); r(4, 2, 1, 2, '#6a4024'); r(10, 6, 1, 2, '#6a4024'); r(0, 0, 16, 16, 'rgba(255,216,144,.12)');
 
+  // ---- Cygnus under lockdown ----
+  // police barricade: striped barrier on the street, a red light on top
+  r = at(134); street(r); r(0, 5, 16, 6, '#e9b23a'); for (let x = 0; x < 16; x += 4) r(x, 5, 2, 6, '#10121e'); r(0, 4, 16, 1, '#8d90a8'); r(0, 11, 16, 1, '#5a647e'); r(2, 12, 2, 4, '#3a4258'); r(12, 12, 2, 4, '#3a4258'); r(7, 2, 2, 2, '#d5473b'); r(6, 1, 4, 1, '#d5473b66');
+  // WANTED holo-board with three faces
+  r = at(135); walk(r); r(7, 12, 2, 4, '#262a40'); r(1, 1, 14, 11, '#0d1424'); r(1, 1, 14, 1, '#5fe3d4'); r(1, 11, 14, 1, '#5fe3d4'); r(2, 2, 12, 2, '#d5473b');
+  [[2, 5], [6, 5], [10, 5]].forEach(([x, y]) => { r(x, y, 3, 4, '#2b3a52'); r(x + 1, y, 1, 2, '#e3b38f'); r(x, y + 2, 3, 2, '#5fe3d4'); }); r(3, 10, 10, 1, '#e9b23a');
+  // maintenance hatch in the wall (locked)
+  r = at(136); r(0, 0, 16, 16, '#151a28'); r(2, 1, 12, 15, '#4a5470'); r(3, 2, 10, 13, '#3a4258'); for (let y = 3; y < 14; y += 3) r(3, y, 10, 1, '#2c3346'); r(5, 7, 6, 2, '#e9b23a'); r(6, 7, 1, 2, '#10121e'); r(9, 7, 1, 2, '#10121e'); r(11, 9, 2, 2, '#d5473b');
+  // maintenance hatch, open
+  r = at(137); r(0, 0, 16, 16, '#151a28'); r(2, 1, 12, 15, '#0b0d18'); r(2, 1, 12, 1, '#4a5470'); r(2, 1, 1, 15, '#4a5470'); r(13, 1, 1, 15, '#4a5470'); r(5, 12, 6, 1, '#5fe3d455'); r(11, 9, 2, 2, '#3fb07a');
+  // checkpoint laser gate
+  r = at(138); street(r); r(0, 2, 2, 14, '#5a647e'); r(14, 2, 2, 14, '#5a647e'); r(0, 1, 16, 2, '#3a4258'); for (let y = 4; y < 15; y += 3) r(2, y, 12, 1, '#ff5f5f'); r(0, 1, 16, 1, '#d5473b');
+  // roll-down shutter, sealed
+  r = at(139); r(0, 0, 16, 16, '#4a5470'); for (let y = 1; y < 16; y += 2) r(0, y, 16, 1, '#3a4258'); r(0, 0, 16, 1, '#8d90a8'); r(0, 14, 16, 2, '#e9b23a'); for (let x = 0; x < 16; x += 4) r(x, 14, 2, 2, '#10121e');
+  // shutter torn open by the Mantis
+  r = at(140); street(r); r(0, 0, 3, 7, '#4a5470'); r(13, 0, 3, 9, '#4a5470'); r(3, 0, 2, 4, '#4a5470'); r(11, 0, 2, 5, '#4a5470'); r(3, 4, 1, 2, '#8d90a8'); r(12, 5, 1, 2, '#8d90a8'); r(6, 12, 2, 1, '#8d90a8'); r(10, 10, 1, 1, '#8d90a8');
+  // ---- Helix Salvage tower ----
+  // polished floor with a teal inlay
+  r = at(141); r(0, 0, 16, 16, '#d8dce6'); r(0, 0, 16, 1, '#e8ecf4'); r(0, 15, 16, 1, '#c0c6d2'); r(15, 0, 1, 16, '#c0c6d2'); r(7, 7, 2, 2, '#2b8f8a55'); r(3, 3, 1, 1, '#ffffff'); r(12, 11, 1, 1, '#ffffff');
+  // glossy wall with the Helix stripe
+  r = at(142); r(0, 0, 16, 16, '#2c3346'); r(0, 0, 16, 2, '#46516a'); r(0, 9, 16, 2, '#2b8f8a'); r(0, 13, 16, 3, '#1b1e30'); r(3, 3, 1, 5, '#3a4258'); r(11, 3, 1, 5, '#3a4258');
+  // floor-to-ceiling window: Cygnus's ring and the stars
+  r = at(143); r(0, 0, 16, 16, '#2c3346'); r(1, 1, 14, 13, '#0b1428'); [[3, 3], [10, 2], [6, 7], [13, 9], [2, 11]].forEach(([x, y]) => r(x, y, 1, 1, '#f1e8d4')); r(1, 9, 14, 2, '#3a2a48'); r(4, 8, 2, 1, '#ff5fa2'); r(9, 8, 3, 1, '#5fe3d4'); r(7, 1, 1, 13, '#46516a'); r(0, 14, 16, 2, '#1b1e30');
+  // reception desk
+  r = at(144); r(0, 0, 16, 16, '#d8dce6'); r(0, 3, 16, 11, '#e8e0cc'); r(0, 3, 16, 2, '#ffffff'); r(0, 9, 16, 1, '#2b8f8a'); r(0, 13, 16, 1, '#bdb3a0'); r(5, 1, 6, 2, '#262a40'); r(6, 1, 4, 1, '#5fe3d4');
+  // the director's desk: dark wood, a lamp, one file
+  r = at(145); r(0, 0, 16, 16, '#5a2a30'); r(0, 3, 16, 10, '#3a2418'); r(0, 3, 16, 2, '#5a3a26'); r(0, 13, 16, 1, '#2c1e10'); r(2, 1, 3, 3, '#e9b23a'); r(3, 0, 1, 2, '#262a40'); r(9, 4, 5, 3, '#f1e8d4'); r(10, 5, 3, 1, '#d5473b');
+  // potted plant
+  r = at(146); r(0, 0, 16, 16, '#d8dce6'); r(4, 10, 8, 6, '#2c3346'); r(4, 10, 8, 1, '#46516a'); r(5, 2, 6, 9, '#2c6a44'); r(3, 4, 4, 5, '#3f8f5a'); r(9, 3, 4, 5, '#3f8f5a'); r(7, 0, 2, 4, '#3f8f5a');
+  // lift doors
+  r = at(147); r(0, 0, 16, 16, '#2c3346'); r(2, 1, 12, 15, '#8d90a8'); r(7, 1, 2, 15, '#5d6a80'); r(2, 1, 12, 1, '#c9ccd6'); r(6, 0, 4, 1, '#5fe3d4');
+  // Helix logo hologram on a plinth
+  r = at(148); r(0, 0, 16, 16, '#d8dce6'); r(4, 12, 8, 4, '#2c3346'); r(5, 12, 6, 1, '#5fe3d4'); r(5, 1, 6, 10, '#5fe3d422'); r(6, 2, 1, 8, '#5fe3d4'); r(9, 2, 1, 8, '#5fe3d4'); for (let y = 3; y < 10; y += 2) r(6, y, 4, 1, '#5fe3d488');
+  // executive carpet
+  r = at(149); r(0, 0, 16, 16, '#3a2430'); r(0, 0, 16, 1, '#4a2e3a'); for (let x = 1; x < 16; x += 5) r(x, 1, 1, 15, '#44303a'); r(7, 7, 2, 2, '#2b8f8a66');
   r = at(31); dock(r); r(3, 3, 10, 12, '#2b8f8a'); r(3, 6, 10, 1, '#1d6663'); r(3, 11, 10, 1, '#1d6663'); r(3, 2, 10, 2, '#3fb0aa'); r(6, 2, 4, 1, '#1d6663'); r(3, 14, 10, 1, '#14403e');
   return cv;
 }

@@ -25,7 +25,10 @@ export const TILE = {
   'λ': 110, 'μ': 111, 'ν': 112, 'ξ': 113, 'ο': 114,
   // Titan and the Lyceum
   'π': 115, 'ρ': 116, 'σ': 117, 'τ': 118, 'υ': 119, 'φ': 120, 'χ': 121, 'ψ': 122, 'ω': 123,
-  'Γ': 124, 'Δ': 125, 'Θ': 126, 'Λ': 127, 'Ξ': 128, 'Π': 129, 'Σ': 130, 'Φ': 131, 'Ψ': 132, 'Ω': 133
+  'Γ': 124, 'Δ': 125, 'Θ': 126, 'Λ': 127, 'Ξ': 128, 'Π': 129, 'Σ': 130, 'Φ': 131, 'Ψ': 132, 'Ω': 133,
+  // Act 3: Cygnus under lockdown and the Helix tower
+  'Б': 134, 'Ж': 135, 'Д': 136, 'И': 137, 'Л': 138, 'Ц': 139, 'Ш': 140,
+  'П': 141, 'Ф': 142, 'Ч': 143, 'Щ': 144, 'Ы': 145, 'Э': 146, 'Ю': 147, 'Я': 148, 'З': 149
 };
 export const RUBBLE = 90;
 export const DOOR_OPEN = 60;
@@ -36,7 +39,8 @@ export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 2
   70, 71, 74, 75, 77, 78,
   80, 82, 83, 87, 88, 89, 90, 91, 92, 94, 95, 96, 97, 98, 99,
   101, 102, 103, 104, 105, 106, 108, 109, 110, 111, 112, 113,
-  116, 117, 118, 119, 120, 121, 122, 123, 125, 126, 127, 129, 130, 131, 132];
+  116, 117, 118, 119, 120, 121, 122, 123, 125, 126, 127, 129, 130, 131, 132,
+  134, 135, 136, 138, 139, 142, 143, 144, 145, 146, 147, 148];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
 export const TILE_LOOKS = {
   20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
@@ -45,6 +49,7 @@ export const TILE_LOOKS = {
   74: 'stall', 75: 'stall', 77: 'lantern', 71: 'rockwall',
   116: 'titanwall', 117: 'column', 119: 'poster', 120: 'cafe', 121: 'titanlamp', 122: 'hedge', 123: 'titanfountain',
   125: 'curtain', 126: 'flats', 127: 'roadcase', 129: 'footlights', 132: 'mirror',
+  134: 'barricade', 140: 'torn_shutter', 142: 'helixwall', 143: 'helixwindow', 144: 'reception', 145: 'haledesk', 146: 'helixplant', 148: 'helixlogo',
   102: 'labglass', 103: 'labbench', 104: 'servers', 105: 'specimen', 108: 'icepond', 109: 'frozentree', 110: 'crystals', 111: 'domeglass',
   80: 'basalt', 82: 'mineface', 83: 'timber', 87: 'chasm', 88: 'orecart', 90: 'rubble', 91: 'minelamp', 92: 'winch', 95: 'hutwall',
   61: 'console_k17', 63: 'racks', 64: 'cryo_look', 65: 'bunk', 66: 'locker', 67: 'window_k17', 69: 'crate_k17'
@@ -564,6 +569,114 @@ export const MAPS = {
       { id: 'ship', x: 4, y: 12, w: 5, h: 3, label: 'Board the Hi-Hat' },
       { id: 'lyceum_doors', x: 15, y: 1, w: 2, label: 'The Lyceum' },
       { id: 'stage_door', x: 31, y: 13, label: 'Stage door' }
+    ]
+  },
+
+  // ---- Act 3: Cygnus under lockdown (Track 07) ----
+  // Every route but the west gap is a shortcut that standing or old friends open. The west gap is always there.
+  cygnus_lock: {
+    name: 'Cygnus Station',
+    jp: 'シグナス・封鎖中',
+    where: 'Upper ring plaza, under lockdown',
+    music: 'lockdown',
+    rain: true,
+    glows: [
+      { x: 3, y: 1, w: 2, c: 0xff5fa2 }, { x: 12, y: 1, w: 2, c: 0x5fe3d4 }, { x: 26, y: 1, w: 2, c: 0xffd34d },
+      { x: 15, y: 8, w: 2, c: 0xff3a3a }
+    ],
+    rows: [
+      '####################################',
+      '#SSNNSSdSSSSMMSSQSSSSSShSSYYSSSS####',
+      '#wwwwwwwwwwwwwwwwwwwwwwwwwwwwwww#ss#',
+      '#wlwwwwwwlwwwwwwwwlwwwwwwwwwwvwwДss#',
+      '#sssssssssssssssssssssssssssssss#ss#',
+      '#sssssssssssssssssssssssssssssss#ss#',
+      '#sssskksssssssssssssssssskksssss#ss#',
+      '#sssssssssssssssssssssssssssssss#ss#',
+      '#БssБББББББББББЛЛББББББББББЦЦБББ#ss#',
+      '#wwwwwwwwwwwwwwwwwwwwwwwwwwwwwww#ss#',
+      '#wwwwwwwwЖwwwwwwwwwwwwЖwwwwwwwww#ss#',
+      '#wkwwuuuwwwwwwwwwwwwwwwwwwwwwwwwДss#',
+      '#wwwwwwwwwwwwwwwwwwwwwwwwwwwwwww#ss#',
+      '#XXXXXXXXXXXXXwwwwXXXXXXXXXXXXXX####',
+      '##############wwww##################',
+      '####################################'
+    ],
+    swaps: [
+      { x: 15, y: 8, flag: 'gate_open', to: 'w', shortcut: true }, { x: 16, y: 8, flag: 'gate_open', to: 'w', shortcut: true },
+      { x: 32, y: 11, flag: 'hatch_open', to: 'И', shortcut: true }, { x: 32, y: 3, flag: 'hatch_open', to: 'И', shortcut: true },
+      { x: 27, y: 8, flag: 'shutter_open', to: 'Ш', shortcut: true }, { x: 28, y: 8, flag: 'shutter_open', to: 'Ш', shortcut: true }
+    ],
+    spawns: { default: { x: 15, y: 14, face: 'up' }, helix: { x: 23, y: 2, face: 'down' } },
+    npcs: [
+      { id: 'marshal', x: 14, y: 9, face: 'down' },
+      { id: 'cass', x: 18, y: 9, face: 'down', if: 'cass_free' },
+      { id: 'benny', x: 31, y: 12, face: 'up', if: 'std_docks' },
+      { id: 'ferro', x: 30, y: 9, face: 'left', if: 'mantis_spared' },
+      { id: 'mantis', x: 28, y: 10, look: 'mantis', deco: true, if: 'mantis_spared' },
+      { id: 'helixsec', x: 22, y: 2, face: 'down', look: 'helixsec', ifNot: 'helixsec_cleared' },
+      { id: 'helixsec', x: 24, y: 2, face: 'down', look: 'helixsec', ifNot: 'helixsec_cleared' }
+    ],
+    // collectors walking a beat; each one sees a short cone in front of it (Juno's camera tricks make it shorter)
+    patrols: [
+      { id: 'low', look: 'collector', path: [[4, 9], [12, 9]], speed: 26, fight: 'collectors' },
+      { id: 'gap', look: 'collector2', path: [[3, 4], [11, 4]], speed: 24, fight: 'collectors' },
+      { id: 'mid', look: 'collector', path: [[12, 6], [21, 6]], speed: 28, fight: 'collectors', ifNot: 'gate_open' },
+      { id: 'hx', look: 'helixsec', path: [[20, 4], [30, 4]], speed: 24, fight: 'helixpatrol', if: 'std_helix_bad' }
+    ],
+    objects: [
+      { id: 'lock_dock', x: 14, y: 15, w: 4, label: 'Back to the Hi-Hat' },
+      { id: 'helix_lock', x: 23, y: 1, label: 'Helix Salvage' },
+      { id: 'ninth_shut', x: 7, y: 1, label: 'The Flat Ninth' },
+      { id: 'lock_gate', x: 15, y: 8, w: 2, label: 'Checkpoint' },
+      { id: 'hatch_low', x: 32, y: 11, label: 'Maintenance hatch' },
+      { id: 'hatch_high', x: 32, y: 3, label: 'Maintenance hatch' },
+      { id: 'shutter', x: 27, y: 8, w: 2, label: 'Shutter' },
+      { id: 'wanted', x: 9, y: 10, label: 'Wanted board' },
+      { id: 'wanted', x: 22, y: 10, label: 'Wanted board' }
+    ]
+  },
+
+  // Helix Salvage, Cygnus office: the lobby, a security corridor and Director Hale's office.
+  helix_hq: {
+    name: 'Helix Salvage',
+    jp: 'ヘリックス社',
+    where: 'Cygnus Station, the top floor',
+    music: 'helix',
+    rows: [
+      '######################',
+      '#ФФФЧЧЧЧЧЧЧЧЧЧЧЧЧЧФФФ#',
+      '#ЭЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЭ#',
+      '#ЗЗЗЗЗЗЗЫЫЫЫЫЫЗЗЗЗЗЗЗ#',
+      '#ЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗ#',
+      '#ЯЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЗЯ#',
+      '#ФФФФФФФФФППФФФФФФФФФ#',
+      '#ФЮППППППППППППППППЮФ#',
+      '#ПППППППППППППППППППП#',
+      '#ПППППППППППППППППППП#',
+      '#ФФФФФФФФФППФФФФФФФФФ#',
+      '#ЭППППППППППППППППППЭ#',
+      '#ППППППЩЩЩППППППППППП#',
+      '#ПППППППППППППППППППП#',
+      '#ППЯППППППППППППППЯПП#',
+      '#ПППППППППППППППППППП#',
+      '##########hh##########'
+    ],
+    spawns: { default: { x: 10, y: 15, face: 'up' } },
+    npcs: [
+      { id: 'receptionist', x: 8, y: 11, face: 'down' },
+      { id: 'quill', x: 16, y: 13, face: 'left', if: 'std_helix' },
+      { id: 'hale', x: 10, y: 2, face: 'down', deco: true, ifNot: 'metronome_done' }
+    ],
+    patrols: [
+      { id: 'corr', look: 'helixsec', path: [[2, 8], [19, 8]], speed: 26, fight: 'helixpatrol', ifNot: 'std_helix' }
+    ],
+    triggers: [{ x: 10, y: 6, w: 2, flag: 'metronome_done', run: 'crane_ambush' }],
+    objects: [
+      { id: 'hq_exit', x: 10, y: 16, w: 2, label: 'Back to the plaza' },
+      { id: 'reception', x: 7, y: 12, w: 3, label: 'Reception' },
+      { id: 'hq_lift', x: 2, y: 7, label: 'Lift' },
+      { id: 'hq_lift', x: 19, y: 7, label: 'Lift' }
     ]
   },
 

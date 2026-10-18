@@ -23,7 +23,7 @@ export function entry(id, flags, location) {
   const deep = location === 'targon_deep';
   switch (id) {
     case 'rook': return docks ? 'rook_docks' : flags.rook_s1 && !flags.rook_s2 ? 'rook_waiting' : flags.rook_s2 ? 'rook_after2' : flags.velvet_done ? 'rook_after' : flags.met_rook ? 'rook_idle' : 'rook_first';
-    case 'cass': return 'cass';
+    case 'cass': return location === 'cygnus_lock' ? 'cass_lock' : 'cass';
     // ---- Nyx ----
     case 'sato': return flags.proto_done ? 'sato_done' : flags.met_sato ? 'sato_idle' : 'sato';
     case 'lyra': return location === 'titan' ? 'lyra_titan' : location === 'ship' ? 'lyra_ship' : flags.lyra_met ? 'lyra_wait' : 'lyra_first';
@@ -61,14 +61,14 @@ export function entry(id, flags, location) {
     case 'juno': return 'juno';
     case 'pell': return flags.tail_done ? 'pell_idle' : flags.met_pell ? 'pell_retry' : 'pell_first';
     case 'wren': return 'wren';
-    case 'quill': return 'quill';
+    case 'quill': return location === 'helix_hq' ? 'quill_hq' : 'quill';
     case 'scav': return 'scavs';
     case 'chest_vesta': return flags.vesta_chest ? 'chest_vesta_done' : flags.scavs_cleared ? 'chest_vesta' : 'chest_vesta_blocked';
     case 'door_hideout': return flags.tail_done ? 'door_hideout_open' : 'door_hideout';
     case 'generator': return flags.power_on ? 'generator_done' : 'generator';
     case 'lockers': return flags.k17_keycard ? 'lockers_done' : flags.power_on ? 'lockers' : 'lockers_dark';
     case 'cryo': return flags.cryo_found ? 'cryo_done' : 'cryo';
-    case 'helix': return flags.ghost_offered ? 'helix_again' : 'helix';
+    case 'helix': return flags.metronome_done ? 'helix_sealed' : flags.ghost_offered ? 'helix_again' : 'helix';
     case 'door': return flags.velvet_done ? 'door_done' : flags.door_open ? 'door_open' : 'door_locked';
     // ---- Targon ----
     case 'okada': return flags.mantis_done ? 'okada_done' : flags.met_okada ? 'okada_idle' : 'okada';
@@ -78,7 +78,7 @@ export function entry(id, flags, location) {
     case 'junction_deep': return flags.tg_lights ? 'junction_done' : flags.minebots_cleared ? 'junction_deep' : 'junction_deep_blocked';
     case 'tg_cart': return flags.tg_lights ? 'tg_cart' : 'tg_cart_dead';
     case 'tg_cache': return flags.tg_cache ? 'tg_cache_done' : 'tg_cache';
-    case 'ferro': return flags.ferro_found ? 'ferro_idle' : 'ferro_first';
+    case 'ferro': return location === 'cygnus_lock' ? 'ferro_lock' : flags.ferro_found ? 'ferro_idle' : 'ferro_first';
     case 'mantis': return flags.ferro_found ? 'mantis' : 'mantis_wait';
     default: return id;
   }
@@ -419,6 +419,7 @@ export const DIALOGUE = {
   ],
   helix: [{ who: null, t: 'Helix Salvage. The lobby smells like money and lemon polish.' }, { do: 'helixOffer' }],
   helix_again: [{ who: null, t: "Helix's receptionist smiles with slightly too many teeth. Director Hale is in a meeting. She is always in a meeting." }],
+  helix_sealed: [{ who: null, t: "Helix Salvage's lobby is dark. There is a Bounty Office seal on the door, and someone has drawn a small baton on it with a line through it." }],
   vend_cygnus: [{ who: null, t: "The machine sells 'Moon Cola: Now With Less Moon'. You decide not to ask." }],
   dockgate: [
     { who: null, t: 'The Hi-Hat sits in the docking bay below, dripping rainwater. Head back aboard?' },
@@ -1167,6 +1168,133 @@ export const DIALOGUE = {
     { set: 'brushes_s2' }, { do: 'bond', arg: 'brushes' }
   ],
 
+  // ---- Act 3, Track 07: Cygnus under lockdown ----
+  lock_arrive: [
+    { who: 'brushes', t: "Captain, collectors on the plaza. Their visors light up red wherever they are looking. Please stay out of the red." },
+    { who: 'juno', if: 'juno_protected', t: "Captain, Juno on your comms. I've looped the plaza cameras into their visors. They won't see as far as they think." },
+    { who: 'rook', if: 'std_office', t: "That's Marshal Okoro on the checkpoint. The Office likes us. She might wave us through." },
+    { who: 'rook', if: 'cass_free', ifNot: 'std_office', t: "Cass is by the checkpoint. If anyone can talk a marshal round, it's her." },
+    { who: 'tam', if: 'std_docks', t: "And that's Benny, Ozzie's cousin, by the cargo hatch on the right. Dockworkers look after their own." },
+    { who: 'tam', if: 'mantis_spared', t: "Ferro made it! She's by the east shutter. With the Mantis. The Mantis is waving. Please don't wave back, people will notice." },
+    { who: 'brushes', t: "Helix Salvage is at the top of the plaza, past the barricade. There is a gap at the west end. There is also a collector at the west end. Of course there is." }
+  ],
+  marshal: [
+    { who: 'marshal', if: 'gate_open', t: "Go on. And Captain? I didn't see you." },
+    { ifNot: 'gate_open', if: 'std_office', go: 'marshal_open' },
+    { ifNot: 'gate_open', if: 'cass_free', go: 'marshal_cass' },
+    { ifNot: 'gate_open', go: 'marshal_no' }
+  ],
+  marshal_open: [
+    { who: 'marshal', t: "Captain {name}. Marshal Okoro, Bounty Office. You've brought us more people in alive than anyone in the belt." },
+    { who: 'marshal', t: "That bounty on your crew came from a shell account and a lot of money. The Office doesn't like either. I'll open the gate, and my people will keep the collectors off the middle of the plaza." },
+    { set: 'gate_open' }, { do: 'gateOpen' }
+  ],
+  marshal_cass: [
+    { who: 'cass', t: "Okoro. It's me." },
+    { who: 'marshal', t: "Marlowe. You're supposed to be dead. Or in a cell. One of those." },
+    { who: 'cass', t: "I got better. These people are with me, and the man who posted their bounty is the man who posted mine. Open the gate." },
+    { who: 'marshal', t: "...Fine. My people will keep the collectors off the middle of the plaza. I never liked shell accounts." },
+    { set: 'gate_open' }, { do: 'gateOpen' }
+  ],
+  marshal_no: [{ who: 'marshal', pick: [
+    "There's a hundred thousand on each of your heads, Captain, and I can count. Turn around. Slowly.",
+    "The checkpoint's closed to you. I don't know you well enough to stick my neck out."
+  ] }],
+  cass_lock: [{ who: 'cass', pick: [
+    "Rook's watching the collectors. I'm watching Rook. Old habits.",
+    "Whoever posted this bounty paid in a hurry. People who pay in a hurry are scared."
+  ] }],
+  benny: [
+    { who: 'benny', if: 'hatch_open', t: "Service run's open. Under the plaza, up the other end. Mind the cables, they bite." },
+    { ifNot: 'hatch_open', go: 'benny_open' }
+  ],
+  benny_open: [
+    { who: 'benny', t: "You're Ozzie's lot? Benny Banda. He says you treat dockworkers right. That's rare enough I believe him." },
+    { who: 'benny', t: "There's a service run under the plaza. Comes up right by Helix Salvage. Nobody checks it, because nobody remembers it's there." },
+    { set: 'hatch_open' }, { do: 'hatchOpen' }
+  ],
+  hatch_low: [
+    { who: null, if: 'hatch_open', t: 'The hatch is open. A narrow service run leads under the plaza.' },
+    { who: null, ifNot: 'hatch_open', t: "A maintenance hatch with a dockworkers' lock. Someone from the docks could open it." }
+  ],
+  hatch_high: [{ who: null, t: 'The service hatch, back down under the plaza.' }],
+  ferro_lock: [
+    { who: 'ferro', if: 'shutter_open', t: "The Mantis says hello. It has been practising. On doors, mostly." },
+    { ifNot: 'shutter_open', go: 'ferro_drill' }
+  ],
+  ferro_drill: [
+    { who: 'ferro', t: "Captain. Somebody put a price on my apprentice. Nobody puts a price on my apprentice." },
+    { who: 'ferro', t: "That shutter's welded shut for the lockdown. The Mantis has opinions about welds. Stand back." },
+    { choices: [{ t: 'Do it.', do: 'mantisDrill' }, { t: 'Not yet.' }] }
+  ],
+  shutter: [
+    { who: null, if: 'shutter_open', t: "Whatever the Mantis did to this shutter, it can't be undone. The edges are still warm." },
+    { who: null, ifNot: 'shutter_open', t: "A heavy shutter, welded shut for the lockdown. You'd need something with a drill. A big one." }
+  ],
+  lock_gate: [
+    { who: null, if: 'gate_open', t: 'The checkpoint gate stands open. The marshal is very carefully looking the other way.' },
+    { who: null, ifNot: 'gate_open', t: 'A laser gate. The marshal beside it decides who goes through.' }
+  ],
+  wanted: [{ who: null, pick: [
+    "WANTED: the crew of the Hi-Hat. ₡ 100,000 each, alive. There is a very unflattering drawing of you. And of Gerald.",
+    "The board flickers through the crew's faces. Under Brushes it says: 'DRUM KIT (SENTIENT?)'. Under Gerald it says: 'ACCESSORY'."
+  ] }],
+  ninth_shut: [{ who: null, t: "The Flat Ninth's shutters are down. Mags has taped up a note: CLOSED FOR HUNTING SEASON. NOT YOURS. OURS." }],
+  lock_dock: [{ who: null, t: 'The docking bay. The Hi-Hat is where you left it, wearing a fake name.' }, { choices: [{ t: 'Back to the ship', do: 'lockToShip' }, { t: 'Stay' }] }],
+  barricade: [{ who: null, t: "A police barricade, 'for public safety'. The public is mostly bounty hunters." }],
+  torn_shutter: [{ who: null, t: 'A Mantis-shaped hole. Very neat. Ferro would be proud. Ferro is proud.' }],
+  helix_lock: [
+    { if: 'std_helix', do: 'toHelixHQ' },
+    { ifNot: 'std_helix', if: 'helixsec_cleared', do: 'toHelixHQ' },
+    { ifNot: 'std_helix', ifNot: 'helixsec_cleared', go: 'helixsec' }
+  ],
+  helixsec: [
+    { if: 'std_helix', go: 'helixsec_friend' },
+    { who: 'helixsec', ifNot: 'std_helix', t: "Helix Salvage is closed. To you especially, Captain." },
+    { ifNot: 'std_helix', choices: [{ t: 'Fight', do: 'fight', arg: 'helixsec' }, { t: 'Back off' }] }
+  ],
+  helixsec_friend: [{ who: 'helixsec', t: "Captain. The Director said you might come. Helix remembers its friends. Go on up." }, { do: 'toHelixHQ' }],
+  // ---- the Helix tower ----
+  hq_exit: [{ who: null, t: 'The way back out to the plaza.' }, { choices: [{ t: 'Back to the plaza', do: 'fromHelixHQ' }, { t: 'Stay' }] }],
+  hq_lift: [{ who: null, t: "The lift wants a Helix keycard. The stairs are 'for staff'. You are not staff. The corridor leads up anyway." }],
+  receptionist: [{ who: 'receptionist', pick: [
+    "Director Hale is in a meeting. She is always in a meeting. Today the meeting is with a man with a very loud watch.",
+    "Please take a seat. Or don't. Most people who come in like that don't sit."
+  ] }],
+  reception: [{ go: 'receptionist' }],
+  quill_hq: [{ who: 'quill', t: "Captain. The Director said to let you up. She said it in a voice I have not heard before. I think she is frightened. I did not know she could be." }],
+  helixwall: [{ who: null, t: 'Glossy grey panels with a teal stripe. You can see your reflection. You look like someone a lot of people are hunting.' }],
+  helixwindow: [{ who: null, t: "Floor-to-ceiling glass. Below, the plaza lights strobe red and blue. Out past the ring, something very far away is listening." }],
+  haledesk: [{ who: null, t: "Director Hale's desk. One lamp, one file, one framed photo turned face down." }],
+  helixplant: [{ who: null, t: 'A plant so healthy it looks expensive. Gerald would be jealous. Gerald is always jealous.' }],
+  helixlogo: [{ who: null, t: 'The Helix logo, spinning slowly in light. Up close, the two strands are made of tiny musical notes.' }],
+  crane_ambush: [{ do: 'craneFight' }],
+  // after the Metronome: what to do with Director Hale
+  hale_choice: [
+    { who: 'hale', t: "I can get you onto Blue Note station. Docking codes, the guard rota, the only way in that he doesn't watch. You'll need all of it." },
+    { set: 'blue_note_codes' },
+    { who: 'hale', t: "So. What happens to me, Captain?" },
+    { choices: [
+      { t: "You're coming with us.", go: 'hale_come' },
+      { t: 'The Bounty Office can decide that.', go: 'hale_office' },
+      { t: 'Walk away, Hale. Before I change my mind.', go: 'hale_walk' }
+    ] }
+  ],
+  hale_come: [
+    { set: 'hale_ally' },
+    { who: 'hale', t: "...Thank you. I'll be useful. I'm always useful. It's the only thing he ever liked about me." },
+    { who: 'rhea', if: 'rhea_joined', t: "If she's coming aboard, I'm checking her for bugs. Personally. Twice." }
+  ],
+  hale_office: [
+    { set: 'hale_office' }, { rep: { office: 2, helix: -2 } },
+    { who: 'hale', t: "Fair. I'll tell them everything. It's a long story, and it's mostly about a piano." },
+    { who: 'rook', t: "Marshal Okoro will want this one. She's been after Helix for years." }
+  ],
+  hale_walk: [
+    { set: 'hale_free' },
+    { who: 'hale', t: "Then I'll go somewhere very quiet. Somewhere with no speakers at all." },
+    { who: 'hale', t: "Captain. When you get to Blue Note, play it loud. He hates loud." }
+  ],
   // ---- Titan looks ----
   titanwall: [{ who: null, t: 'Sandstone, warm from a sun that is very far away. Somebody has carved a treble clef into it, very carefully.' }],
   column: [{ who: null, t: 'A marble column, wrapped in posters for shows that closed fifty years ago.' }],

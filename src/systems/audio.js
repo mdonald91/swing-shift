@@ -40,6 +40,10 @@ const MOODS = {
   // Mister Nocturne's show: slow and theatrical (the backstage spotlights keep its time)
   nocturne: { bpm: 84, swing: .58, prog: [ch('Bb', 'm7'), ch('Gb', 'maj7'), ch('Eb', 'm7'), ch('F', 'b9')], ride: 1, comp: 1, horn: 1, kick: .5, always: 1 },
   // The Conductor's broadcast: slow, minor, a little too grand
+  lockdown: { bpm: 100, swing: .6, prog: [ch('C', 'm7'), ch('C', 'm7'), ch('Ab', 'dom7'), ch('G', 'b9'), ch('C', 'm7'), ch('F', 'm7'), ch('D', 'm7b5'), ch('G', 'b9')], ride: 1, comp: 1, horn: 1, kick: .45 },
+
+  helix: { bpm: 92, swing: .56, prog: [ch('E', 'maj7'), ch('Db', 'm7'), ch('A', 'maj7'), ch('B', 'dom7')], brush: 1, arp: 1, comp: 1 },
+
   finale: { bpm: 66, swing: .58, prog: [ch('C', 'm7'), ch('C', 'm7'), ch('Ab', 'maj7'), ch('Ab', 'maj7'), ch('D', 'm7b5'), ch('G', 'b9'), ch('C', 'm7'), ch('G', 'b9')], ride: 1, comp: 1, horn: 1, half: 1, always: 1 },
   // Brushes' song: which version plays depends on what the captain picked
   brushes_ballad: { bpm: 70, swing: .6, prog: [ch('Bb', 'maj7'), ch('G', 'm7'), ch('C', 'm7'), ch('F', 'dom7')], brush: 1, arp: 1, half: 1, horn: 1, always: 1 },

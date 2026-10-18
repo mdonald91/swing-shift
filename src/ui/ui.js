@@ -14,6 +14,9 @@ import { tip } from './tips.js';
 import { playFinale, playFinale2 } from './recap.js';
 import { openUpgrades, openWorkshop, openBooth } from './hihat.js';
 import { jobDialogue } from '../systems/jobs.js';
+import { available } from '../systems/party.js';
+import { startBattle } from './battle.js';
+import { playAct3Open } from './recap.js';
 
 export const $ = (s, root = document) => root.querySelector(s);
 export const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -64,6 +67,11 @@ export const UI = {
       toast(['Spotted! Back into the shadows.', 'A spotlight catches you. Try again, on the dark beats.', "The crowd gasps. Not for Nocturne. Back you go."][Math.floor(Math.random() * 3)]);
       setTimeout(() => travel('lyceum', reset), 250);
     });
+    bus.on('patrol-seen', ({ id, fight }) => {
+      Audio.sfx('scratch');
+      toast(['Spotted! The collectors close in.', 'A visor flashes red. You have been made.', '"Hi-Hat crew! Over here!"'][Math.floor(Math.random() * 3)]);
+      setTimeout(() => startBattle(fight, { flag: 'patrol_' + state.location + '_' + id, retreatTo: 'default' }), 800);
+    });
     bus.on('menu', () => { if (!modals.length && !document.querySelector('.dlg')) openPauseMenu(); });
     bus.on('hint', t => Hud.hint(t));
     bus.on('area', map => {
@@ -84,6 +92,10 @@ export const UI = {
       }
       if (state.location === 'ship' && flag('courier_done') && !flag('act1_done')) setTimeout(playFinale, 1200);
       if (state.location === 'ship' && flag('nocturne_done') && !flag('act2_done')) setTimeout(playFinale2, 1200);
+      if (state.location === 'ship' && flag('act2_done') && !flag('act3_open')) setTimeout(playAct3Open, 1200);
+      if (state.location === 'cygnus_lock' && !flag('lock_arrived')) {
+        setTimeout(async () => { setFlag('lock_arrived'); await tip('patrols'); runDialogue('lock_arrive'); Hud.refresh(); }, 700);
+      }
       if (state.location === 'titan' && !flag('titan_arrived')) {
         setTimeout(() => playCut('titan_arrive').then(() => { setFlag('titan_arrived'); Hud.refresh(); }), 400);
       }
@@ -137,6 +149,8 @@ export function startWorld() {
   showScreen(null);
   document.body.classList.add('in-world');
   Hud.show();
+  updateStanding();
+  if (state.location === 'cygnus' && lockdown()) { state.location = 'cygnus_lock'; state.pos = null; }
   if (game.scene.isActive('world') || game.scene.isPaused('world')) game.scene.stop('world');
   game.scene.start('world');
   setTimeout(async () => {
@@ -157,7 +171,23 @@ export function dialogLayer() { return layers['dialog-layer']; }
 export function sceneLayer() { return layers['scene-layer']; }
 
 // Move to another map. spawn names a point in that map's "spawns".
+// Standing and bonds, kept as flags so maps and scenes can check them (recalculated on every move).
+export function updateStanding() {
+  const r = state.rep || {}, f = state.flags, b = state.bonds || {};
+  const set = (k, v) => { if (v) f[k] = true; else delete f[k]; };
+  set('std_office', (r.office || 0) >= 3);
+  set('std_docks', (r.docks || 0) >= 2);
+  set('std_helix', (r.helix || 0) >= 2);
+  set('std_helix_bad', (r.helix || 0) <= -2);
+  for (const k of ['rook', 'tam', 'brushes', 'rhea', 'lyra']) set('bonded_' + k, (b[k] || 0) >= 2 && available(k));
+}
+
+// Cygnus is under lockdown while the Conductor's bounty is out on the crew.
+const lockdown = () => flag('bounty_conductor') && !flag('metronome_done');
+
 export function travel(location, spawn = 'default') {
+  if (location === 'cygnus' && lockdown()) { location = 'cygnus_lock'; if (!MAPS.cygnus_lock.spawns[spawn]) spawn = 'default'; }
+  updateStanding();
   const m = MAPS[location]; if (!m) return;
   const s = m.spawns[spawn] || m.spawns.default;
   if (state.location === 'ship' && location !== 'ship') delete state.flags.busked_visit;   // a fresh crowd each trip
