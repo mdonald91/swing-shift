@@ -35,6 +35,10 @@ export const TIPS = {
     title: 'New skills',
     lines: ['Someone has reached a new tier of their skill tree.', 'Open the <b>Menu</b>, then <b>Crew</b>, then <b>Learn a new skill</b>. Each tier has two choices.']
   }),
+  echo: () => ({
+    title: 'Echo lock',
+    lines: ['Someone sings a short phrase on the four pads. Watch and listen, then tap the same pads in the same order.', 'Each pad has its own colour, shape and number (keys 1 to 4), so you can follow it without sound too. A wrong note just plays the phrase again.']
+  }),
   busk: () => ({
     title: 'Sitting in',
     lines: ['Four clicks count you in, then eight beats. Tap as each ring closes.', 'Every beat you land earns tips. Perfect ones earn more.']

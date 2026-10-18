@@ -16,6 +16,8 @@ import { startBattle } from './battle.js';
 import { openShop } from './menus.js';
 import { busk } from './busk.js';
 import { openCircuit } from './circuit.js';
+import { openEcho } from './echo.js';
+import { partyAverageLevel } from '../systems/party.js';
 import { completeJob, jobObjective } from '../systems/jobs.js';
 
 // Things a conversation can trigger. Anything that changes scene waits until the box closes.
@@ -69,6 +71,19 @@ const ACTIONS = {
     Audio.sfx('save'); Hud.refresh();
     setTimeout(() => toast(flag('cass_jailed') ? `Cass handed in: ₡ 5,000. Bond with Rook deepened.` : 'Cass is gone, with a head start. Bond with Rook deepened.'), 300);
     after = () => bus.emit('dialog-closed');
+  },
+  // ---- Nyx ----
+  departNyx() { after = () => playCut('proto_depart', { restoreMood: false }).then(() => travel('nyx')); },
+  toNyx() { after = () => travel('nyx'); },
+  echo() { after = () => openEcho().then(ok => { if (ok) Hud.refresh(); }); },
+  toDome() { after = () => travel('nyx_dome'); },
+  fromDome() { after = () => travel('nyx', 'dome'); },
+  domeCache() { state.chits += 800; state.items.cell = (state.items.cell || 0) + 2; Audio.sfx('save'); Hud.refresh(); },
+  lyraFound() { after = () => { setFlag('lyra_met'); playCut('lyra_found', { restoreMood: false }).then(() => startBattle('sentinel')); }; },
+  joinLyra() {
+    state.levels.lyra = { lv: Math.max(1, Math.round(partyAverageLevel())), xp: 0 };
+    if (state.party.length < 3) state.party.push('lyra');
+    setTimeout(() => toast('Lyra joined the crew. Swap her into the party under Menu, Crew. She has skills to learn.'), 1800);
   },
   // ---- Targon ----
   departTargon() { after = () => playCut('targon_depart', { restoreMood: false }).then(() => travel('targon')); },

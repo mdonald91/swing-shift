@@ -1,7 +1,7 @@
 // The walkable world: tile map, the captain, crew and things to interact with.
 import { MAPS, TILE, SOLID, TILE_LOOKS, DOOR_OPEN, RUBBLE } from '../data/maps.js';
 import { CREW } from '../data/crew.js';
-import { characterSheet, droneSheet, mantisSheet, tileSheet, starTile, shipSprite, darknessCanvas, addSheet, DIRS } from '../art/pixel.js';
+import { characterSheet, droneSheet, mantisSheet, lyraSheet, tileSheet, starTile, shipSprite, darknessCanvas, addSheet, DIRS } from '../art/pixel.js';
 import { resolveLook, NPC_LOOKS } from '../data/appearance.js';
 import { Input } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
@@ -63,7 +63,12 @@ export class WorldScene extends Phaser.Scene {
       const key = 'npc-' + lookId;
       const x = n.x * T + 8, y = n.y * T + 8;
       let spr;
-      if (lookId === 'mantis') {
+      if (lookId === 'lyra') {
+        if (!this.textures.exists(key)) addSheet(this, key, lyraSheet(), 16, 16);
+        spr = this.add.sprite(x, y - 4, key, 0).setOrigin(0.5, 0.8);
+        this.tweens.add({ targets: spr, y: y - 9, duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+        this.time.addEvent({ delay: 700, loop: true, callback: () => spr.setFrame(spr.frame.name === 0 ? 1 : 0) });
+      } else if (lookId === 'mantis') {
         if (!this.textures.exists(key)) this.textures.addCanvas(key, mantisSheet());
         spr = this.add.sprite(x, y + 2, key).setOrigin(0.5, 0.9);
         this.tweens.add({ targets: spr, scaleY: 1.03, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
@@ -133,9 +138,9 @@ export class WorldScene extends Phaser.Scene {
       } });
     }
 
-    // rain
-    this.rain = null;
-    if (map.rain) {
+    // rain (or, under the Nyx dome, slow snow)
+    this.rain = null; this.snow = !!map.snow;
+    if (map.rain || map.snow) {
       this.rain = this.add.graphics().setDepth(9000);
       this.drops = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), v: .5 + Math.random() * .5 }));
     }
@@ -331,13 +336,23 @@ export class WorldScene extends Phaser.Scene {
     if (this.rain) {
       const v = this.cameras.main.worldView, w = v.width, h = v.height;
       this.rain.clear();
-      this.rain.lineStyle(1, 0x9fc6e0, 0.35);
-      for (const d of this.drops) {
-        d.y += dt * 0.0011 * d.v; d.x -= dt * 0.0002 * d.v;
-        if (d.y > 1) { d.y = 0; d.x = Math.random(); }
-        if (d.x < 0) d.x += 1;
-        const x = v.x + d.x * w, y = v.y + d.y * h;
-        this.rain.lineBetween(x, y, x - 1.5, y + 5);
+      if (this.snow) {
+        this.rain.fillStyle(0xffffff, 0.8);
+        for (const d of this.drops) {
+          d.y += dt * 0.00012 * d.v; d.x += Math.sin((time / 900) + d.v * 7) * dt * 0.00004;
+          if (d.y > 1) { d.y = 0; d.x = Math.random(); }
+          if (d.x < 0) d.x += 1; if (d.x > 1) d.x -= 1;
+          this.rain.fillRect(v.x + d.x * w, v.y + d.y * h, d.v > .75 ? 2 : 1, d.v > .75 ? 2 : 1);
+        }
+      } else {
+        this.rain.lineStyle(1, 0x9fc6e0, 0.35);
+        for (const d of this.drops) {
+          d.y += dt * 0.0011 * d.v; d.x -= dt * 0.0002 * d.v;
+          if (d.y > 1) { d.y = 0; d.x = Math.random(); }
+          if (d.x < 0) d.x += 1;
+          const x = v.x + d.x * w, y = v.y + d.y * h;
+          this.rain.lineBetween(x, y, x - 1.5, y + 5);
+        }
       }
     }
 
@@ -398,7 +413,7 @@ export class WorldScene extends Phaser.Scene {
     const pressed = Input.action || J(k.act) || J(k.e) || J(k.enter);
     Input.action = false;
     if (pressed && target) {
-      if (target.kind === 'npc' && target.spr.npcId !== 'brushes' && !['drone', 'mantis'].includes(target.spr.def.look || target.spr.npcId)) {
+      if (target.kind === 'npc' && target.spr.npcId !== 'brushes' && !['drone', 'mantis', 'lyra'].includes(target.spr.def.look || target.spr.npcId)) {
         const dx = p.x - target.spr.x, dy = p.y - target.spr.y;
         const face = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
         target.spr.setFrame(DIRS.indexOf(face) * 3);

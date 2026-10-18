@@ -10,6 +10,7 @@ export const TRACKS = {
   station: { file: 'music/station.mp3', bpm: 112, label: 'Cygnus in the rain' },
   vesta:   { file: 'music/vesta.mp3',   bpm: 96,  label: 'Vesta market' },
   targon:  { file: 'music/targon.mp3',  bpm: 104, label: 'Shaft 3' },
+  nyx:     { file: 'music/nyx.mp3',     bpm: 88,  label: 'Nyx, under glass' },
   battle:  { file: 'music/battle.mp3',  bpm: 192, label: 'Big band brawl' },
   victory: { file: 'music/victory.mp3', bpm: 150, label: 'Payday' },
   brushes: { file: 'music/brushes.mp3', bpm: 120, label: "Brushes' song", unlock: 'song_done' },

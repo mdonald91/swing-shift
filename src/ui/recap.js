@@ -4,7 +4,7 @@ import { state, flag, setFlag, saveGame, formatTime } from '../state.js';
 import { CREW, CAPTAIN_ROLES } from '../data/crew.js';
 import { FACTIONS, tier } from '../data/shop.js';
 import { temperament } from '../data/appearance.js';
-import { level, available } from '../systems/party.js';
+import { level, available, CREW_KEYS } from '../systems/party.js';
 import { block, unblock } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
 import { playCut } from './cutscene.js';
@@ -54,6 +54,16 @@ function tracks() {
         f.mantis_core && 'Sent the Mantis\'s control core to the Bounty Office as evidence.',
         f.mantis_scrapped && 'Had the Mantis scrapped for Targon Mining.'
       ]
+    },
+    {
+      n: '05', side: 'B', name: 'Runaway Prototype', where: 'Nyx', done: done('proto'), started: f.bounty_proto,
+      notes: [
+        'Found Lyra, prototype L-7, in the frozen garden dome, and beat the Sentinel sent to take her.',
+        "Learned where Brushes came from: unit B-1, scrapped for improvising. Lyra is built from his recordings.",
+        f.proto_returned && 'Sent Lyra back to Dr Sato, who cancelled the buyer.',
+        f.proto_free && 'Set Lyra free in the network, to play the wrong note at the right time.',
+        f.lyra_joined && 'Lyra joined the Hi-Hat as its conductor.'
+      ]
     }
   ].map(t => ({ ...t, notes: t.notes.filter(Boolean) }));
 }
@@ -74,7 +84,7 @@ function offClock() {
 
 function html({ finale }) {
   const p = state.player, temp = temperament(p);
-  const crew = ['rook', 'tam', 'brushes', 'rhea'].filter(available);
+  const crew = CREW_KEYS.filter(k => k !== 'captain' && available(k));
   const all = tracks(), sideB = flag('act1_done') && !finale;
   const ts = all.filter(t => (t.side === 'B') === sideB);
   const off = offClock();
@@ -105,7 +115,7 @@ function html({ finale }) {
     </div>
     ${sideB ? `<section class="ln-sec ln-next"><h3>Side A, in short</h3>
       <p>${sideA.map(t => `${t.n} · ${esc(t.name)}`).join(' &nbsp; ')}: ${esc(sideA.flatMap(t => t.notes).filter(n => /Juno|core|Rhea/.test(n)).join(' '))}</p></section>
-      <section class="ln-sec ln-next"><h3>Still to come on Side B</h3><p>05 · Runaway Prototype &nbsp; 06 · Mister Nocturne &nbsp; and the Conductor, still listening.</p></section>`
+      <section class="ln-sec ln-next"><h3>Still to come on Side B</h3><p>${flag('proto_done') ? '' : '05 · Runaway Prototype &nbsp; '}06 · Mister Nocturne &nbsp; and the Conductor, still listening.</p></section>`
       : finale ? `<section class="ln-sec ln-next"><h3>Coming up on Side B</h3>
       <p>04 · Iron Mantis &nbsp; 05 · Runaway Prototype &nbsp; and a quarter of a million chits on the Conductor.</p></section>` : ''}
   </div>`;

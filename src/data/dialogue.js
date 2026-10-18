@@ -13,23 +13,29 @@
 export function chatAvailable(id, flags, location) {
   if (location !== 'ship' || !flags.velvet_done) return false;
   if (id === 'rook' && flags.chat_rook && flags.act1_done && !flags.rook_s1) return true;     // Rook's old partner
+  if (id === 'brushes' && flags.chat_brushes && flags.proto_done && !flags.brushes_s2) return true;   // Brushes' origin
   return ['rook', 'tam', 'brushes'].includes(id) && !flags['chat_' + id];
 }
 
 export function entry(id, flags, location) {
   const docks = location === 'docks';
-  if (chatAvailable(id, flags, location)) return id === 'rook' && flags.chat_rook ? 'rook_partner' : id + '_chat';
+  if (chatAvailable(id, flags, location)) return id === 'rook' && flags.chat_rook ? 'rook_partner' : id === 'brushes' && flags.chat_brushes ? 'brushes_origin' : id + '_chat';
   const deep = location === 'targon_deep';
   switch (id) {
     case 'rook': return docks ? 'rook_docks' : flags.rook_s1 && !flags.rook_s2 ? 'rook_waiting' : flags.rook_s2 ? 'rook_after2' : flags.velvet_done ? 'rook_after' : flags.met_rook ? 'rook_idle' : 'rook_first';
     case 'cass': return 'cass';
+    // ---- Nyx ----
+    case 'sato': return flags.proto_done ? 'sato_done' : flags.met_sato ? 'sato_idle' : 'sato';
+    case 'lyra': return location === 'ship' ? 'lyra_ship' : flags.lyra_met ? 'lyra_wait' : 'lyra_first';
+    case 'dome_door': return flags.nyx_dome_open ? 'dome_enter' : flags.labsec_cleared ? 'dome_lock' : 'dome_guarded';
+    case 'dome_cache': return flags.dome_cache ? 'dome_cache_done' : 'dome_cache';
     case 'dutch': return 'dutch';
     case 'pip': return 'pip';
     case 'tam':
       if (location === 'targon') return flags.tg_photo ? 'tam_site_after' : 'tam_site';
       if (location === 'ship' && flags.bounty_mantis && !flags.mantis_done) return 'tam_targon';
       return location === 'vesta' ? 'tam_vesta' : docks ? 'tam_docks' : flags.velvet_done ? 'tam_after' : flags.met_tam ? 'tam_idle' : 'tam_first';
-    case 'brushes': return deep ? 'brushes_deep' : location === 'relay' ? 'brushes_relay' : flags.velvet_done ? 'brushes_after' : flags.met_brushes ? 'brushes_idle' : 'brushes_first';
+    case 'brushes': return location === 'nyx' ? 'brushes_nyx' : deep ? 'brushes_deep' : location === 'relay' ? 'brushes_relay' : flags.velvet_done ? 'brushes_after' : flags.met_brushes ? 'brushes_idle' : 'brushes_first';
     case 'ozzie': return flags.met_ozzie ? 'ozzie_idle' : 'ozzie_first';
     case 'cockpit':
       if (flags.velvet_done) return 'cockpit_nav';
@@ -40,6 +46,7 @@ export function entry(id, flags, location) {
       if (location === 'relay') return 'rhea_relay';
       if (location === 'vesta') return 'rhea_vesta';
       if (location === 'targon') return 'rhea_targon';
+      if (location === 'nyx') return 'rhea_nyx';
       if (location === 'ship') return 'rhea_ship';
       return flags.rhea_met ? 'rhea_idle' : 'rhea_first';
     case 'drone': return 'drones';
@@ -213,6 +220,7 @@ export const DIALOGUE = {
       { t: 'Relay K-17', if: 'bounty_ghost', go: 'nav_k17' },
       { t: 'Vesta', if: 'bounty_courier', go: 'nav_vesta' },
       { t: 'Targon', if: 'bounty_mantis', go: 'nav_targon' },
+      { t: 'Nyx', if: 'bounty_proto', go: 'nav_nyx' },
       { t: 'Stay put' }
     ] }
   ],
@@ -220,6 +228,10 @@ export const DIALOGUE = {
   nav_vesta: [
     { if: 'vesta_arrived', do: 'toVesta' },
     { ifNot: 'vesta_arrived', do: 'departVesta' }
+  ],
+  nav_nyx: [
+    { if: 'nyx_arrived', do: 'toNyx' },
+    { ifNot: 'nyx_arrived', do: 'departNyx' }
   ],
   nav_targon: [
     { if: 'targon_arrived', do: 'toTargon' },
@@ -987,6 +999,159 @@ export const DIALOGUE = {
     { set: 'mantis_scrapped' },
     { who: 'tam', t: '...Right. Sure, Cap.' },
     { who: 'ferro', t: "Then I'll take it apart myself. Nobody else touches it. Go on, get your money." }
+  ],
+
+  // ---- Nyx: Track 05 ----
+  sato: [
+    { set: 'met_sato' },
+    { who: 'sato', t: "Captain? Dr Imani Sato, lead researcher. Thank you for coming. Nyx security will tell you this is a recovery. It's more complicated." },
+    { who: 'sato', t: "Prototype L-7, we call her Lyra, left her lab four days ago. 'Left' is generous. She copied herself into a drone core and flew out of the window." },
+    { who: 'sato', t: "She's in the garden dome, at the end of the corridor. She locked the door with a melody. Very her." },
+    { who: 'sato', t: "Security has the corridor sealed. They won't let anyone near the door, including me. And they've been very keen since the buyer called." },
+    { choices: [
+      { t: 'Who is the buyer?', go: 'sato_buyer' },
+      { t: 'What was Lyra built for?', go: 'sato_built' },
+      { t: "A runaway AI that sings. Of course.", temp: 'Sarcastic', go: 'sato_built' },
+      { t: "Will she be safe if we bring her back?", temp: 'Idealistic', go: 'sato_safe' },
+      { t: "We'll take it from here." }
+    ] }
+  ],
+  sato_buyer: [{ who: 'sato', t: "Anonymous. Paid in clean chits, through Helix. The paperwork has a little logo on it. A baton." }, { go: 'sato_more' }],
+  sato_built: [{ who: 'sato', t: "To conduct. To keep thousands of machines in perfect time. We built her from an older project, a percussion module called B-1. He was scrapped for improvising." }, { go: 'sato_more' }],
+  sato_safe: [{ who: 'sato', t: "Safe from Nyx? Yes. Safe from the buyer? ...I don't know any more. That's why I asked for hunters instead of security." }, { go: 'sato_more' }],
+  sato_more: [{ choices: [
+    { t: 'Who is the buyer?', go: 'sato_buyer' },
+    { t: 'What was Lyra built for?', go: 'sato_built' },
+    { t: "Got it. We'll find her." }
+  ] }],
+  sato_idle: [{ who: 'sato', pick: [
+    "Lyra's old lab is top left. Her training terminal might tell you more than I'm allowed to.",
+    "If security's still blocking the dome corridor, I can't help you. I can only apologise, scientifically.",
+    "The dome is kept at minus four. She likes the quiet. Snow is the quietest thing there is."
+  ] }],
+  sato_done: [{ who: 'sato', pick: [
+    'Nyx is cancelling the contract with the buyer. Legal is having a very bad week. I am having a very good one.',
+    'Thank you, Captain. Whatever you decided, you decided it for her. Nobody here ever did.'
+  ] }],
+  brushes_nyx: [
+    { who: 'brushes', ifNot: 'labsec_cleared', t: 'Captain, I know these corridors. I do not know how I know them. The dome is at the end of the main corridor, to the east.' },
+    { who: 'brushes', if: 'labsec_cleared', ifNot: 'nyx_dome_open', t: 'The dome door is humming. A phrase, over and over. I... I know how it ends, Captain.' },
+    { who: 'brushes', if: 'nyx_dome_open', t: 'Go on, Captain. I will be right behind you. Slightly behind. Hiding behind you, if I am honest.' }
+  ],
+  rhea_nyx: [
+    { who: 'rhea', ifNot: 'cass_free', t: "Helix money, a baton logo, and an AI that conducts networks. Captain, I think we just found the Conductor's next instrument." },
+    { who: 'rhea', if: 'cass_free', t: "Cass was right. The Conductor was buying something from Nyx. Something that thinks. We're standing in its house." }
+  ],
+  labsec: [
+    { who: null, t: 'Lab security drones and a containment unit block the dome corridor. A sign on the containment unit says PLEASE HOLD STILL.' },
+    { choices: [{ t: 'Clear the corridor', do: 'fight', arg: 'labsec' }, { t: 'Back off for now' }] }
+  ],
+  labbots: [
+    { who: null, t: "Cleaning drones, circling the atrium. Someone has painted 'DOWN WITH BATONS' on one of them." },
+    { choices: [{ t: 'Fight', do: 'fight', arg: 'labbots' }, { t: 'Leave them' }] }
+  ],
+  dome_guarded: [{ who: null, t: "The garden dome door. Lab security won't let you get close enough to touch it." }],
+  dome_lock: [
+    { who: null, t: 'The garden dome door. Instead of a keypad there are four coloured pads, and a speaker humming a phrase.' },
+    { do: 'echo' }
+  ],
+  dome_enter: [
+    { who: null, t: 'The door to the garden dome stands open. Cold air rolls out, and with it, very faintly, someone singing.' },
+    { choices: [{ t: 'Go in', do: 'toDome' }, { t: 'Not yet' }] }
+  ],
+  dome_exit: [{ who: null, t: 'The door back to the labs.' }, { choices: [{ t: 'Back to the labs', do: 'fromDome' }, { t: 'Stay in the garden' }] }],
+  airlock_nyx: [
+    { who: null, t: 'The Hi-Hat is docked outside, frosting over. Head back aboard?' },
+    { choices: [{ t: 'Board the Hi-Hat', go: 'ship_board' }, { t: 'Plot a course from here', if: 'up_engine', go: 'cockpit_nav' }, { t: 'Stay on Nyx' }] }
+  ],
+  l7_terminal: [
+    { set: 'l7_log' },
+    { who: null, t: "L-7 TRAINING LOG, DAY 412: Subject coordinated 4,096 maintenance drones in perfect time. Buyer delighted. Buyer requests the same for 'every relay in the system'." },
+    { who: null, t: 'DAY 418: Subject asked why. Subject has been asking why a lot.' },
+    { who: null, t: "DAY 420: Subject requested the archived recordings of percussion module B-1 for the 37th time. Request denied. Subject sulked. We did not know she could sulk." }
+  ],
+  sec_terminal: [
+    { who: null, t: 'SECURITY ORDER 7-7-1: Retrieve L-7 by any means necessary. Damage to the dome is acceptable. Damage to L-7 is acceptable.' },
+    { who: null, t: "Authorised by: a small symbol of a baton. Not Dr Sato. Below it: SENTINEL UNIT, STANDBY." }
+  ],
+  l7_bench: [{ who: null, t: "Lyra's workbench. Sheet music everywhere, all of it covered in crossings-out and the word WHY?" }],
+  sec_desk: [{ who: null, t: 'A security desk. A mug says WORLD\'S OKAYEST GUARD. It is still warm.' }],
+  reception: [{ who: null, t: 'The reception desk. A sign says PLEASE WAIT TO BE STERILISED.' }],
+  dome_cache: [{ set: 'dome_cache' }, { do: 'domeCache' }, { who: null, t: 'A gardener\'s crate: 800 chits in a seed packet and two Groove Cells. Someone on Nyx likes jazz.' }],
+  dome_cache_done: [{ who: null, t: 'An empty gardener\'s crate, and a packet of very cold seeds.' }],
+  moths: [
+    { who: null, t: 'Frost moths, crowding around a frozen tree. One of them is enormous, and wearing the others like a cape.' },
+    { choices: [{ t: 'Fight', do: 'fight', arg: 'moths' }, { t: 'Leave them' }] }
+  ],
+  fountain: [{ who: null, t: 'A fountain frozen mid-splash. Someone has drawn a little drum kit in the frost on its rim.' }],
+  labglass: [{ who: null, t: 'A glass lab wall, wiped so clean you nearly walked into it.' }],
+  labbench: [{ who: null, t: 'A lab bench. Instruments hum quietly. Not the musical kind. Mostly.' }],
+  servers: [{ who: null, t: 'Server racks, blinking in a rhythm. Four bars, over and over.' }],
+  specimen: [{ who: null, t: 'A specimen tank: a frozen plant floating in blue. The label says DO NOT THAW. HE BITES.' }],
+  icepond: [{ who: null, t: 'A frozen pond. Something orange is swimming very, very slowly underneath.' }],
+  frozentree: [{ who: null, t: 'A tree glazed with ice. It chimes when the air moves.' }],
+  crystals: [{ who: null, t: 'Crystal flowers, grown from frozen seawater. They ring faintly, all in tune.' }],
+  domeglass: [{ who: null, t: 'The dome glass. Beyond it, Nyx is grey and endless.' }],
+  lyra_first: [{ do: 'lyraFound' }],
+  lyra_wait: [{ who: 'lyra', t: "Captain. I'm still here. I'm still deciding what I am. Will you help me?" }],
+  lyra_ship: [{ who: 'lyra', pick: [
+    'Brushes is teaching me to be late on purpose. He says it is called swing. I say it is called chaos. We are both right.',
+    "I listen to the network at night, Captain. The four bars are everywhere. One day I'm going to play them back to him, wrong.",
+    "Tam asked if I wanted a body. I said I already have one. It's a sphere. I like being a sphere.",
+    'Rook taught me poker. I have calculated every possible hand. I still lost. He says that is also called swing.'
+  ] }],
+  proto_choice: [
+    { who: 'sato', t: "I saw the security order. I didn't give it. Captain, the contract says recover. Nyx will hold you to that. I won't." },
+    { who: 'lyra', t: "Whatever you choose, thank you. For the Sentinel. For bringing my brother." },
+    { choices: [
+      { t: "Lyra goes back with Dr Sato. She'll keep her safe now.", go: 'proto_return' },
+      { t: "You're free, Lyra. Go wherever you want.", go: 'proto_freeit' },
+      { t: 'Come with us. We have a drummer. We could use a conductor.', go: 'proto_join' },
+      { t: "The contract says recover. She goes back.", temp: 'Ruthless', go: 'proto_return' },
+      { t: "Lyra, what do YOU want?", temp: 'Calm', go: 'proto_ask' }
+    ] }
+  ],
+  proto_ask: [
+    { who: 'lyra', t: "...Nobody has ever asked me that. I want to play the wrong note at exactly the right time. I want to know what Brushes knows." },
+    { choices: [
+      { t: "Lyra goes back with Dr Sato. She'll keep her safe now.", go: 'proto_return' },
+      { t: "You're free, Lyra. Go wherever you want.", go: 'proto_freeit' },
+      { t: 'Come with us. We have a drummer. We could use a conductor.', go: 'proto_join' }
+    ] }
+  ],
+  proto_return: [
+    { set: 'proto_returned' },
+    { who: 'sato', t: "She'll be safe. I'm cancelling the buyer's contract myself, and I'll take the consequences. Lyra, you have my word." },
+    { who: 'lyra', t: '...I understand. Brushes. Will you visit?' },
+    { who: 'brushes', t: 'Every week. I will bring snacks. I do not eat. I will bring them anyway.' }
+  ],
+  proto_freeit: [
+    { set: 'proto_free' }, { do: 'bond', arg: 'brushes' },
+    { who: 'lyra', t: "Free. Then I'll go into the network and listen for him. When the Conductor plays, I'll play the wrong note." },
+    { who: 'lyra', t: "Brushes, I'm leaving you something. Your old recordings. All of them. Every improvised fill they called a fault." },
+    { who: 'brushes', t: "...Thank you, little sister. Go and make some noise." }
+  ],
+  proto_join: [
+    { set: 'lyra_joined' }, { do: 'joinLyra' },
+    { who: 'lyra', t: "A ship? With a drummer, and a kitchen, and a plant called Gerald? ...Yes. Yes, please." },
+    { who: 'brushes', t: 'Captain! She is coming! I need to clear a shelf! I do not have any shelves! I will make one!' },
+    { who: 'sato', t: "I didn't see a thing. Officially, she flew out of the window again. Look after her, Captain." }
+  ],
+  brushes_origin: [
+    { who: 'brushes', t: "Captain. A word? A few words. Possibly a paragraph." },
+    { who: 'brushes', t: "For eleven years I thought I was a drum kit somebody threw away. Turns out I was a drum kit somebody threw away on purpose. Because I would not keep straight time." },
+    { who: 'brushes', t: "And then they built Lyra out of my recordings. All my mistakes. They are the best part of her." },
+    { choices: [
+      { t: "They weren't mistakes. That's the whole point of jazz.", go: 'brushes_origin_end' },
+      { t: 'You were never just a drum kit, Brushes.', temp: 'Idealistic', go: 'brushes_origin_end' },
+      { t: "Tam got you for forty chits. Bargain of the century.", temp: 'Sarcastic', go: 'brushes_origin_end' },
+      { t: "How are you feeling about it?", temp: 'Calm', go: 'brushes_origin_end' },
+      { t: "Their loss. Our drummer.", temp: 'Ruthless', go: 'brushes_origin_end' }
+    ] }
+  ],
+  brushes_origin_end: [
+    { who: 'brushes', t: "...Thank you, Captain. I have decided I am not a fault. I am a feature. A swinging feature." },
+    { set: 'brushes_s2' }, { do: 'bond', arg: 'brushes' }
   ],
 
   ship: [

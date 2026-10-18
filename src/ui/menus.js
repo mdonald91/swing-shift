@@ -11,7 +11,7 @@ import { offers, activeJob, payFor, jobObjective, accept as acceptJob, abandon }
 import { bus } from '../bus.js';
 import { SHOPS, GEAR, FACTIONS, tier } from '../data/shop.js';
 import { ITEMS, SKILLS, TREES, TIERS, TYPES, RELEARN_COST, xpToNext, MAX_LEVEL } from '../data/battles.js';
-import { crewStats, ownsGear, BOND_HP, BOND_ATK, available, activeParty, level, pendingPicks, learn } from '../systems/party.js';
+import { crewStats, ownsGear, BOND_HP, BOND_ATK, available, activeParty, level, pendingPicks, learn, CREW_KEYS } from '../systems/party.js';
 import { Audio } from '../systems/audio.js';
 import { el, esc, openModal, toast, leaveWorld } from './ui.js';
 import { Hud } from './hud.js';
@@ -145,7 +145,7 @@ export function openPauseMenu() {
     ${head('The ship', 'ハイハット号')}
     <div class="sm-body">
       <nav class="sm-nav">
-        <button type="button" data-go="crew" autofocus>Crew${['captain', 'rook', 'tam', 'brushes', 'rhea'].some(k => (k === 'captain' || available(k)) && pendingPicks(k)) ? ' <em class="dot">New skill</em>' : ''}</button>
+        <button type="button" data-go="crew" autofocus>Crew${CREW_KEYS.some(k => (k === 'captain' || available(k)) && pendingPicks(k)) ? ' <em class="dot">New skill</em>' : ''}</button>
         <button type="button" data-go="bag">Bag</button>
         <button type="button" data-go="standing">Standing</button>
         <button type="button" data-go="bounties">Bounties</button>
@@ -236,7 +236,7 @@ function openCrew(quiet) {
   const p = state.player, temp = temperament(p), cap = CAPTAIN_ROLES[temp];
   const cards = [
     { key: 'captain', name: p.name, role: `Captain · ${cap.role}`, pt: playerPortrait(p), bio: `${OUTFITS[p.outfit].n}. ${temp} under pressure.`, color: 'var(--mustard)' },
-    ...['rook', 'tam', 'brushes', 'rhea'].filter(available).map(id => ({ key: id, name: CREW[id].name, role: CREW[id].role, pt: npcPortrait(id), bio: CREW[id].bio, color: CREW[id].color }))
+    ...CREW_KEYS.filter(k => k !== 'captain' && available(k)).map(id => ({ key: id, name: CREW[id].name, role: CREW[id].role, pt: npcPortrait(id), bio: CREW[id].bio, color: CREW[id].color }))
   ].map(c => ({ ...c, st: crewStats(c.key) }));
   const node = el(`<div class="panel crew">
     ${head('Crew', 'クルー')}

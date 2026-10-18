@@ -5,7 +5,7 @@ import { GEAR } from '../data/shop.js';
 import { state, settings } from '../state.js';
 
 export const BOND_HP = 10, BOND_ATK = 1;
-export const CREW_KEYS = ['captain', 'rook', 'tam', 'brushes', 'rhea'];
+export const CREW_KEYS = ['captain', 'rook', 'tam', 'brushes', 'rhea', 'lyra'];
 
 export function ownsGear(id) { return (state.gear || []).includes(id); }
 

@@ -213,6 +213,33 @@ const BUILD = {
     <circle cx="800" cy="400" r="40" fill="#d5473b" opacity=".18"/><circle cx="785" cy="398" r="5" fill="#d5473b"/><circle cx="815" cy="398" r="5" fill="#d5473b"/>
     <path d="M120 760 L190 640 L260 700 L320 620 L360 900 H80Z M1280 900 L1320 650 L1400 700 L1460 600 L1540 900Z" fill="#3a2e28"/>
     <rect x="1290" y="560" width="160" height="90" fill="#5a3a24" stroke="#120d0b" stroke-width="6"/><rect x="1300" y="570" width="140" height="22" fill="#7a5a5a"/></svg>`,
+
+  // Nyx labs: white corridors and glass
+  lab: () => `${open}<rect width="1600" height="900" fill="#c8cdd8"/>
+    <rect width="1600" height="120" fill="#aab0c0"/><rect y="120" width="1600" height="10" fill="#2b8f8a"/>
+    ${[0, 1, 2, 3].map(i => `<rect x="${80 + i * 380}" y="200" width="300" height="420" fill="#9fd6e8" opacity=".55"/><rect x="${80 + i * 380}" y="200" width="300" height="420" fill="none" stroke="#7a8094" stroke-width="8"/><path d="M${100 + i * 380} 240 l40 -30 M${110 + i * 380} 300 l70 -60" stroke="#e8f6fb" stroke-width="6"/>`).join('')}
+    ${[0, 1, 2, 3].map(i => `<rect x="${150 + i * 380}" y="420" width="160" height="180" fill="#46516a"/><rect x="${165 + i * 380}" y="435" width="130" height="90" fill="#0d3b3a"/><rect x="${180 + i * 380}" y="455" width="80" height="8" fill="#5fe3d4"/><rect x="${180 + i * 380}" y="480" width="60" height="8" fill="#5fe3d4"/>`).join('')}
+    <path d="M0 640 H1600 V900 H0Z" fill="#d8dce6"/>${Array.from({ length: 9 }, (_, i) => `<path d="M${i * 200} 640 L${i * 260 - 400} 900" stroke="#b8bdcc" stroke-width="3"/>`).join('')}
+    <path d="M0 640 H1600" stroke="#9298aa" stroke-width="6"/>
+    <text x="1480" y="90" text-anchor="end" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="44" fill="#2b8f8a" opacity=".8">ニュクス研究所</text></svg>`,
+  // the frozen garden dome
+  dome: () => {
+    let trees = '', flakes = '';
+    [[200, 520, 1], [430, 470, .8], [1160, 500, .9], [1380, 540, 1.1], [760, 430, .6]].forEach(([x, y, k]) => {
+      trees += `<path d="M${x} ${y + 260 * k} V${y + 60 * k}" stroke="#5a4a40" stroke-width="${18 * k}"/><ellipse cx="${x}" cy="${y}" rx="${120 * k}" ry="${150 * k}" fill="#cfe4f0"/><ellipse cx="${x - 30 * k}" cy="${y - 40 * k}" rx="${60 * k}" ry="${60 * k}" fill="#e8f6fb"/>`;
+    });
+    for (let i = 0; i < 70; i++) flakes += `<circle cx="${(i * 233) % 1600}" cy="${(i * 137) % 760}" r="${1 + (i % 3)}" fill="#ffffff" opacity=".8"/>`;
+    return `${open}<defs><radialGradient id="bdDomeSky" cx="50%" cy="0%" r="90%"><stop offset="0" stop-color="#2c3b5a"/><stop offset="1" stop-color="#0d1426"/></radialGradient></defs>
+      <rect width="1600" height="900" fill="url(#bdDomeSky)"/>
+      ${Array.from({ length: 9 }, (_, i) => `<path d="M800 -200 Q${i * 200} 300 ${i * 200 - 50} 900" stroke="#5d8a9a" stroke-width="5" fill="none" opacity=".6"/>`).join('')}
+      <path d="M-100 520 Q800 300 1700 520" stroke="#5d8a9a" stroke-width="5" fill="none" opacity=".6"/>
+      <circle cx="1240" cy="150" r="70" fill="#d8dce6" opacity=".7"/>
+      ${trees}
+      <path d="M0 700 Q400 640 800 690 Q1200 650 1600 700 V900 H0Z" fill="#e8eef6"/>
+      <ellipse cx="800" cy="760" rx="260" ry="50" fill="#9fc6e0"/><ellipse cx="760" cy="750" rx="120" ry="12" fill="#e8f6fb" opacity=".8"/>
+      <path d="M760 700 V560 M840 700 V560" stroke="#c8cdd8" stroke-width="22"/><path d="M720 560 H880 V600 H720Z" fill="#aab0c0"/><path d="M745 540 Q800 470 855 540" fill="#e8f6fb"/>
+      ${flakes}</svg>`;
+  },
   black: () => ''
 };
 

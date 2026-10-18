@@ -68,6 +68,16 @@ export const JOBS = [
     pay: 360, scrap: 7, rep: {}
   },
   {
+    id: 'cold_storage', who: 'sato', kind: 'fight', title: 'Cold storage', client: 'Dr Imani Sato', where: 'Nyx',
+    needs: 'nyx_arrived', map: 'nyx', at: { x: 20, y: 13, look: 'drone', face: 'up' },
+    desc: "Something in Nyx's cold storage has learned to open its own tank. Dr Sato would like it to unlearn that.",
+    marker: 'A specimen drone, a cleaning bot and something with far too many leaves are having a meeting by the tanks.',
+    enc: { bg: 'lab', intro: 'The thing with leaves rattles. The drones take that as an order.',
+      enemies: [{ id: 'drone', name: 'Specimen drone', hp: 70, atk: 14, def: 3, xp: 22, weakTo: ['shock'], machine: true, word: 'ZZT!', verb: 'fires a stun bolt at' },
+        { id: 'holo', name: 'Leafy thing', hp: 95, atk: 15, def: 2, xp: 26, weakTo: ['shot'], resists: ['blunt'], word: 'THWAP', verb: 'slaps' }] },
+    pay: 360, scrap: 3, rep: { office: 1 }
+  },
+  {
     id: 'noodle_run', who: 'ozzie', kind: 'deliver', title: 'Noodle run', client: 'Ozzie Banda', where: 'Dock 9 to Cygnus Station',
     needs: 'cygnus_arrived', from: { npc: 'ozzie', map: 'docks' }, to: { npc: 'chef', map: 'cygnus' },
     desc: "Ozzie's got a crate of Ganymede chilli oil for Chef Ama. It's urgent. It's also slightly on fire.",

@@ -12,7 +12,18 @@ export function objective() {
   if (!f.intro_done) return '';
   const met = ['met_rook', 'met_tam', 'met_brushes'].filter(k => f[k]).length;
   if (f.act1_done) {
-    if (f.mantis_done) return 'Track 04 complete. Track 05, Runaway Prototype, arrives in a later build.';
+    if (f.proto_done) return 'Track 05 complete. Track 06, Mister Nocturne, arrives in a later build.';
+    if (f.mantis_done) {
+      if (!f.bounty_proto) return 'Accept Runaway Prototype on the bounty board';
+      if (state.location === 'nyx') {
+        if (!f.met_sato) return 'Talk to Dr Sato in the lobby';
+        if (!f.labsec_cleared) return 'Get past lab security in the east corridor';
+        if (!f.nyx_dome_open) return 'Open the garden dome door at the end of the corridor';
+        return 'Find Lyra in the garden dome';
+      }
+      if (state.location === 'nyx_dome') return 'Find Lyra by the frozen fountain';
+      return f.nyx_arrived ? 'Fly back to Nyx from the cockpit' : 'Fly to Nyx from the cockpit';
+    }
     if (!f.bounty_mantis) return 'Accept Iron Mantis on the bounty board';
     if (state.location === 'targon') {
       if (!f.tg_power1) return f.met_okada ? 'Route power to the main lift: junction board in the pump house' : 'Talk to the foreman';

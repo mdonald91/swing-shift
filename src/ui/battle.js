@@ -1,5 +1,5 @@
 // Turn-based combat with on-the-beat timing, plus the payday ledger afterwards.
-import { SKILLS, ITEMS, ENCOUNTERS, TYPES, TIERS, xpToNext, JAM_STYLES } from '../data/battles.js';
+import { SKILLS, ITEMS, ENCOUNTERS, ENEMIES, TYPES, TIERS, xpToNext, JAM_STYLES } from '../data/battles.js';
 import { completeJob } from '../systems/jobs.js';
 import { CREW } from '../data/crew.js';
 import { BOUNTIES } from '../data/bounties.js';
@@ -54,6 +54,7 @@ export function startBattle(id, { retry = false } = {}) {
     ...e, key: 'e' + i, ko: false,
     hp: Math.round(e.hp * (1 + .2 * L)), atk: Math.round(e.atk + 1.3 * L), def: Math.round((e.def || 0) + .4 * L), xp: Math.round((e.xp || 15) * (1 + .3 * L))
   })).map(e => ({ ...e, max: e.hp }));
+  for (const e of enemies) if (e.ai === 'sentinel') { e.shielded = true; e.summons = 0; }
   for (const e of enemies) if (e.ai === 'mantis') {
     e.baseDef = e.def - (state.flags.core_kept ? 3 : 0);
     setStance(e, 'guard');
@@ -167,6 +168,7 @@ function update() {
     if (u.guard) tags.push('Guard'); if (u.stun) tags.push('Stunned'); if (u.tuning && !u.ko) tags.push('Tuning'); if (u.jammed > 0) tags.push('Jammed'); if (u.weak > 0) tags.push('Weakened');
     if (u.stance && !u.ko) tags.push(STANCES[u.stance].label + ' stance');
     if (u.drillPending && !u.ko) tags.push('Spinning up');
+    if (u.shielded && !u.ko) tags.push('Shield up');
     if (u.spMax && B.overclock > 0 && !u.ko) tags.push('Overclocked');
     if (u.spMax && B.shield > 0 && !u.ko) tags.push('Shielded');
     c.querySelector('.bt-tags').innerHTML = tags.map(t => `<em>${t}</em>`).join('');
@@ -424,11 +426,16 @@ function hitEnemy(a, e, mult, word, snd, { type, pierce } = {}) {
   const weak = type && (e.weakTo || []).includes(type), resist = type && (e.resists || []).includes(type);
   const typeMult = weak ? 1.5 : resist ? .6 : 1;
   let v = a.atk * mult * typeMult * rnd(.9, 1.1) * (B.overclock > 0 ? 1.3 : 1) * (e.jammed > 0 ? 1.25 : 1) - (pierce ? 0 : e.def);
+  if (e.shielded) v *= .6;
   v = Math.max(1, Math.round(v));
   e.hp = Math.max(0, e.hp - v);
   const c = cardOf(e); pop(c, weak ? 'WEAK!' : resist ? 'RESIST' : word, weak ? 'weak' : resist ? 'resist' : ''); pop(c, '-' + v, 'num'); shake(c);
   if (weak) B.groove = Math.min(100, B.groove + 6);
   Audio.sfx(snd);
+  if (e.shielded && type === 'shock' && e.hp > 0) {
+    e.shielded = false; e.shieldT = 3;
+    setTimeout(() => { if (!root) return; pop(c, 'SHIELD DOWN', 'weak'); Audio.sfx('clam'); log(`The shock shorts out ${e.name}'s shield! Hit it with everything.`); update(); }, 250);
+  }
   if (e.hp === 0) { e.ko = true; e.stun = false; e.jammed = 0; log(e.ai === 'velvet' ? 'Velvet hits the deck. Her hat lands a beat later.' : `${e.name} is down for the count.`); }
   else log(`${a.name} hits ${e.name} for ${v}.`);
   update();
@@ -553,6 +560,36 @@ async function enemyPhase() {
       } else {
         const p = pick(targets); const v = hitParty(e, p, 1.1, 'BWOOM!');
         log(`Vox swings his bass like a club at ${p.name}. ${v} damage.`);
+      }
+    } else if (e.ai === 'sentinel') {
+      if (!e.shielded && --e.shieldT <= 0) {
+        e.shielded = true; pop(cardOf(e), 'SHIELD UP'); Audio.sfx('heal');
+        log('The Sentinel rebuilds its shield. You need another Shock hit to break it.'); update(); await sleep(900); if (!root) return;
+      }
+      if (e.hp < e.max * .5 && !e.overclocked) {
+        e.overclocked = true; e.atk += 5;
+        pop(cardOf(e), 'OVERCLOCK'); Audio.sfx('zap');
+        log('The Sentinel diverts power from the dome heaters into itself. Frost creeps over the glass. It hits harder now.');
+        await sleep(1000); if (!root) return;
+      }
+      const helpers = living(B.enemies).filter(x => x !== e);
+      if (!helpers.length && e.summons < 2) {
+        e.summons++;
+        const ne = { ...ENEMIES.labdrone, hp: 170, key: 'e' + B.enemies.length, ko: false };
+        const L = partyAverageLevel() - 12; if (L > 0) { ne.hp += 20 * L; ne.atk += L; }
+        ne.max = ne.hp;
+        B.enemies.push(ne);
+        const cardEl = el(card(ne, true));
+        $('.bt-enemies').append(cardEl);
+        cardEl.addEventListener('click', () => onCard(ne.key));
+        log('"REINFORCEMENT REQUESTED." A lab drone drops from the dome frame.'); Audio.sfx('clank'); update();
+      } else if (Math.random() < .3) {
+        log('CONTAINMENT PULSE. A ring of white light rolls across the snow.');
+        targets.forEach((p, i) => setTimeout(() => root && hitParty(e, p, .55, 'FZZT!'), i * 150));
+        await sleep(500);
+      } else {
+        const p = pick(targets); const v = hitParty(e, p, 1.1, 'ZWAP!');
+        log(`The Sentinel's beam finds ${p.name}. ${v} damage.`);
       }
     } else if (e.ai === 'mantis') {
       if (e.hp < e.max * .5 && !e.hurt) {
@@ -732,6 +769,7 @@ const AFTER = {
   velvet: { cut: 'victory', ending: 'ending', title: 'Track 01 · Counterfeit Swing' },
   ghost: { cut: 'k17_victory', choice: 'k17_choice', ending: 'k17_ending', title: 'Track 02 · Ghost Frequency' },
   courier: { cut: 'duet_victory', choice: 'case_choice', ending: 'courier_ending', title: 'Track 03 · The Missing Courier' },
+  proto: { cut: 'sentinel_victory', choice: 'proto_choice', ending: 'proto_ending', title: 'Track 05 · Runaway Prototype' },
   mantis: { cut: 'mantis_victory', choice: 'mantis_choice', ending: 'mantis_ending', title: 'Track 04 · Iron Mantis' }
 };
 
@@ -746,6 +784,22 @@ async function finishBounty(res) {
 function ledgerFor(res) {
   const b = BOUNTIES.find(x => x.id === res.id) || { name: 'Bounty', reward: 0 };
   const style = [`Style bonus: ${res.perfects} ${res.perfects === 1 ? 'hit' : 'hits'} on the beat`, res.perfects * 150];
+  if (res.id === 'proto') {
+    const f = state.flags;
+    return {
+      outcome: f.proto_returned ? 'Prototype L-7 recovered for Nyx Applied Sciences.' : f.lyra_joined ? 'Prototype L-7 not recovered. She joined the Hi-Hat instead.' : 'Prototype L-7 not recovered. She is somewhere in the network, free.',
+      extra: 'The Sentinel decommissioned',
+      items: [
+        ...(f.proto_returned ? [[`Bounty: ${b.name}, recovered`, b.reward]] : [['Nyx Applied Sciences: target not recovered', 0], ['Nyx search fee (for your trouble)', 4000]]),
+        ...(f.lyra_joined ? [["A research grant Lyra 'found' in Nyx's accounts", 9000]] : []),
+        ...(f.proto_free ? [["Lyra's goodbye present: she cleared your fuel bill", 4800]] : []),
+        style,
+        ['Fuel to Nyx and back', -4800],
+        ['Cold-weather gear (rented, returned damp)', -600],
+        ...(f.proto_returned ? [['Brushes is sad. Emergency noodles.', -45]] : [])
+      ].filter(it => it[1] !== 0 || /not recovered/.test(it[0]))
+    };
+  }
   if (res.id === 'mantis') {
     const f = state.flags;
     return {
@@ -843,7 +897,7 @@ function showLedger(res) {
       unblock();
       travel('ship', 'lounge');
       const ok = saveGame();
-      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04' }[res.id] || 'Track';
+      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04', proto: 'Track 05' }[res.id] || 'Track';
       setTimeout(() => { toast(ok ? `${label} complete. Game saved.` : `${label} complete.`); Hud.refresh(); }, 800);
     });
   });

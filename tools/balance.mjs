@@ -1,7 +1,7 @@
 // Balance check: simulates fights many times with a simple "just attack" party and mixed timing.
 // Run with:  node tools/balance.mjs
 // Reports how often the party wins at a given level, how many rounds it takes and how much HP is left.
-import { ENCOUNTERS } from '../src/data/battles.js';
+import { ENCOUNTERS, ENEMIES } from '../src/data/battles.js';
 import { state } from '../src/state.js';
 import { crewStats } from '../src/systems/party.js';
 
@@ -21,6 +21,7 @@ function fight(encId, lv, crew) {
   const ST = { guard: [['shock'], ['shot', 'blunt'], 8, 'strike'], strike: [['blunt'], ['shock'], 0, 'drill'], drill: [['shot'], [], -4, 'guard'] };
   const stance = (e, n) => { const [w, r, d] = ST[n]; e.stance = n; e.weakTo = w; e.resists = r; e.def = Math.max(0, e.base + d); e.left = 2; e.spin = 0; };
   foes.filter(e => e.ai === 'mantis').forEach(e => { e.base = e.def; stance(e, 'guard'); });
+  foes.filter(e => e.ai === 'sentinel').forEach(e => { e.shield = 1; e.summons = 0; });
   const alive = a => a.filter(u => !u.ko);
   const hitParty = (e, mult) => { const t = alive(party); const p = t[Math.floor(Math.random() * t.length)]; p.hp -= Math.max(1, Math.round(e.atk * mult * rnd(.9, 1.1) - p.def)); if (p.hp <= 0) { p.hp = 0; p.ko = true; } };
   let round = 0, duet = 0;
@@ -30,7 +31,8 @@ function fight(encId, lv, crew) {
       const t = alive(foes); if (!t.length) break;
       const e = t.reduce((a, b) => (a.boss ? b : a.hp < b.hp ? a : b));   // finish off minions first
       const type = p.attack.type, typeMult = (e.weakTo || []).includes(type) ? 1.5 : (e.resists || []).includes(type) ? .6 : 1;
-      e.hp -= Math.max(1, Math.round(p.atk * timing() * typeMult * rnd(.9, 1.1) - e.def));
+      e.hp -= Math.max(1, Math.round((p.atk * timing() * typeMult * rnd(.9, 1.1) - e.def) * (e.shield ? .6 : 1)));
+      if (e.shield && type === 'shock') { e.shield = 0; e.st = 3; }
       if (e.hp <= 0) { e.hp = 0; e.ko = true; }
     }
     const duo = alive(foes).filter(e => e.ai === 'duet');
@@ -43,6 +45,13 @@ function fight(encId, lv, crew) {
       if (e.ai === 'warden' && e.hp < e.max * .5 && !e.o) { e.o = 1; e.atk += 5; continue; }
       if (e.ai === 'duet' && e.role === 'sable' && !e.s) { const v = foes.find(x => x.role === 'vox'); if (v && !v.ko && v.hp < v.max * .45) { e.s = 1; v.hp += 60; continue; } }
       if (e.ai === 'duet' && duo.length < 2 && !e.solo) { e.solo = 1; e.atk = Math.round(e.atk * 1.3); }
+      if (e.ai === 'sentinel') {
+        if (!e.shield && --e.st <= 0) e.shield = 1;
+        if (e.hp < e.max * .5 && !e.o) { e.o = 1; e.atk += 5; }
+        if (alive(foes).length === 1 && e.summons < 2) { e.summons++; const d = { ...ENEMIES.labdrone, hp: 170, max: 170, ko: false }; foes.push(d); continue; }
+        if (Math.random() < .3) alive(party).forEach(() => alive(party).length && hitParty(e, .55)); else hitParty(e, 1.1);
+        continue;
+      }
       if (e.ai === 'mantis') {
         if (e.hp < e.max * .5 && !e.hurt) { e.hurt = 1; e.atk += 4; }
         if (e.stance === 'guard') hitParty(e, .85);
@@ -75,7 +84,12 @@ const plan = [
   ['rockrats', [7, 8, 9], ['rook', 'rhea', 'tam']],
   ['minebots', [8, 9, 10], ['rook', 'rhea', 'tam']],
   ['crawler', [8, 9, 10], ['rook', 'rhea', 'tam']],
-  ['mantis', [8, 9, 10, 11, 12], ['rook', 'rhea', 'tam']]
+  ['mantis', [8, 9, 10, 11, 12], ['rook', 'rhea', 'tam']],
+  ['labsec', [10, 11, 12], ['rook', 'rhea', 'tam']],
+  ['labbots', [10, 11, 12], ['rook', 'rhea', 'tam']],
+  ['moths', [10, 11, 12], ['rook', 'rhea', 'tam']],
+  ['sentinel', [10, 11, 12, 13, 14], ['rook', 'rhea', 'tam']],
+  ['sentinel', [12], ['rook', 'brushes', 'tam']]
 ];
 const N = 600;
 console.log('fight       lvl  win%  rounds  HP left');

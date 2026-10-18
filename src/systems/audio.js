@@ -33,6 +33,8 @@ const MOODS = {
   vesta: { bpm: 96, swing: .6, prog: [ch('D', 'm7'), ch('G', 'dom7'), ch('D', 'm7'), ch('G', 'dom7'), ch('C', 'm7'), ch('F', 'dom7'), ch('Bb', 'maj7'), ch('A', 'b9')], ride: 1, comp: 1, horn: 1, kick: .3 },
   // Targon: a heavy, swaggering mining-town blues
   targon: { bpm: 104, swing: .64, prog: [ch('E', 'dom7'), ch('E', 'dom7'), ch('A', 'dom7'), ch('E', 'dom7'), ch('B', 'b9'), ch('A', 'dom7'), ch('E', 'dom7'), ch('B', 'b9')], ride: 1, comp: 1, horn: 1, kick: .45 },
+  // Nyx: cool, glassy, a little lonely
+  nyx: { bpm: 88, swing: .56, prog: [ch('D', 'maj7'), ch('B', 'm7'), ch('G', 'maj7'), ch('A', 'dom7'), ch('Gb', 'm7'), ch('B', 'm7'), ch('E', 'm7'), ch('A', 'dom7')], brush: 1, arp: 1, horn: 1 },
   // The Conductor's broadcast: slow, minor, a little too grand
   finale: { bpm: 66, swing: .58, prog: [ch('C', 'm7'), ch('C', 'm7'), ch('Ab', 'maj7'), ch('Ab', 'maj7'), ch('D', 'm7b5'), ch('G', 'b9'), ch('C', 'm7'), ch('G', 'b9')], ride: 1, comp: 1, horn: 1, half: 1, always: 1 },
   // Brushes' song: which version plays depends on what the captain picked
@@ -196,6 +198,8 @@ export const Audio = {
   time: at => now() - (at ? Math.max(0, performance.now() - at) / 1000 : 0),
   // For the calibration test: a click at an exact audio-clock time, and the music turned down meanwhile.
   click(t, accent) { if (!A.ctx) return; osc('square', accent ? 2000 : 1400, t, .045, accent ? .16 : .12, { dest: A.master }); noise(t, .03, .25, { f: 5000, q: 2, dest: A.master }); },
+  // A single sung note, for Lyra's echo lock.
+  note(midi, dur = .45) { if (!A.ctx) return; const t = now(); osc('triangle', mf(midi), t, dur, .16, { dest: A.sfx, vib: 6 }); osc('sine', mf(midi + 12), t, dur * .8, .05, { dest: A.sfx }); },
   duck(on) { if (!A.ctx) return; const v = on ? .08 : 1; A.music.gain.setTargetAtTime(settings.music * .6 * v, now(), .08); if (suno.el) suno.el.volume = Math.min(1, settings.music) * v; },
   volumes() { applyVolumes(); if (!settings.suno) stopSuno(); else if (A.ctx) trySuno(moodName); },
   sfx(name, arg) {

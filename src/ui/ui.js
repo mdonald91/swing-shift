@@ -78,6 +78,9 @@ export const UI = {
         setTimeout(() => playCut('cygnus_arrive').then(() => { setFlag('cygnus_arrived'); Hud.refresh(); }), 400);
       }
       if (state.location === 'ship' && flag('courier_done') && !flag('act1_done')) setTimeout(playFinale, 1200);
+      if (state.location === 'nyx' && !flag('nyx_arrived')) {
+        setTimeout(() => playCut('nyx_arrive').then(() => { setFlag('nyx_arrived'); Hud.refresh(); }), 400);
+      }
       if (state.location === 'targon' && !flag('targon_arrived')) {
         setTimeout(() => playCut('targon_arrive').then(() => { setFlag('targon_arrived'); Hud.refresh(); }), 400);
       }

@@ -192,7 +192,7 @@ export function droneSheet(hostile = false) {
 
 // ---- Ship tiles (16x16), in the order used by data/maps.js TILE ----
 export function tileSheet() {
-  const T = 16, cols = 8, count = 104;   // room to grow: 0-103
+  const T = 16, cols = 8, count = 120;   // room to grow: 0-119
   const cv = document.createElement('canvas');
   cv.width = T * cols; cv.height = T * Math.ceil(count / cols);
   const ctx = cv.getContext('2d');
@@ -422,7 +422,54 @@ export function tileSheet() {
   r = at(99); floor(r); r(1, 0, 14, 7, '#3a2440'); for (let x = 2; x < 15; x += 3) for (let y = 1; y < 7; y += 3) r(x, y, 2, 2, '#4f3458');
   r(0, 7, 16, 7, '#262a40'); r(0, 7, 16, 1, '#46516a'); for (let x = 2; x < 14; x += 2) r(x, 9, 1, 3, x % 4 ? P.mustard : '#7fe0c8'); r(10, 1, 4, 2, P.crimson); r(1, 14, 14, 1, '#1b1e30');
 
+  // ---- Nyx: sterile labs and the frozen garden ----
+  const labf = r => { r(0, 0, 16, 16, '#d8dce6'); r(0, 0, 16, 1, '#eef0f5'); r(0, 0, 1, 16, '#eef0f5'); r(15, 0, 1, 16, '#b8bdcc'); r(0, 15, 16, 1, '#b8bdcc'); r(7, 7, 2, 2, '#c4c9d6'); };
+  const snow = r => { r(0, 0, 16, 16, '#e8eef6'); [[2, 3], [10, 2], [6, 9], [13, 12], [3, 13], [12, 7]].forEach(([x, y]) => r(x, y, 2, 1, '#d2dcea')); [[8, 5], [1, 8], [14, 3]].forEach(([x, y]) => r(x, y, 1, 1, '#ffffff')); };
+  r = at(100); labf(r);
+  // lab wall: white panels with a teal stripe
+  r = at(101); r(0, 0, 16, 16, '#aab0c0'); r(0, 0, 16, 2, '#c8cdd8'); r(0, 9, 16, 2, '#2b8f8a'); r(0, 13, 16, 3, '#7a8094'); r(7, 2, 1, 7, '#9298aa');
+  // glass partition
+  r = at(102); labf(r); r(0, 2, 16, 12, '#9fd6e8'); r(0, 2, 16, 1, '#e8f6fb'); r(2, 4, 1, 6, '#e8f6fb'); r(4, 3, 1, 3, '#e8f6fb'); r(0, 13, 16, 1, '#5d8a9a'); r(0, 7, 16, 1, '#7fb6c8');
+  // lab bench with instruments
+  r = at(103); labf(r); r(0, 4, 16, 7, '#f1f3f8'); r(0, 4, 16, 1, '#ffffff'); r(0, 10, 16, 1, '#9298aa'); r(2, 1, 3, 4, '#5fe3d4'); r(3, 0, 1, 1, '#2b8f8a'); r(8, 2, 5, 3, '#46516a'); r(9, 3, 3, 1, '#7fe0c8'); r(1, 11, 2, 4, '#9298aa'); r(13, 11, 2, 4, '#9298aa');
+  // server rack
+  r = at(104); labf(r); r(2, 0, 12, 15, '#262a40'); for (let y = 2; y < 14; y += 3) { r(3, y, 10, 2, '#3a4258'); r(4, y, 1, 1, '#5fe3d4'); r(6, y, 1, 1, y % 2 ? P.mustard : '#5fe3d4'); } r(2, 15, 12, 1, '#151a28');
+  // specimen tank (a frozen plant floating in blue)
+  r = at(105); labf(r); r(3, 0, 10, 15, '#46516a'); r(4, 1, 8, 12, '#3a8fb0'); r(5, 2, 1, 9, '#7fd0e8'); r(7, 5, 2, 7, '#2c6a44'); r(6, 4, 4, 2, '#5fb07a'); r(3, 13, 10, 2, '#262a40');
+  // dome door (sealed)
+  r = at(106); r(0, 0, 16, 16, '#aab0c0'); r(1, 1, 14, 15, '#5d6a80'); r(7, 1, 2, 15, '#3a4258'); r(2, 6, 4, 4, '#2b8f8a'); r(10, 6, 4, 4, '#2b8f8a'); r(3, 7, 2, 2, '#7fe0c8'); r(11, 7, 2, 2, '#7fe0c8'); r(0, 0, 16, 1, '#c8cdd8');
+  r = at(107); snow(r);
+  // frozen pond
+  r = at(108); r(0, 0, 16, 16, '#9fc6e0'); r(0, 0, 16, 1, '#c8e2f0'); r(2, 3, 5, 1, '#e8f6fb'); r(9, 8, 4, 1, '#e8f6fb'); r(4, 12, 6, 1, '#7fb0cc'); r(12, 2, 1, 4, '#e8f6fb');
+  // frozen tree
+  r = at(109); snow(r); r(7, 9, 2, 6, '#5a4a40'); r(2, 1, 12, 9, '#cfe4f0'); r(4, 0, 8, 2, '#e8f6fb'); r(3, 4, 3, 2, '#a8c8dc'); r(10, 6, 3, 2, '#a8c8dc'); r(7, 3, 2, 2, '#ffffff'); r(5, 15, 6, 1, '#b8c8d8');
+  // crystal flower bed
+  r = at(110); snow(r); r(1, 9, 14, 6, '#b8c8d8'); [[3, 4, '#c79bf0'], [7, 2, '#7fe0c8'], [11, 5, '#f0a0c8'], [5, 8, '#9fd6e8']].forEach(([x, y, c]) => { r(x, y, 2, 6, '#5a8a7a'); r(x - 1, y - 2, 4, 3, c); r(x, y - 2, 2, 1, '#ffffff'); });
+  // dome glass wall
+  r = at(111); r(0, 0, 16, 16, '#7fa8c0'); r(0, 0, 16, 16, '#9fc6e0'); for (let i = 0; i < 16; i += 5) { r(i, 0, 1, 16, '#5d8a9a'); } r(0, 7, 16, 1, '#5d8a9a'); r(2, 2, 2, 1, '#e8f6fb'); r(8, 10, 2, 1, '#e8f6fb'); r(0, 15, 16, 1, '#3a5a6a');
+  // frozen fountain
+  r = at(112); snow(r); r(1, 8, 14, 7, '#aab0c0'); r(2, 9, 12, 5, '#9fc6e0'); r(6, 1, 4, 8, '#c8cdd8'); r(4, 0, 8, 3, '#e8f6fb'); r(5, 3, 1, 5, '#e8f6fb'); r(10, 3, 1, 4, '#e8f6fb'); r(1, 14, 14, 1, '#7a8094');
+  // lab terminal
+  r = at(113); labf(r); r(2, 1, 12, 10, '#262a40'); r(3, 2, 10, 7, '#0d3b3a'); r(4, 3, 6, 1, '#5fe3d4'); r(4, 5, 8, 1, '#5fe3d4'); r(4, 7, 4, 1, P.mustard); r(6, 11, 4, 4, '#9298aa');
+  // stepping stones through the snow
+  r = at(114); snow(r); r(2, 2, 5, 4, '#aab0c0'); r(9, 8, 5, 5, '#aab0c0'); r(3, 2, 3, 1, '#c8cdd8'); r(10, 8, 3, 1, '#c8cdd8');
+
   r = at(31); dock(r); r(3, 3, 10, 12, '#2b8f8a'); r(3, 6, 10, 1, '#1d6663'); r(3, 11, 10, 1, '#1d6663'); r(3, 2, 10, 2, '#3fb0aa'); r(6, 2, 4, 1, '#1d6663'); r(3, 14, 10, 1, '#14403e');
+  return cv;
+}
+
+// Lyra, the runaway prototype: a hovering core with a soft holo glow (two frames, the glow pulses).
+export function lyraSheet() {
+  const cv = document.createElement('canvas'); cv.width = 32; cv.height = 16;
+  const ctx = cv.getContext('2d');
+  for (let f = 0; f < 2; f++) {
+    const r = rectFn(ctx, f * 16, 0);
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+      const dx = x - 7.5, dy = y - 7.5, d = dx * dx + dy * dy;
+      if (d <= 9) r(x, y, 1, 1, '#f1f6ff'); else if (d <= 20) r(x, y, 1, 1, f ? '#7fe0c8' : '#5fc8d4'); else if (d <= 30 && f) r(x, y, 1, 1, 'rgba(127,224,200,.35)');
+    }
+    r(6, 6, 1, 1, '#2b8f8a'); r(9, 6, 1, 1, '#2b8f8a'); r(7, 9, 2, 1, '#2b8f8a');
+  }
   return cv;
 }
 

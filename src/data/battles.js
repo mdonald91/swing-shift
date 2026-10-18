@@ -26,7 +26,8 @@ export const PARTY = {
   rook: { hp: 120, sp: 40, atk: 19, def: 4, attack: { n: 'Shoot', word: 'BANG!', sfx: 'bang', type: 'shot' }, skills: ['quickdraw', 'ricochet'] },
   tam: { hp: 105, sp: 40, atk: 14, def: 5, attack: { n: 'Wrench', word: 'CLANK!', sfx: 'clank', type: 'blunt' }, skills: ['patch', 'overclock'] },
   brushes: { hp: 85, sp: 40, atk: 12, def: 3, attack: { n: 'Rimshot', word: 'TOK!', sfx: 'tok', type: 'blunt' }, skills: ['static', 'jamsignal'] },
-  rhea: { hp: 95, sp: 40, atk: 15, def: 3, attack: { n: 'Taser', word: 'ZAP!', sfx: 'zap', type: 'shock' }, skills: ['tap', 'feedback'] }
+  rhea: { hp: 95, sp: 40, atk: 15, def: 3, attack: { n: 'Taser', word: 'ZAP!', sfx: 'zap', type: 'shock' }, skills: ['tap', 'feedback'] },
+  lyra: { hp: 92, sp: 46, atk: 14, def: 3, attack: { n: 'Sonic Pulse', word: 'VOOM!', sfx: 'zap', type: 'blunt' }, skills: ['harmonize', 'resonance'] }
 };
 
 // What each crew member gains per level after level 1.
@@ -35,14 +36,15 @@ export const GROWTH = {
   rook: { hp: 10, sp: 1.5, atk: 1.6, def: .5 },
   tam: { hp: 9, sp: 2, atk: 1.2, def: .7 },
   brushes: { hp: 7, sp: 2.5, atk: 1.1, def: .4 },
-  rhea: { hp: 8, sp: 2.2, atk: 1.3, def: .4 }
+  rhea: { hp: 8, sp: 2.2, atk: 1.3, def: .4 },
+  lyra: { hp: 8, sp: 2.6, atk: 1.25, def: .4 }
 };
 export const MAX_LEVEL = 30;
 export const xpToNext = lv => 20 + 20 * lv;          // 40 to reach level 2, 60 to reach 3, ...
 
 // Crew who can be picked for the party, and what makes them available.
 export const ROSTER = [
-  { id: 'rook' }, { id: 'tam' }, { id: 'brushes' }, { id: 'rhea', needs: 'rhea_joined' }
+  { id: 'rook' }, { id: 'tam' }, { id: 'brushes' }, { id: 'rhea', needs: 'rhea_joined' }, { id: 'lyra', needs: 'lyra_joined' }
 ];
 
 export const CAPTAIN_SKILLS = {
@@ -70,6 +72,9 @@ export const SKILLS = {
   intimidate: { n: 'Intimidate', cost: 10, tgt: 'enemies', d: 'May stun every enemy', stun: .45, word: 'GLARE' },
   tap: { n: 'Signal Tap', cost: 8, tgt: 'enemy', type: 'shock', d: 'Hack: target takes more, hits softer', hit: .6, jam: 3, weaken: 2, word: 'TAPPED', sfx: 'zap' },
   feedback: { n: 'Feedback Loop', cost: 12, tgt: 'enemies', type: 'shock', d: 'Shocks every enemy, may stun', hit: .75, stun: .25, word: 'SKREEE', sfx: 'zap' },
+
+  harmonize: { n: 'Harmonize', cost: 10, tgt: 'none', d: '+25 Groove, crew hits harder 2 rounds', groove: 25, buff: 2 },
+  resonance: { n: 'Resonance', cost: 10, tgt: 'enemies', type: 'blunt', d: 'A sound wave through every enemy', hit: .7, word: 'WHUMM', sfx: 'zap' },
 
   // captain's tree
   trickshot: { n: 'Trick Shot', cost: 7, tgt: 'enemy', type: 'shot', d: 'Two quick shots', hit: .75, multi: 2, word: 'BANG!', sfx: 'bang' },
@@ -129,7 +134,19 @@ export const SKILLS = {
   signaljam: { n: 'Signal Jam', cost: 14, tgt: 'enemies', d: 'Enemies take more and hit softer', jam: 3, weaken: 3, word: 'NO SIGNAL' },
   shortcircuit: { n: 'Short Circuit', cost: 16, tgt: 'enemy', type: 'shock', d: 'Huge zap that may stun', hit: 2.2, stun: .4, word: 'FZZZT', sfx: 'zap' },
   zeroday: { n: 'Zero Day', cost: 22, tgt: 'enemy', type: 'shock', d: 'Ignores armour, double under 40%', hit: 2.4, pierce: true, exec: true, word: 'ZERO DAY', sfx: 'zap' },
-  totalfeedback: { n: 'Total Feedback', cost: 22, tgt: 'enemies', type: 'shock', d: 'Big shock to every enemy', hit: 1.55, stun: .3, word: 'SKREEEE', sfx: 'zap' }
+  totalfeedback: { n: 'Total Feedback', cost: 22, tgt: 'enemies', type: 'shock', d: 'Big shock to every enemy', hit: 1.55, stun: .3, word: 'SKREEEE', sfx: 'zap' },
+
+  // Lyra's tree
+  counterpoint: { n: 'Counterpoint', cost: 7, tgt: 'enemy', type: 'blunt', d: 'Two answering notes', hit: .6, multi: 2, word: 'DA-DUM', sfx: 'tok' },
+  lullaby: { n: 'Lullaby', cost: 12, tgt: 'enemies', d: 'May send every enemy to sleep (stun)', stun: .45, word: 'hush...' },
+  crescendo: { n: 'Crescendo', cost: 12, tgt: 'none', d: 'Crew hits harder 3 rounds, +15 Groove', buff: 3, groove: 15 },
+  perfecttime: { n: 'Perfect Time', cost: 10, tgt: 'party', d: 'Heal the crew 20, +10 SP', heal: 20, sp: 10 },
+  fugue: { n: 'Fugue', cost: 14, tgt: 'random', type: 'blunt', d: 'Five overlapping notes at random enemies', hit: .48, multi: 5, word: 'DOO!', sfx: 'tok' },
+  silence: { n: 'Silence', cost: 14, tgt: 'enemies', d: 'Enemies take more and hit softer', jam: 3, weaken: 3, word: '......' },
+  chorus: { n: 'Chorus', cost: 18, tgt: 'party', d: 'Heal the crew 45', heal: 45 },
+  overture: { n: 'Overture', cost: 18, tgt: 'none', d: '+60 Groove', groove: 60 },
+  symphony: { n: 'Symphony', cost: 22, tgt: 'enemies', type: 'blunt', d: 'A full orchestra through every enemy, may stun', hit: 1.45, stun: .3, word: 'FORTISSIMO', sfx: 'bang' },
+  requiem: { n: 'Requiem', cost: 24, tgt: 'party', d: 'Revive everyone at 60%, heal 40', reviveAll: .6, heal: 40 }
 };
 
 // Skill trees: at each tier level, pick one of the two skills.
@@ -139,7 +156,8 @@ export const TREES = {
   rook: [['snapshot', 'fanhammer'], ['piercer', 'legshot'], ['deadeye', 'bulletstorm'], ['quickhands', 'smokeround'], ['highnoon', 'luckyseven']],
   tam: [['tuneup', 'wrenchtoss'], ['spareparts', 'overload'], ['blastshield', 'jumpstart'], ['fullservice', 'hammertime'], ['miraclefix', 'wreckingball']],
   brushes: [['snareroll', 'countin'], ['paradiddle', 'brushsweep'], ['cymbalcrash', 'backbeat'], ['drumsolo', 'temposhift'], ['bigfinish', 'thunderkit']],
-  rhea: [['ping', 'firewall'], ['overclockhack', 'packetstorm'], ['backdoor', 'blackout'], ['signaljam', 'shortcircuit'], ['zeroday', 'totalfeedback']]
+  rhea: [['ping', 'firewall'], ['overclockhack', 'packetstorm'], ['backdoor', 'blackout'], ['signaljam', 'shortcircuit'], ['zeroday', 'totalfeedback']],
+  lyra: [['counterpoint', 'lullaby'], ['crescendo', 'perfecttime'], ['fugue', 'silence'], ['chorus', 'overture'], ['symphony', 'requiem']]
 };
 export const RELEARN_COST = 300;
 
@@ -176,6 +194,9 @@ export const ENEMIES = {
   scav: { id: 'scav', name: 'Tunnel scavenger', hp: 120, atk: 21, def: 5, xp: 30, weakTo: ['shot'], word: 'THUNK!' },
   minebot: { id: 'mech', name: 'Mine bot', hp: 220, atk: 32, def: 9, xp: 60, weakTo: ['shock'], resists: ['blunt'], machine: true, word: 'GRRZZK!', verb: 'drills into' },
   rockrat: { id: 'drone', name: 'Rock rat', hp: 125, atk: 28, def: 5, xp: 38, weakTo: ['blunt'], machine: true, word: 'SKRITCH!', verb: 'gnaws at' },
+  labdrone: { id: 'drone', name: 'Lab security drone', hp: 210, atk: 33, def: 9, xp: 62, weakTo: ['shock'], resists: ['shot'], machine: true, word: 'ZZT!', verb: 'fires a stun bolt at' },
+  labmech: { id: 'mech', name: 'Containment unit', hp: 330, atk: 36, def: 12, xp: 90, weakTo: ['shock'], resists: ['blunt'], machine: true, word: 'KRUNCH!', verb: 'clamps down on' },
+  moth: { id: 'holo', name: 'Frost moth', hp: 150, atk: 31, def: 5, xp: 48, weakTo: ['shot'], resists: ['blunt'], word: 'FWSSH', verb: 'beats frozen wings at' },
   holo: { id: 'holo', name: 'Holo-player', hp: 75, atk: 14, def: 2, xp: 20, weakTo: ['shock'], machine: true, word: 'BLIP!' }
 };
 const E = (key, over = {}) => ({ ...ENEMIES[key], ...over });
@@ -252,6 +273,23 @@ export const ENCOUNTERS = {
     ]
   },
 
+  // ---- Track 05, Nyx ----
+  labsec: {
+    bg: 'lab', intro: 'Two lab drones and a containment unit lock onto you. "UNAUTHORISED PERSONNEL. PLEASE HOLD STILL."',
+    flag: 'labsec_cleared', reward: { chits: 900, items: { patch: 1 } },
+    enemies: [E('labdrone'), E('labmech'), E('labdrone', { hp: 190 })]
+  },
+  // The Sentinel is a Warden-class security AI. It starts behind a shield that cuts damage by 40%; a Shock hit
+  // knocks the shield down, and it comes back up every third round. It calls a drone when it's alone.
+  sentinel: {
+    bg: 'dome', bounty: 'proto', intro: "The Sentinel unfolds from the dome's frame, white and silent. A shield hums up around it: it takes less damage until a Shock hit breaks it.",
+    noRun: "The dome has sealed itself. Lyra is pressed against the glass behind you.",
+    enemies: [
+      E('labdrone', { hp: 180 }),
+      { id: 'warden', name: 'The Sentinel', hp: 950, atk: 34, def: 8, boss: true, machine: true, ai: 'sentinel', xp: 300, weakTo: ['shock'], resists: ['shot'] }
+    ]
+  },
+
   // ---- optional side fights ----
   smugglers: {
     bg: 'docks', intro: 'Two smugglers draw on you before you have finished saying hello.',
@@ -287,6 +325,16 @@ export const ENCOUNTERS = {
     bg: 'mine_deep', intro: 'A tunnel crawler rears up from the old camp, a rock rat riding on its back like a bad idea.',
     flag: 'crawler_cleared', reward: { chits: 950, items: { curry: 1 } },
     enemies: [E('heavy', { name: 'Tunnel crawler', hp: 440, atk: 37, def: 12, xp: 95 }), E('rockrat', { atk: 30 })]
+  },
+  labbots: {
+    bg: 'lab', intro: 'Cleaning drones, reprogrammed by someone with a grudge. They have decided you are a spill.',
+    flag: 'labbots_cleared', reward: { chits: 1000, items: { coffee: 2 } },
+    enemies: [E('labdrone', { name: 'Cleaning drone', hp: 160, atk: 30 }), E('labdrone', { name: 'Cleaning drone', hp: 160, atk: 30 }), E('labdrone', { name: 'Cleaning drone', hp: 160, atk: 30 })]
+  },
+  moths: {
+    bg: 'dome', intro: 'A cloud of frost moths lifts off a frozen tree. They are very beautiful and very bitey.',
+    flag: 'moths_cleared', reward: { chits: 1100, items: { curry: 1 } },
+    enemies: [E('moth'), E('moth', { name: 'Frost queen', hp: 260, atk: 35, def: 7, xp: 80 }), E('moth')]
   },
   // Brushes' holo-rehearsal on the Hi-Hat: repeatable, grows with the crew, XP only.
   rehearsal: {

@@ -19,7 +19,10 @@ export const TILE = {
   'a': 80, 'i': 81, '[': 82, ']': 83, '/': 84, '^': 85, '<': 86, '>': 87, '?': 88, '@': 89, '0': 90,
   ';': 91, '{': 92, '}': 93, '`': 94, '"': 95, '§': 96,
   // Hi-Hat upgrades (swapped in when bought)
-  '¤': 97, '¶': 98, '©': 99
+  '¤': 97, '¶': 98, '©': 99,
+  // Nyx: labs and the frozen garden dome
+  'α': 100, 'β': 101, 'γ': 102, 'δ': 103, 'ε': 104, 'ζ': 105, 'η': 106, 'θ': 107, 'ι': 108, 'κ': 109,
+  'λ': 110, 'μ': 111, 'ν': 112, 'ξ': 113, 'ο': 114
 };
 export const RUBBLE = 90;
 export const DOOR_OPEN = 60;
@@ -28,13 +31,15 @@ export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 2
   34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 46, 48, 49, 50, 51, 52, 53,
   54, 55, 58, 59, 61, 62, 63, 64, 65, 66, 67, 69,
   70, 71, 74, 75, 77, 78,
-  80, 82, 83, 87, 88, 89, 90, 91, 92, 94, 95, 96, 97, 98, 99];
+  80, 82, 83, 87, 88, 89, 90, 91, 92, 94, 95, 96, 97, 98, 99,
+  101, 102, 103, 104, 105, 106, 108, 109, 110, 111, 112, 113];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
 export const TILE_LOOKS = {
   20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
   34: 'storefront', 35: 'neon', 36: 'neon', 37: 'neon', 41: 'neonlamp', 43: 'planter', 44: 'railing',
   48: 'piano', 49: 'bottles', 50: 'bartable', 51: 'booth',
   74: 'stall', 75: 'stall', 77: 'lantern', 71: 'rockwall',
+  102: 'labglass', 103: 'labbench', 104: 'servers', 105: 'specimen', 108: 'icepond', 109: 'frozentree', 110: 'crystals', 111: 'domeglass',
   80: 'basalt', 82: 'mineface', 83: 'timber', 87: 'chasm', 88: 'orecart', 90: 'rubble', 91: 'minelamp', 92: 'winch', 95: 'hutwall',
   61: 'console_k17', 63: 'racks', 64: 'cryo_look', 65: 'bunk', 66: 'locker', 67: 'window_k17', 69: 'crate_k17'
 };
@@ -68,7 +73,8 @@ export const MAPS = {
       { id: 'rook', x: 2, y: 6, face: 'down' },
       { id: 'tam', x: 8, y: 2, face: 'down' },
       { id: 'brushes', x: 20, y: 4 },
-      { id: 'rhea', x: 14, y: 7, face: 'down', if: 'rhea_joined' }
+      { id: 'rhea', x: 14, y: 7, face: 'down', if: 'rhea_joined' },
+      { id: 'lyra', x: 16, y: 7, look: 'lyra', if: 'lyra_joined' }
     ],
     objects: [
       { id: 'bed', x: 1, y: 2, w: 1, h: 2, label: 'Rest' },
@@ -427,6 +433,87 @@ export const MAPS = {
       { id: 'tg_cache', x: 32, y: 2, label: 'Search the crate' },
       { id: 'tg_drill', x: 15, y: 14, label: 'Look' },
       { id: 'lift_service', x: 29, y: 15, w: 2, h: 2, label: 'Service lift' }
+    ]
+  },
+  nyx: {
+    name: 'Nyx Applied Sciences',
+    jp: 'ニュクス応用科学',
+    where: 'Research campus, Nyx',
+    music: 'nyx',
+    minimap: true,
+    rows: [
+      'ββββββββββββββββββββββββββββββββ',
+      'βξαδδαζαδδβζαζαζαζαζβεεεξααεεεεβ',
+      'βαααααααααβαααααααααβααααααααααβ',
+      'βααδδααδδαβαααααααααβααααααααααβ',
+      'βαααααααααβαζααααζααβααααααααδδβ',
+      'βαααααααααβαααααααααβααααααααααβ',
+      'βββββαβββββββββαβββββββββαββββββ',
+      'βααααααααααααααααααααααααααααααβ',
+      'βααααααααααααααααααααααααααααααη',
+      'βααααααααααααααααααααααααααααααβ',
+      'βγγγγααγγγγγγβγγγγγγγααγγγγγγγγβ',
+      'βααααααααααααβαααααααααααααααααβ',
+      'βαααααααζααααβααζααααααααααζαααβ',
+      'βααααααααααααβαααααααααααααααααβ',
+      'βδδααααααααδδβαααααααααααααααααβ',
+      'ββββββββββββββββββββββββββββββββ'
+    ],
+    doors: [{ x: 31, y: 8, flag: 'nyx_dome_open' }],
+    spawns: { default: { x: 2, y: 12, face: 'right' }, dome: { x: 30, y: 8, face: 'left' } },
+    npcs: [
+      { id: 'sato', x: 8, y: 12, face: 'left' },
+      { id: 'brushes', x: 4, y: 13, ifNot: 'proto_done' },
+      { id: 'rhea', x: 10, y: 13, face: 'up', if: 'rhea_joined', ifNot: 'proto_done' },
+      { id: 'labsec', x: 28, y: 8, face: 'left', look: 'mech', ifNot: 'labsec_cleared' },
+      { id: 'labbots', x: 25, y: 12, look: 'drone', ifNot: 'labbots_cleared' }
+    ],
+    objects: [
+      { id: 'airlock_nyx', x: 0, y: 12, label: 'Airlock to the Hi-Hat' },
+      { id: 'l7_terminal', x: 1, y: 1, label: 'Training terminal' },
+      { id: 'l7_bench', x: 3, y: 3, w: 2, label: 'Look' },
+      { id: 'sec_terminal', x: 24, y: 1, label: 'Security terminal' },
+      { id: 'sec_desk', x: 29, y: 4, w: 2, label: 'Look' },
+      { id: 'dome_door', x: 31, y: 8, label: 'Garden dome door' },
+      { id: 'reception', x: 1, y: 14, w: 2, label: 'Look' }
+    ]
+  },
+
+  nyx_dome: {
+    name: 'The Garden Dome',
+    jp: '凍った庭園',
+    where: 'Nyx, under glass',
+    music: 'nyx',
+    snow: true,
+    rows: [
+      'μμμμμμμμμμμμμμμμμμμμμμμμμμμμμμ',
+      'μθθθθθθθθθθθθθθθθθθθθθθθθθθθθμ',
+      'μθθθθθκθθθθθκθθθθθθθθθθθθθθθxμ',
+      'μθθκθθθθθθθθθθθθθθθθθθθθθκθθθμ',
+      'μθθθθθθθθθθθθθθκθθθθθθθθθθθθθμ',
+      'μθθθθθθθθθθθθθθθθθθθθθθθθθθθθμ',
+      'μθθθιιιιθθθκθθθθθθθθθθθθλλθθθμ',
+      'μθθιιιιιθθθθθθθθθθθθθθθθθθθθθμ',
+      'μθθιιιιιθθθθθθθθθθθθθννθθθθθθμ',
+      'μοοιιιιιοοοοολλοοοοοθννθθθθκθμ',
+      'μθθιιιιθθθθθθλθθθθθθθθθθθθθθθμ',
+      'μθθθθθθθθθθθθθθθθθθθθθθθθθθθθμ',
+      'μθθθθθθθθθθθθθθθλλθθθθθθθθθθθμ',
+      'μθθθκθθθθθθθθθκθθθθθθθθθθθθθθμ',
+      'μθθθθθθθθθθθθθθθθθθθθθθθθθκθθμ',
+      'μθθθθθθθθκθθθθθθθθκθθθθθθθθθθμ',
+      'μθθθθθθθθθθθθθθθθθθθθθθθθθθθθμ',
+      'μμμμμμμμμμμμμμμμμμμμμμμμμμμμμμ'
+    ],
+    spawns: { default: { x: 1, y: 9, face: 'right' } },
+    npcs: [
+      { id: 'lyra', x: 20, y: 10, look: 'lyra', ifNot: 'proto_done' },
+      { id: 'moths', x: 9, y: 3, look: 'drone', ifNot: 'moths_cleared' }
+    ],
+    objects: [
+      { id: 'dome_exit', x: 0, y: 9, label: 'Back to the labs' },
+      { id: 'dome_cache', x: 28, y: 2, label: 'Search the crate' },
+      { id: 'fountain', x: 21, y: 8, w: 2, h: 2, label: 'Look' }
     ]
   }
 };

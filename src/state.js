@@ -27,7 +27,7 @@ function blank() {
     items: { noodle: 2 },
     gear: [],              // ids from data/shop.js GEAR
     rep: { office: 0, docks: 0, helix: 0 },
-    bonds: { rook: 0, tam: 0, brushes: 0, rhea: 0 },
+    bonds: { rook: 0, tam: 0, brushes: 0, rhea: 0, lyra: 0 },
     party: ['rook', 'tam', 'brushes'],   // who fights alongside the captain (up to 3)
     levels: {},            // crew key -> { lv, xp }
     skills: {},            // crew key -> skills picked from the tree, by tier

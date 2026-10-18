@@ -165,6 +165,7 @@ export function npcPortrait(id) {
       <rect x="60" y="64" width="80" height="8" fill="${INK}"/>
       <g class="eyes"><path d="M80 114 q8 -6 16 0 M106 114 q8 -6 16 0" stroke="${INK}" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
       <path class="mouth" d="M90 134 q10 7 20 0 q-10 3 -20 0Z" fill="${P.crimson}" stroke="${P.crimson}" stroke-width="2"/>`);
+    case 'sentinel':
     case 'warden': return svg(`
       <path d="M10 240 L30 170 L170 170 L190 240Z" fill="#3a4258"/><path d="M30 170 L60 150 L140 150 L170 170Z" fill="#4a5470"/>
       <rect x="40" y="186" width="120" height="10" fill="${P.mustard}"/>
@@ -225,6 +226,23 @@ export function npcPortrait(id) {
         <rect x="80" y="111" width="6" height="3" fill="#ffd1c8"/><rect x="114" y="111" width="6" height="3" fill="#ffd1c8"/></g>
       <path class="mouth" d="M84 140 H116" stroke="#22263a" stroke-width="5"/><path d="M88 148 H112" stroke="#22263a" stroke-width="3"/>
       <path d="M30 236 L22 150 L46 92 L36 150 L52 210Z" fill="#c9ccd6" stroke="${INK}" stroke-width="2"/><path d="M170 236 L178 150 L154 92 L164 150 L148 210Z" fill="#c9ccd6" stroke="${INK}" stroke-width="2"/>`);
+    case 'lyra': return svg(`
+      <defs><radialGradient id="ptLyraGlow" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#7fe0c8" stop-opacity=".45"/><stop offset="1" stop-color="#7fe0c8" stop-opacity="0"/></radialGradient></defs>
+      <rect width="200" height="240" fill="url(#ptLyraGlow)"/>
+      <g stroke="#7fe0c8" stroke-width="1.5" opacity=".45">${[40, 52, 64, 76, 88].map(y => `<path d="M8 ${y} H192"/>`).join('')}</g>
+      <g opacity=".88">
+        <path d="M30 240 C40 186 70 170 100 170 C130 170 160 186 170 240Z" fill="#9fd6e8"/>
+        <path d="M76 178 Q100 200 124 178" stroke="#e8f6fb" stroke-width="4" fill="none"/>
+        <circle cx="100" cy="212" r="16" fill="#f1f6ff"/><circle cx="100" cy="212" r="9" fill="#7fe0c8"/>
+        <rect x="90" y="140" width="20" height="32" fill="#c8e2f0"/>
+        <ellipse cx="100" cy="106" rx="34" ry="42" fill="#d8eef6"/>
+        <path d="M64 104 C58 58 142 58 136 104 C130 80 116 70 100 72 C84 70 70 80 64 104Z" fill="#e8f6fb"/>
+        <path d="M66 100 C60 140 56 160 62 176 L72 150 C70 130 70 116 72 104Z M134 100 C140 140 144 160 138 176 L128 150 C130 130 130 116 128 104Z" fill="#e8f6fb"/>
+        <g class="eyes"><path d="M80 110 q8 -6 16 0 q-8 5 -16 0Z" fill="#2b8f8a"/><path d="M104 110 q8 -6 16 0 q-8 5 -16 0Z" fill="#2b8f8a"/></g>
+        <path class="mouth" d="M92 132 q8 5 16 0" stroke="#2b8f8a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M100 76 v-10" stroke="#7fe0c8" stroke-width="3"/><circle cx="100" cy="62" r="5" fill="#7fe0c8"/>
+      </g>
+      <g fill="#e8f6fb" opacity=".8"><circle cx="30" cy="56" r="3"/><circle cx="170" cy="48" r="2.5"/><path d="M160 76 v-14 h4 v10" stroke="#e8f6fb" stroke-width="2" fill="none"/></g>`);
     case 'ozzie': return svg(`
       <path d="${SHOULDERS}" fill="#d39a2a"/>
       <path d="M40 200 L160 200 M30 222 L170 222" stroke="${P.cream}" stroke-width="7"/>

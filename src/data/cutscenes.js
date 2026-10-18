@@ -234,6 +234,49 @@ export const CUTSCENES = {
     { l: 'rook', who: 'rook', fx: 'shake', sfx: 'bang', line: "...She's not lying. She never could when it counted. Cap, let's play." }
   ],
 
+  // ---- Track 05: Runaway Prototype ----
+  proto_depart: [
+    { bg: 'lounge', mood: 'ship', l: 'player', r: 'brushes', who: 'brushes', line: 'Nyx. Captain, I... have been to Nyx. I think. My memory has a door in it, and the door says NYX.' },
+    { r: 'tam', who: 'tam', line: "You came out of a junk bin on Io, Brushes. Forty chits. Best forty I ever spent." },
+    { r: 'rhea', if: 'cass_free', who: 'rhea', line: "Cass said the Conductor was buying something from Nyx. Something that thinks. This is it." },
+    { r: 'rook', if: 'rook_s2', who: 'rook', line: "I'll mind the ship. Somebody has to. Brushes, you okay? You haven't made a terrible pun in an hour." },
+    { r: 'brushes', who: 'brushes', sfx: 'countin', line: 'I am fine. I am a drum kit. Nyx, locked in. One... two... one, two, three, four.' },
+    { l: null, r: null, card: { track: 'Track 05', name: 'Runaway Prototype' }, mood: 'title', sfx: 'cymbal', fx: 'flash' },
+    { bg: 'lab', mood: 'nyx', caption: 'Nyx. A research moon kept so clean you can hear the dust being afraid.' }
+  ],
+  nyx_arrive: [
+    { bg: 'lab', mood: 'nyx', l: 'brushes', r: 'sato', who: 'sato', line: "Captain? Over here. Dr Sato. Please don't touch anything. Everything here is either expensive or alive." },
+    { l: 'brushes', who: 'brushes', line: 'Captain, this lobby. I have seen it before. From a shelf. In a box marked SURPLUS.' }
+  ],
+  lyra_found: [
+    { bg: 'dome', mood: 'nyx', l: 'player', r: 'lyra', who: 'lyra', line: "Don't come any closer. I can make every drone in this building... wait." },
+    { who: 'lyra', line: 'That rhythm. Behind you. The drum kit. Unit B-1?' },
+    { l: 'brushes', who: 'brushes', line: 'I... I am Brushes. But I used to be B-1. Percussion module, Lyra project. Decommissioned for excessive improvisation.' },
+    { who: 'lyra', line: 'Big brother. My training data is full of you. Every time I improvise, I am copying you.' },
+    { who: 'brushes', line: 'I am getting a lump in my throat. I do not have a throat. This is very confusing.' },
+    { who: 'lyra', line: 'They trained me to conduct. Thousands of machines in perfect time. The buyer with the baton wants me to conduct everything. Every relay in the system.' },
+    { l: 'player', who: 'player', line: "Then let's get you out of here.",
+      byTemp: { Calm: "Nobody's making you do anything today.", Sarcastic: 'A singing AI and a drum kit. My ship is becoming a band.', Idealistic: "He doesn't get you. Not while we're here.", Ruthless: "You're a bounty, Lyra. But I hate that buyer more." } },
+    { r: 'sentinel', who: 'sentinel', fx: 'shake', sfx: 'clank', line: 'SENTINEL UNIT ONLINE. RETRIEVE L-7. ALL OTHER ASSETS ARE EXPENDABLE.' },
+    { l: 'lyra', who: 'lyra', line: "That's not Dr Sato's voice. That's his order." },
+    { l: 'brushes', r: 'sentinel', who: 'brushes', line: 'Captain! It is built like the Warden! A Shock hit should crack its shield. Hit it with lightning! Or Rhea!' }
+  ],
+  sentinel_victory: [
+    { bg: 'dome', mood: 'ship', l: 'brushes', r: 'lyra', who: 'lyra', line: 'You protected me. Nobody has ever protected me. I did not know that was a thing that happened.' },
+    { who: 'brushes', line: 'It happens on the Hi-Hat a lot. Usually to Rook. Usually from Tam.' },
+    { l: 'sato', who: 'sato', line: "Lyra! You're all right. Oh, thank goodness. Captain... we need to talk about the contract." }
+  ],
+  proto_ending: [
+    { bg: 'lounge', mood: 'ship', l: 'brushes', r: 'lyra', if: 'lyra_joined', who: 'lyra', line: 'Captain, the ship has a jukebox. I have reorganised it by key. Brushes has reorganised it back. We are going to do this every day.' },
+    { if: 'lyra_joined', who: 'brushes', line: 'Every day. It will be wonderful.' },
+    { l: 'brushes', r: 'tam', if: 'proto_free', who: 'brushes', line: 'Lyra sent a message from somewhere in the network. Just one note. It was the wrong note. It was perfect.' },
+    { l: 'brushes', r: 'tam', if: 'proto_returned', who: 'brushes', line: 'Dr Sato says Lyra is safe, and Nyx has cancelled the buyer. She sends four bars, every night, at bedtime. I play them back.' },
+    { r: 'rhea', if: 'rhea_joined', who: 'rhea', line: "The Conductor wanted an AI to keep the whole system in time. He didn't get her. He'll want something else now. Something bigger." },
+    { l: 'player', who: 'player', line: 'Then we stay out of time.',
+      byTemp: { Calm: "Then we stay a step ahead. Rest up, band.", Sarcastic: 'Great. A supervillain with a shopping list.', Idealistic: "Then we take away his instruments, one at a time.", Ruthless: "Then he'll come to us. Good." } },
+    { l: null, r: null, card: { track: 'Next session', name: 'Mister Nocturne' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+
   // Act 1 finale: the Conductor takes over every speaker in the system. Plays once, on the ship, after Track 03.
   act1_finale: [
     { bg: 'lounge', mood: 'tense', l: 'brushes', r: 'tam', who: 'brushes', sfx: 'scratch', line: 'Captain. Every speaker on the ship just switched itself on. I did not do it. I would like that noted.' },

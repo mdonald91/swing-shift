@@ -32,8 +32,8 @@ export const BOUNTIES = [
   },
   {
     id: 'proto', name: 'Runaway Prototype', sub: 'Experimental AI · Nyx',
-    reward: 26000, risk: 'B', portrait: 'unknown', track: 'Track 05',
-    client: 'Nyx Applied Sciences', wanted: 'Recovered', unlock: 'Opens later',
+    reward: 26000, risk: 'B', portrait: 'lyra', track: 'Track 05',
+    client: 'Nyx Applied Sciences', wanted: 'Recovered', requires: 'mantis_done', unlock: 'Finish Track 04 first',
     desc: 'An experimental AI walked out of a lab on Nyx. Brushes would like to talk to it first.'
   }
 ];

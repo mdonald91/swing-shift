@@ -44,7 +44,15 @@ export const CREW = {
   cass: { name: 'Cass Marlowe', short: 'Cass', color: 'var(--violet)', blip: 340 },
   dutch: { name: 'Dutch', short: 'Dutch', color: 'var(--smoke)', blip: 150 },
   pip: { name: 'Pip', short: 'Pip', color: 'var(--mustard)', blip: 600 },
-  job: { name: 'Odd job', short: 'Odd job', color: 'var(--teal)', blip: 300 }
+  job: { name: 'Odd job', short: 'Odd job', color: 'var(--teal)', blip: 300 },
+  // 0.12: Nyx
+  lyra: { name: 'Lyra', short: 'Lyra', role: 'Runaway prototype', color: '#9fd6e8', blip: 640,
+    bio: 'Prototype L-7 from Nyx. Trained to conduct a network of machines. Prefers to improvise, like her big brother.', skillKeys: ['harmonize', 'resonance'] },
+  sato: { name: 'Dr Imani Sato', short: 'Dr Sato', color: 'var(--cream)', blip: 420 },
+  labsec: { name: 'Lab security', short: 'Security', color: 'var(--crimson)', blip: 130 },
+  labbots: { name: 'Cleaning drones', short: 'Cleaning drone', color: 'var(--crimson)', blip: 820 },
+  moths: { name: 'Frost moths', short: 'Frost moth', color: '#9fd6e8', blip: 900 },
+  sentinel: { name: 'The Sentinel', short: 'Sentinel', color: 'var(--crimson)', blip: 110 }
 };
 
 // What the captain brings to a fight, based on temperament.
