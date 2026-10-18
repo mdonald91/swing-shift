@@ -62,6 +62,8 @@ Any file that's missing is covered by the built-in generated jazz combo. If a tr
 
 **Editing maps:** `src/data/maps.js` draws each map with one character per tile. The key is at the top of that file. After changing a map, run `node tools/check-maps.mjs`: it walks every map from its spawn points and reports anything a player can't reach.
 
+**Balancing fights:** `node tools/balance.mjs` simulates every fight hundreds of times at different crew levels and prints the win rate and how much HP is left. Enemy stats live in `src/data/battles.js`.
+
 Saves are kept in the browser on each device (3 slots).
 
 ## Roadmap
@@ -72,6 +74,7 @@ Saves are kept in the browser on each device (3 slots).
 - [x] **0.5 Cygnus Station:** neon plaza in the rain, the Flat Ninth bar (rumours, Lou, Rhea), Kessler's Outfitters and Neon Noodle, busking with Old Sol, Helix Salvage offers Ghost Frequency
 - [x] **0.6 Track 02, Ghost Frequency:** Relay K-17 (dark until you restore power, doors, keycard, minimap), Rhea joins with her own skills, party selection, drone skirmish, the Warden boss, a choice with real consequences
 - [x] **0.7 Track 03, The Missing Courier:** Vesta's market and mine tunnels, tailing a suspect using stalls as cover, the Sable and Vox duet boss, the first sign of the Conductor, what to do with the Helix tuning core
-- [ ] **0.8 Levels and skills** (see the full roadmap doc)
+- [x] **0.8 Levels and skills:** XP and levels to 30, a 5-tier skill tree per crew member, Shot/Blunt/Shock weaknesses, gunmen, hackers and heavy mechs, optional side fights on every map, Brushes' holo-rehearsal, rebalanced bosses
+- [ ] **0.9 Act 1 polish** (see the full roadmap doc)
 
 Built with [Phaser 3](https://phaser.io) (MIT licence), included in `vendor/`.

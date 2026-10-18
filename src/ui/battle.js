@@ -1,12 +1,11 @@
 // Turn-based combat with on-the-beat timing, plus the payday ledger afterwards.
-import { PARTY, CAPTAIN_SKILLS, SKILLS, ITEMS, ENCOUNTERS } from '../data/battles.js';
+import { SKILLS, ITEMS, ENCOUNTERS, TYPES, TIERS, xpToNext } from '../data/battles.js';
 import { CREW } from '../data/crew.js';
 import { BOUNTIES } from '../data/bounties.js';
-import { temperament } from '../data/appearance.js';
 import { backdrop } from '../art/backdrops.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
 import { state, setFlag, saveGame, addRep } from '../state.js';
-import { crewStats, startingGroove, beatWindowBonus, activeParty } from '../systems/party.js';
+import { crewStats, startingGroove, beatWindowBonus, activeParty, addXp, available, level, partyAverageLevel, CREW_KEYS } from '../systems/party.js';
 import { MAPS } from '../data/maps.js';
 import { bus } from '../bus.js';
 import { block, unblock } from '../systems/input.js';
@@ -36,13 +35,17 @@ export function startBattle(id, { retry = false } = {}) {
   if (!retry) block();
   cleanup();
   Audio.setMood('battle', true);
-  const temp = temperament(state.player);
   const party = [
-    { key: 'captain', id: 'player', name: state.player.name, ...crewStats('captain'), skills: CAPTAIN_SKILLS[temp] },
+    { key: 'captain', id: 'player', name: state.player.name, ...crewStats('captain') },
     ...activeParty().map(k => ({ key: k, id: k, name: CREW[k].short, ...crewStats(k) }))
-  ].map(u => ({ ...u, max: u.hp, spMax: u.sp, sp: 14, ko: false, guard: false }));
-  const enemies = enc.enemies.map((e, i) => ({ ...e, key: 'e' + i, max: e.hp, ko: false }));
-  B = { id, enc, party, enemies, groove: Math.min(100, startingGroove()), turn: 0, overclock: 0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null };
+  ].map(u => ({ ...u, max: u.hp, spMax: u.sp, sp: Math.round(u.sp * .4), ko: false, guard: false }));
+  // encounters marked "scale" grow with the crew (the rehearsal)
+  const L = enc.scale ? partyAverageLevel() - 1 : 0;
+  const enemies = enc.enemies.map((e, i) => ({
+    ...e, key: 'e' + i, ko: false,
+    hp: Math.round(e.hp * (1 + .2 * L)), atk: Math.round(e.atk + 1.3 * L), def: Math.round((e.def || 0) + .4 * L), xp: Math.round((e.xp || 15) * (1 + .3 * L))
+  })).map(e => ({ ...e, max: e.hp }));
+  B = { id, enc, party, enemies, groove: Math.min(100, startingGroove()), turn: 0, overclock: 0, shield: 0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null };
 
   root = el(`<div class="bt" role="dialog" aria-label="Combat">
     <div class="bt-bg">${backdrop(enc.bg)}</div>
@@ -95,7 +98,8 @@ function clearMarks() { root.querySelectorAll('.bt-card').forEach(c => c.classLi
 function card(u, enemy) {
   return `<button class="bt-card ${enemy ? 'enemy' : 'ally'} ${u.boss ? 'boss' : ''}" data-k="${u.key}" type="button" aria-label="${esc(u.name)}">
     <span class="bt-pt">${portraitOf(u)}</span>
-    <span class="bt-info"><b class="bt-nm">${esc(u.name)}</b>
+    <span class="bt-info"><b class="bt-nm">${esc(u.name)}${enemy ? '' : ` <small class="bt-lv">Lv ${u.lv}</small>`}</b>
+      ${enemy && (u.weakTo || u.resists) ? `<span class="bt-weak">${(u.weakTo || []).map(t => `<i class="w">${TYPES[t]}</i>`).join('')}${(u.resists || []).map(t => `<i class="r">${TYPES[t]}</i>`).join('')}</span>` : ''}
       <span class="bt-stat"><span>HP</span><i class="bar hp"><i></i></i><em class="hpn"></em></span>
       ${enemy ? '' : '<span class="bt-stat"><span>SP</span><i class="bar sp"><i></i></i><em class="spn"></em></span>'}
       <span class="bt-tags"></span></span></button>`;
@@ -112,7 +116,8 @@ function update() {
     c.classList.toggle('low', !u.ko && u.hp / u.max < .3);
     const tags = [];
     if (u.guard) tags.push('Guard'); if (u.stun) tags.push('Stunned'); if (u.tuning && !u.ko) tags.push('Tuning'); if (u.jammed > 0) tags.push('Jammed'); if (u.weak > 0) tags.push('Weakened');
-    if (!u.boss && u.spMax && B.overclock > 0 && !u.ko) tags.push('Overclocked');
+    if (u.spMax && B.overclock > 0 && !u.ko) tags.push('Overclocked');
+    if (u.spMax && B.shield > 0 && !u.ko) tags.push('Shielded');
     c.querySelector('.bt-tags').innerHTML = tags.map(t => `<em>${t}</em>`).join('');
   });
   $('.gbar i').style.width = B.groove + '%';
@@ -155,7 +160,7 @@ function menuPick(a, c) {
   else if (c === 'skills') {
     cmd(`<p class="bt-who">${esc(a.name)} · Skills</p>` + a.skills.map(k => {
       const s = SKILLS[k];
-      return `<button type="button" data-s="${k}" ${a.sp < s.cost ? 'disabled' : ''}>${esc(s.n)} <small>${s.cost} SP<span class="d"> · ${esc(s.d)}</span></small></button>`;
+      return `<button type="button" data-s="${k}" ${a.sp < s.cost ? 'disabled' : ''}>${esc(s.n)} <small>${s.cost} SP${s.type ? ' · ' + TYPES[s.type] : ''}<span class="d"> · ${esc(s.d)}</span></small></button>`;
     }).join('') + backButton(a));
     root.querySelectorAll('.bt-cmd [data-s]').forEach(b => b.addEventListener('click', () => {
       Audio.sfx('tick'); const sk = SKILLS[b.dataset.s];
@@ -175,7 +180,7 @@ function menuPick(a, c) {
     log(`${a.name} lays out a bar and steadies their nerve.`); update(); endAction(300);
   } else if (c === 'run') {
     if (B.enc.noRun) { log(B.enc.noRun); Audio.sfx('back'); return; }
-    Audio.sfx('back'); cleanup(); unblock(); backToWorld(); toast('You slip away. The drones will still be there.');
+    Audio.sfx('back'); cleanup(); unblock(); backToWorld(); toast(B.enc.scale ? 'Rehearsal over. Brushes looks disappointed.' : 'You slip away. They will still be there.');
   } else if (c === 'jam') doJam(a);
 }
 
@@ -224,7 +229,7 @@ async function run(a, act, target) {
   let wait = 700;
   if (act.kind === 'attack') {
     if (a.key === 'tam') B.wrench++;
-    hitEnemy(a, target, m, a.attack.word, a.attack.sfx);
+    hitEnemy(a, target, m, a.attack.word, a.attack.sfx, { type: a.attack.type });
   } else {
     a.sp -= act.sk.cost;
     wait += applySkill(a, act.sk, target, m);
@@ -234,31 +239,41 @@ async function run(a, act, target) {
 }
 
 function applySkill(a, sk, target, m) {
-  const targets = sk.tgt === 'enemy' || sk.tgt === 'ally' ? [target]
-    : sk.tgt === 'enemies' ? living(B.enemies)
-    : sk.tgt === 'party' ? living(B.party) : [];
-  if (sk.tag === 'ricochet') B.ricochet++;
-  if (sk.buff) {
-    B.overclock = sk.buff + (m >= 1.5 ? 1 : 0);
-    Audio.sfx('zap');
-    log(`${a.name} cranks the ship's amp to eleven. The crew hits harder for ${B.overclock} rounds.`);
-  }
   const notes = [];
+  // crew-wide effects
+  if (sk.buff) { B.overclock = sk.buff + (m >= 1.5 ? 1 : 0); Audio.sfx('zap'); notes.push(`The crew hits harder for ${B.overclock} rounds`); }
+  if (sk.shield) { B.shield = sk.shield + (m >= 1.5 ? 1 : 0); Audio.sfx('heal'); notes.push(`The crew takes less damage for ${B.shield} rounds`); }
+  if (sk.groove) { B.groove = Math.min(100, B.groove + sk.groove); notes.push(B.groove >= 100 ? 'The Groove is full' : `+${sk.groove} Groove`); }
+  if (sk.tgt === 'none' && sk.sp) living(B.party).forEach(p => { p.sp = Math.min(p.spMax, p.sp + sk.sp); });
+  if (sk.reviveAll) B.party.filter(p => p.ko).forEach(p => healAlly(p, Math.round(p.max * sk.reviveAll), true));
+  if (sk.tag === 'ricochet') B.ricochet++;
+
+  // who gets hit, in order (multi-hit skills repeat; "random" picks a fresh enemy each time)
+  let targets = sk.tgt === 'enemy' || sk.tgt === 'ally' ? [target]
+    : sk.tgt === 'enemies' ? living(B.enemies)
+    : sk.tgt === 'party' ? (sk.reviveAll ? B.party : living(B.party)) : [];
+  const n = sk.multi || 1;
+  if (sk.tgt === 'random') targets = Array.from({ length: n }, () => null);
+  else if (n > 1) targets = targets.flatMap(t => Array.from({ length: n }, () => t));
+  const gap = n > 1 ? 130 : 170;
+
   targets.forEach((t, i) => setTimeout(() => {
     if (!root) return;
+    if (sk.tgt === 'random') t = pick(living(B.enemies)) || null;
+    if (!t) return;
     if (B.enemies.includes(t)) {
       if (t.ko) return;
       if (sk.hit) {
         let mult = sk.hit * m;
         if (sk.exec && t.hp < t.max * .4) mult *= 2;
-        if (sk.machine && t.machine) mult *= sk.machine;
-        hitEnemy(a, t, mult, sk.word || a.attack.word, sk.sfx || 'bang');
+        hitEnemy(a, t, mult, sk.word || a.attack.word, sk.sfx || 'bang', { type: sk.type, pierce: sk.pierce });
       } else {
         if (sk.word) pop(cardOf(t), sk.word);
         if (sk.sfx) Audio.sfx(sk.sfx);
       }
       if (!t.ko) {
-        if (sk.stun && Math.random() < sk.stun * Math.min(m, 1.4) * (t.boss ? .5 : 1)) {
+        const weakStun = (t.weakTo || []).includes('stun') ? 2 : 1;
+        if (sk.stun && Math.random() < sk.stun * Math.min(m, 1.4) * (t.boss ? .5 : 1) * weakStun) {
           t.stun = true; notes.push(`${t.name} is stunned`);
           if (t.tuning && B.duetPending && !B.duetBroken) { B.duetBroken = true; notes.push('The duet loses the key'); pop(cardOf(t), 'OFF KEY'); }
         }
@@ -266,13 +281,17 @@ function applySkill(a, sk, target, m) {
         if (sk.weaken) { t.weak = sk.weaken; notes.push(`${t.name} is weakened`); }
       }
     } else {
-      if (sk.heal) healAlly(t, Math.round(sk.heal * Math.min(m, 1.3)), sk.revive);
+      if (sk.heal) {
+        const amt = sk.heal < 1 ? Math.round(t.max * sk.heal) : Math.round(sk.heal * Math.min(m, 1.3));
+        healAlly(t, amt, sk.revive || sk.reviveAll);
+      }
       if (sk.sp && !t.ko) t.sp = Math.min(t.spMax, t.sp + sk.sp);
     }
     update();
-    if (i === targets.length - 1 && notes.length) log(notes.slice(0, 2).join('. ') + (notes.length > 2 ? '...' : '.'));
-  }, i * 170));
-  return targets.length * 170;
+    if (i === targets.length - 1 && notes.length) log([...new Set(notes)].slice(0, 2).join('. ') + (notes.length > 2 ? '...' : '.'));
+  }, i * gap));
+  if (!targets.length && notes.length) { log(`${a.name}: ${notes.join('. ')}.`); update(); }
+  return targets.length * gap;
 }
 
 function endAction(wait = 500) {
@@ -334,14 +353,17 @@ function pop(c, text, cls = '') {
 }
 function shake(c) { if (!c) return; c.classList.remove('hit'); void c.offsetWidth; c.classList.add('hit'); }
 
-function hitEnemy(a, e, mult, word, snd) {
+function hitEnemy(a, e, mult, word, snd, { type, pierce } = {}) {
   if (!e || e.ko) { e = living(B.enemies)[0]; if (!e) return; }
-  let v = a.atk * mult * rnd(.9, 1.1) * (B.overclock > 0 ? 1.3 : 1) * (e.jammed > 0 ? 1.25 : 1) - e.def;
+  const weak = type && (e.weakTo || []).includes(type), resist = type && (e.resists || []).includes(type);
+  const typeMult = weak ? 1.5 : resist ? .6 : 1;
+  let v = a.atk * mult * typeMult * rnd(.9, 1.1) * (B.overclock > 0 ? 1.3 : 1) * (e.jammed > 0 ? 1.25 : 1) - (pierce ? 0 : e.def);
   v = Math.max(1, Math.round(v));
   e.hp = Math.max(0, e.hp - v);
-  const c = cardOf(e); pop(c, word); pop(c, '-' + v, 'num'); shake(c);
+  const c = cardOf(e); pop(c, weak ? 'WEAK!' : resist ? 'RESIST' : word, weak ? 'weak' : resist ? 'resist' : ''); pop(c, '-' + v, 'num'); shake(c);
+  if (weak) B.groove = Math.min(100, B.groove + 6);
   Audio.sfx(snd);
-  if (e.hp === 0) { e.ko = true; e.stun = false; e.jammed = 0; log(e.boss ? 'Velvet hits the deck. Her hat lands a beat later.' : `${e.name} is down for the count.`); }
+  if (e.hp === 0) { e.ko = true; e.stun = false; e.jammed = 0; log(e.ai === 'velvet' ? 'Velvet hits the deck. Her hat lands a beat later.' : `${e.name} is down for the count.`); }
   else log(`${a.name} hits ${e.name} for ${v}.`);
   update();
 }
@@ -356,6 +378,7 @@ function healAlly(p, amt, revive, msg) {
 function hitParty(e, p, mult, word) {
   let v = e.atk * mult * rnd(.9, 1.1) * (e.weak > 0 ? .6 : 1) - p.def;
   if (p.guard) v /= 2;
+  if (B.shield > 0) v *= .65;
   v = Math.max(1, Math.round(v));
   p.hp = Math.max(0, p.hp - v);
   const c = cardOf(p); pop(c, word); pop(c, '-' + v, 'num'); shake(c);
@@ -459,9 +482,13 @@ async function enemyPhase() {
         const p = pick(targets); const v = hitParty(e, p, 1, 'BLAM!');
         log(`Velvet's silver derringer tags ${p.name} for ${v}.`);
       }
+    } else if (e.ai === 'hacker' && Math.random() < .45) {
+      const p = pick(targets); const drain = Math.min(p.sp, 8); p.sp -= drain;
+      const v = hitParty(e, p, .6, 'GLITCH');
+      log(`${e.name} spikes ${p.name}'s comms: ${v} damage and ${drain} SP drained.`);
     } else {
       const p = pick(targets); const v = hitParty(e, p, 1, e.word || 'POW!');
-      log(e.machine ? `${e.name} fires a stun bolt at ${p.name}. ${v} damage.` : `${e.name} throws a haymaker at ${p.name}. ${v} damage.`);
+      log(`${e.name} ${e.verb || 'throws a haymaker at'} ${p.name}. ${v} damage.`);
     }
     await sleep(600);
   }
@@ -470,6 +497,7 @@ async function enemyPhase() {
   if (checkEnd()) return;
   B.enemies.forEach(e => { if (e.jammed > 0) e.jammed--; if (e.weak > 0) e.weak--; });
   if (B.overclock > 0) B.overclock--;
+  if (B.shield > 0) B.shield--;
   B.party.forEach(p => { if (!p.ko) p.sp = Math.min(p.spMax, p.sp + 4); });
   B.turn = 0; update();
   await sleep(400);
@@ -481,17 +509,17 @@ function checkEnd() {
   if (!living(B.enemies).length) {
     B.over = true; B.mode = 'busy'; cmd('');
     Audio.sfx('cymbal');
-    setTimeout(() => {
+    setTimeout(async () => {
       const res = { ...B };
-      cleanup();
-      if (res.enc.bounty) return finishBounty(res);
-      // a skirmish: collect the spoils and carry on exploring
+      // collect skirmish spoils now; bounty money comes in the ledger later
+      const rw = res.enc.bounty ? {} : (res.enc.reward || {});
       if (res.enc.flag) setFlag(res.enc.flag);
-      const rw = res.enc.reward || {};
       if (rw.chits) state.chits += rw.chits;
       Object.entries(rw.items || {}).forEach(([k, n]) => { state.items[k] = (state.items[k] || 0) + n; });
+      await showResults(res, rw);
+      cleanup();
+      if (res.enc.bounty) return finishBounty(res);
       unblock(); backToWorld();
-      toast(`Victory! ₡ ${rw.chits || 0}${rw.items ? ' and supplies' : ''}`);
     }, 1200);
     return true;
   }
@@ -509,7 +537,7 @@ function showDefeat() {
   const o = $('.bt-over');
   o.innerHTML = `<div class="panel bt-over-box">
     <p class="eyebrow">Session over</p><h3>The band missed its cue.</h3>
-    <p>Velvet is still out there, and Tam is already blaming Rook's shoes.</p>
+    <p>${B.enc.scale ? 'Brushes calls it a learning experience. Nobody feels like they learned anything.' : B.enc.bounty ? "The job's still out there, and Tam is already blaming Rook's shoes." : 'You limp away. You can try them again any time.'}</p>
     <div class="bt-over-btns"><button class="btn primary" type="button" data-retry>Take it from the top</button><button class="btn ghost" type="button" data-leave>Back to the ship</button></div>
   </div>`;
   o.hidden = false;
@@ -521,6 +549,43 @@ function showDefeat() {
     o.querySelector('[data-leave]').addEventListener('click', () => { Audio.sfx('back'); cleanup(); unblock(); backToWorld(); });
   }
   o.querySelector('[data-retry]').focus({ preventScroll: true });
+}
+
+/* ---------------- victory: XP and level-ups ---------------- */
+function showResults(res, rw) {
+  return new Promise(resolve => {
+    const total = Math.round(res.enemies.reduce((s, e) => s + (e.xp || 15), 0) * (res.enc.xpRate || 1));
+    const inBattle = res.party.map(p => p.key);
+    const rows = CREW_KEYS.filter(k => k === 'captain' || available(k)).map(k => {
+      const share = inBattle.includes(k) ? total : Math.round(total / 2);
+      const before = level(k), picksBefore = TIERS.filter(t => before >= t).length;
+      const gained = addXp(k, share);
+      const after = level(k), newPicks = TIERS.filter(t => after >= t).length - picksBefore;
+      const L = state.levels[k];
+      return { k, share, before, after, gained, newPicks, pct: L.lv >= 30 ? 100 : Math.round(L.xp / xpToNext(L.lv) * 100), bench: !inBattle.includes(k) };
+    });
+    const name = k => k === 'captain' ? state.player.name : CREW[k].short;
+    const items = Object.entries(rw.items || {}).map(([k, n]) => `${ITEMS[k]?.n || k} ×${n}`);
+    const ups = rows.filter(r => r.gained);
+    if (ups.length) Audio.sfx('save');
+    const o = el(`<div class="bt-results"><div class="panel bt-res-box">
+      <p class="eyebrow">Victory</p>
+      <h3>+${total} XP${rw.chits ? ` · ₡ ${rw.chits.toLocaleString('en-AU')}` : ''}</h3>
+      ${items.length ? `<p class="res-items">Found: ${esc(items.join(', '))}</p>` : ''}
+      <ul class="res-list">${rows.map(r => `<li class="${r.gained ? 'up' : ''}">
+        <b>${esc(name(r.k))}</b><span class="res-lv">Lv ${r.after}</span>
+        <i class="bar xp"><i style="width:${r.pct}%"></i></i>
+        <em>${r.gained ? `LEVEL UP${r.gained > 1 ? ' ×' + r.gained : ''}!` : `+${r.share} XP${r.bench ? ' (bench)' : ''}`}</em>
+        ${r.newPicks ? '<small class="res-skill">New skill to learn: Menu, Crew</small>' : ''}
+      </li>`).join('')}</ul>
+      <button class="btn primary" type="button" data-ok>Continue</button>
+    </div></div>`);
+    root.append(o);
+    const ok = o.querySelector('[data-ok]');
+    ok.focus({ preventScroll: true });
+    ok.addEventListener('click', () => { Audio.sfx('confirm'); o.remove(); resolve(); });
+    if (rows.some(r => r.newPicks)) setTimeout(() => toast('New skills to learn: Menu, Crew'), 400);
+  });
 }
 
 function backToWorld() {

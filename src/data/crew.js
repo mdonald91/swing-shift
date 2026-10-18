@@ -27,7 +27,12 @@ export const CREW = {
   vox: { name: 'Vox', short: 'Vox', color: 'var(--teal)', blip: 150 },
   quill: { name: 'Mr Quill', short: 'Quill', color: 'var(--cream)', blip: 380 },
   scav: { name: 'Tunnel scavenger', short: 'Scavenger', color: 'var(--smoke)', blip: 200 },
-  conductor: { name: 'The Conductor', short: '???', color: 'var(--crimson)', blip: 110 }
+  conductor: { name: 'The Conductor', short: '???', color: 'var(--crimson)', blip: 110 },
+  smugglers: { name: 'Smugglers', short: 'Smuggler', color: 'var(--smoke)', blip: 200 },
+  loader: { name: 'Rogue loader', short: 'Loader', color: 'var(--crimson)', blip: 120 },
+  alley: { name: 'Hired guns', short: 'Hired gun', color: 'var(--smoke)', blip: 260 },
+  maint: { name: 'Maintenance mech', short: 'Mech', color: 'var(--crimson)', blip: 120 },
+  jumpers: { name: 'Claim jumpers', short: 'Claim jumper', color: 'var(--smoke)', blip: 210 }
 };
 
 // What the captain brings to a fight, based on temperament.

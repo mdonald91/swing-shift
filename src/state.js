@@ -21,6 +21,8 @@ function blank() {
     rep: { office: 0, docks: 0, helix: 0 },
     bonds: { rook: 0, tam: 0, brushes: 0, rhea: 0 },
     party: ['rook', 'tam', 'brushes'],   // who fights alongside the captain (up to 3)
+    levels: {},            // crew key -> { lv, xp }
+    skills: {},            // crew key -> skills picked from the tree, by tier
     playtime: 0,
     savedAt: 0
   };
@@ -57,6 +59,14 @@ export function loadGame(slot) {
   state.bonds = { ...b.bonds, ...(data.bonds || {}) };
   state.items = { ...(data.items || b.items) };
   state.party = Array.isArray(data.party) && data.party.length ? data.party : b.party;
+  state.levels = { ...(data.levels || {}) };
+  state.skills = { ...(data.skills || {}) };
+  // saves from before levels existed: start the crew at a level that fits how far they've got
+  if (!data.levels) {
+    const f = state.flags;
+    const lv = f.courier_done ? 8 : f.ghost_done ? 6 : f.velvet_done ? 4 : 1;
+    for (const k of ['captain', 'rook', 'tam', 'brushes', 'rhea']) state.levels[k] = { lv, xp: 0 };
+  }
   // saves from before reputation existed
   if (state.flags.velvet_done && !state.flags.rep_init) { state.rep.office += 2; state.flags.rep_init = true; }
   return true;

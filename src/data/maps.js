@@ -67,7 +67,7 @@ export const MAPS = {
       { id: 'couch', x: 2, y: 5, w: 2, label: 'Couch' },
       { id: 'plant', x: 19, y: 6, label: 'Look' },
       { id: 'plant', x: 1, y: 7, label: 'Look' },
-      { id: 'table', x: 14, y: 5, label: 'Look' },
+      { id: 'holo', x: 14, y: 5, label: 'Holo-rehearsal' },
       { id: 'hatch', x: 11, y: 10, label: 'Airlock' },
       { id: 'window', x: 3, y: 1, label: 'Look outside' },
       { id: 'window', x: 12, y: 1, label: 'Look outside' }
@@ -104,7 +104,9 @@ export const MAPS = {
       { id: 'tam', x: 10, y: 13, face: 'left' },
       { id: 'ozzie', x: 22, y: 2, face: 'down' },
       { id: 'goon', x: 11, y: 2, face: 'down', look: 'goon', ifNot: 'velvet_done' },
-      { id: 'goon', x: 14, y: 2, face: 'down', look: 'goon2', ifNot: 'velvet_done' }
+      { id: 'goon', x: 14, y: 2, face: 'down', look: 'goon2', ifNot: 'velvet_done' },
+      { id: 'smugglers', x: 2, y: 8, face: 'right', look: 'gunman', ifNot: 'smugglers_cleared' },
+      { id: 'loader', x: 26, y: 11, face: 'left', look: 'mech', ifNot: 'loader_cleared' }
     ],
     objects: [
       { id: 'door', x: 12, y: 1, label: 'Warehouse 9-C' },
@@ -144,7 +146,8 @@ export const MAPS = {
     spawns: { default: { x: 15, y: 8 }, bar: { x: 17, y: 2 } },
     npcs: [
       { id: 'sax', x: 12, y: 8, face: 'down' },
-      { id: 'chef', x: 7, y: 9, face: 'up' }
+      { id: 'chef', x: 7, y: 9, face: 'up' },
+      { id: 'alley', x: 30, y: 6, face: 'left', look: 'hacker', ifNot: 'alley_cleared' }
     ],
     walkers: [
       { look: 'w1', y: 5, x1: 3, x2: 27, speed: 22 },
@@ -229,7 +232,8 @@ export const MAPS = {
       { id: 'brushes', x: 3, y: 12 },
       { id: 'drone', x: 27, y: 7, look: 'drone', ifNot: 'drones_cleared' },
       { id: 'drone', x: 29, y: 7, look: 'drone', ifNot: 'drones_cleared' },
-      { id: 'juno', x: 32, y: 5, face: 'left', ifNot: 'ghost_done' }
+      { id: 'juno', x: 32, y: 5, face: 'left', ifNot: 'ghost_done' },
+      { id: 'maint', x: 17, y: 13, face: 'up', look: 'mech', ifNot: 'maint_cleared' }
     ],
     objects: [
       { id: 'generator', x: 1, y: 2, h: 2, label: 'Generator' },
@@ -288,7 +292,8 @@ export const MAPS = {
       { id: 'quill', x: 20, y: 3, face: 'down', if: 'juno_handed', ifNot: 'courier_done' },
       { id: 'wren', x: 4, y: 14, face: 'right', ifNot: 'courier_done' },
       { id: 'scav', x: 18, y: 15, face: 'up', look: 'scav', ifNot: 'scavs_cleared' },
-      { id: 'scav', x: 19, y: 15, face: 'up', look: 'scav2', ifNot: 'scavs_cleared' }
+      { id: 'scav', x: 19, y: 15, face: 'up', look: 'scav2', ifNot: 'scavs_cleared' },
+      { id: 'jumpers', x: 30, y: 13, face: 'left', look: 'gunman', ifNot: 'jumpers_cleared' }
     ],
     walkers: [
       { look: 'v1', y: 5, x1: 3, x2: 30, speed: 20 },

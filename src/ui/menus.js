@@ -6,8 +6,8 @@ import { temperament, OUTFITS } from '../data/appearance.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
 import { state, settings, saveGame, saveSettings, setFlag, formatTime } from '../state.js';
 import { SHOPS, GEAR, FACTIONS, tier } from '../data/shop.js';
-import { ITEMS, SKILLS, CAPTAIN_SKILLS } from '../data/battles.js';
-import { crewStats, ownsGear, BOND_HP, BOND_ATK, available, activeParty } from '../systems/party.js';
+import { ITEMS, SKILLS, TREES, TIERS, TYPES, RELEARN_COST, xpToNext, MAX_LEVEL } from '../data/battles.js';
+import { crewStats, ownsGear, BOND_HP, BOND_ATK, available, activeParty, level, pendingPicks, learn } from '../systems/party.js';
 import { Audio } from '../systems/audio.js';
 import { el, esc, openModal, toast, leaveWorld } from './ui.js';
 import { Hud } from './hud.js';
@@ -103,7 +103,7 @@ export function openPauseMenu() {
     ${head('The ship', 'ハイハット号')}
     <div class="sm-body">
       <nav class="sm-nav">
-        <button type="button" data-go="crew" autofocus>Crew</button>
+        <button type="button" data-go="crew" autofocus>Crew${['captain', 'rook', 'tam', 'brushes', 'rhea'].some(k => (k === 'captain' || available(k)) && pendingPicks(k)) ? ' <em class="dot">New skill</em>' : ''}</button>
         <button type="button" data-go="bag">Bag</button>
         <button type="button" data-go="standing">Standing</button>
         <button type="button" data-go="bounties">Bounties</button>
@@ -153,8 +153,8 @@ function openCrew(quiet) {
   const party = activeParty();
   const p = state.player, temp = temperament(p), cap = CAPTAIN_ROLES[temp];
   const cards = [
-    { key: 'captain', name: p.name, role: `Captain · ${cap.role}`, pt: playerPortrait(p), skills: CAPTAIN_SKILLS[temp], bio: `${OUTFITS[p.outfit].n}. ${temp} under pressure.`, color: 'var(--mustard)' },
-    ...['rook', 'tam', 'brushes', 'rhea'].filter(available).map(id => ({ key: id, name: CREW[id].name, role: CREW[id].role, pt: npcPortrait(id), skills: CREW[id].skillKeys, bio: CREW[id].bio, color: CREW[id].color }))
+    { key: 'captain', name: p.name, role: `Captain · ${cap.role}`, pt: playerPortrait(p), bio: `${OUTFITS[p.outfit].n}. ${temp} under pressure.`, color: 'var(--mustard)' },
+    ...['rook', 'tam', 'brushes', 'rhea'].filter(available).map(id => ({ key: id, name: CREW[id].name, role: CREW[id].role, pt: npcPortrait(id), bio: CREW[id].bio, color: CREW[id].color }))
   ].map(c => ({ ...c, st: crewStats(c.key) }));
   const node = el(`<div class="panel crew">
     ${head('Crew', 'クルー')}
@@ -163,10 +163,12 @@ function openCrew(quiet) {
         <span class="cc-pt">${c.pt}</span>
         <div class="cc-info">
           <b>${esc(c.name)}</b><small>${esc(c.role)}</small>
+          <div class="cc-lv"><span>Lv ${c.st.lv}</span><i class="bar xp"><i style="width:${xpPct(c.key)}%"></i></i><em>${xpText(c.key)}</em></div>
           <p class="cc-stats"><span>HP <b>${c.st.hp}</b></span><span>SP <b>${c.st.sp}</b></span><span>ATK <b>${c.st.atk}</b></span><span>DEF <b>${c.st.def}</b></span></p>
           ${c.key === 'captain' ? '<p class="cc-party lead">Leads every fight</p>' : `<button class="cc-party ${party.includes(c.key) ? 'on' : ''}" type="button" data-p="${c.key}">${party.includes(c.key) ? 'In the party' : 'On the bench'}</button>`}
           ${c.key === 'captain' ? '' : `<p class="bond" title="Bond">${[0, 1, 2].map(i => `<i class="${i < c.st.bond ? 'on' : ''}"></i>`).join('')}<span>Bond ${c.st.bond}</span></p>`}
-          <p class="skills">${(c.skills || []).map(k => `<span>${esc(SKILLS[k]?.n || k)}</span>`).join('')}</p>
+          <p class="skills">${c.st.skills.map(k => `<span>${esc(SKILLS[k]?.n || k)}</span>`).join('')}</p>
+          <button class="cc-tree ${pendingPicks(c.key) ? 'new' : ''}" type="button" data-tree="${c.key}">${pendingPicks(c.key) ? `Learn a new skill (${pendingPicks(c.key)})` : 'Skill tree'}</button>
           <p class="bio">${esc(c.bio)}</p>
         </div>
       </article>`).join('')}</div>
@@ -188,6 +190,49 @@ function openCrew(quiet) {
     Audio.sfx('tick');
     m.close(true); openCrew(true);
   }));
+  node.querySelectorAll('[data-tree]').forEach(b => b.addEventListener('click', () => { m.close(true); openTree(b.dataset.tree); }));
+}
+
+function xpPct(k) { const L = state.levels?.[k] || { lv: 1, xp: 0 }; return L.lv >= MAX_LEVEL ? 100 : Math.round(L.xp / xpToNext(L.lv) * 100); }
+function xpText(k) { const L = state.levels?.[k] || { lv: 1, xp: 0 }; return L.lv >= MAX_LEVEL ? 'Max level' : `${L.xp}/${xpToNext(L.lv)} XP`; }
+
+/* ---------------- Skill tree ---------------- */
+function openTree(key) {
+  Audio.sfx('confirm');
+  const name = key === 'captain' ? state.player.name : CREW[key].short;
+  const lv = level(key), picked = state.skills?.[key] || [];
+  const node = el(`<div class="panel tree">
+    ${head(`${esc(name)} · Skill tree`, 'スキル')}
+    <p class="tree-lead muted small">At each level marked below, pick one of two skills. Picks are permanent, but you can relearn them for ₡ ${RELEARN_COST}. ${esc(name)} is level ${lv}.</p>
+    <ol class="tree-list">${TREES[key].map((pair, i) => {
+      const need = TIERS[i], open = lv >= need, chosen = picked[i];
+      return `<li class="tier ${open ? 'open' : 'locked'} ${open && !chosen ? 'pick' : ''}">
+        <span class="tier-lv">Lv ${need}</span>
+        <div class="tier-opts">${pair.map(sk => {
+          const S = SKILLS[sk];
+          return `<button type="button" class="opt ${chosen === sk ? 'chosen' : ''} ${chosen && chosen !== sk ? 'other' : ''}" data-tier="${i}" data-sk="${sk}" ${!open || chosen ? 'disabled' : ''}>
+            <b>${esc(S.n)}</b><small>${S.cost} SP${S.type ? ' · ' + TYPES[S.type] : ''}</small><span>${esc(S.d)}</span></button>`;
+        }).join('<i class="or">or</i>')}</div>
+      </li>`;
+    }).join('')}</ol>
+    <div class="tree-foot">${picked.some(Boolean) ? `<button class="btn ghost" type="button" data-relearn ${state.chits < RELEARN_COST ? 'disabled' : ''}>Relearn all (₡ ${RELEARN_COST})</button>` : ''}<button class="btn" type="button" data-back>Back to crew</button></div>
+  </div>`);
+  const m = openModal(node);
+  wireClose(node, m);
+  node.querySelector('[data-back]').addEventListener('click', () => { m.close(true); openCrew(true); });
+  node.querySelectorAll('[data-sk]').forEach(b => b.addEventListener('click', () => {
+    if (!learn(key, +b.dataset.tier, b.dataset.sk)) return;
+    Audio.sfx('save'); toast(`${name} learned ${SKILLS[b.dataset.sk].n}`);
+    m.close(true); openTree(key);
+  }));
+  node.querySelector('[data-relearn]')?.addEventListener('click', e => {
+    const btn = e.currentTarget;
+    if (!btn.dataset.armed) { btn.dataset.armed = '1'; btn.textContent = `Tap again to forget all picks (₡ ${RELEARN_COST})`; return; }
+    if (state.chits < RELEARN_COST) return;
+    state.chits -= RELEARN_COST; state.skills[key] = [];
+    Audio.sfx('back'); toast(`${name}'s skill picks reset`); Hud.refresh();
+    m.close(true); openTree(key);
+  });
 }
 
 /* ---------------- Bag ---------------- */

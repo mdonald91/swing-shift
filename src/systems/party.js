@@ -1,21 +1,64 @@
-// Crew stats with gear and bonds applied. Used by combat and the crew screen.
-import { PARTY, ROSTER } from '../data/battles.js';
+// Crew stats with levels, gear and bonds applied. Used by combat and the crew screen.
+import { PARTY, ROSTER, GROWTH, MAX_LEVEL, xpToNext, CAPTAIN_SKILLS, TREES, TIERS } from '../data/battles.js';
+import { temperament } from '../data/appearance.js';
 import { GEAR } from '../data/shop.js';
 import { state } from '../state.js';
 
 export const BOND_HP = 10, BOND_ATK = 1;
+export const CREW_KEYS = ['captain', 'rook', 'tam', 'brushes', 'rhea'];
 
 export function ownsGear(id) { return (state.gear || []).includes(id); }
 
+export function level(key) { return state.levels?.[key]?.lv || 1; }
+
 export function crewStats(key) {
-  const base = PARTY[key];
+  const base = PARTY[key], g = GROWTH[key], lv = level(key), up = lv - 1;
   const bond = key === 'captain' ? 0 : (state.bonds?.[key] || 0);
-  let atk = base.atk + bond * BOND_ATK, def = base.def, hp = base.hp + bond * BOND_HP;
-  for (const g of GEAR) {
-    if (!ownsGear(g.id) || (g.who !== key && g.who !== 'all')) continue;
-    atk += g.atk || 0; def += g.def || 0;
+  let atk = Math.round(base.atk + g.atk * up) + bond * BOND_ATK;
+  let def = Math.round(base.def + g.def * up);
+  const hp = Math.round(base.hp + g.hp * up) + bond * BOND_HP;
+  const sp = Math.round(base.sp + g.sp * up);
+  for (const gear of GEAR) {
+    if (!ownsGear(gear.id) || (gear.who !== key && gear.who !== 'all')) continue;
+    atk += gear.atk || 0; def += gear.def || 0;
   }
-  return { ...base, atk, def, hp, sp: base.sp, bond };
+  return { ...base, atk, def, hp, sp, bond, lv, skills: knownSkills(key) };
+}
+
+// Starting skills plus everything picked from the skill tree.
+export function knownSkills(key) {
+  const start = key === 'captain' ? CAPTAIN_SKILLS[temperament(state.player)] : PARTY[key].skills;
+  return [...start, ...(state.skills?.[key] || []).filter(Boolean)];
+}
+
+// Tiers the crew member has reached but not yet picked a skill for.
+export function pendingPicks(key) {
+  const picked = state.skills?.[key] || [];
+  return TIERS.filter((lv, i) => level(key) >= lv && !picked[i]).length;
+}
+
+export function learn(key, tier, skill) {
+  state.skills ||= {};
+  const list = state.skills[key] ||= [];
+  if (!TREES[key][tier].includes(skill) || level(key) < TIERS[tier]) return false;
+  list[tier] = skill;
+  return true;
+}
+
+// Adds XP and returns how many levels were gained.
+export function addXp(key, amount) {
+  state.levels ||= {};
+  const L = state.levels[key] ||= { lv: 1, xp: 0 };
+  let gained = 0;
+  L.xp += Math.round(amount);
+  while (L.lv < MAX_LEVEL && L.xp >= xpToNext(L.lv)) { L.xp -= xpToNext(L.lv); L.lv++; gained++; }
+  if (L.lv >= MAX_LEVEL) L.xp = 0;
+  return gained;
+}
+
+export function partyAverageLevel() {
+  const keys = ['captain', ...activeParty()];
+  return keys.reduce((s, k) => s + level(k), 0) / keys.length;
 }
 
 export function startingGroove() {

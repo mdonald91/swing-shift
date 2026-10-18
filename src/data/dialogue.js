@@ -493,6 +493,32 @@ export const DIALOGUE = {
   core_helix: [{ set: 'core_helix' }, { rep: { helix: 2, office: -1 } }, { who: 'quill', t: 'A sensible choice. Helix remembers its friends.' }, { who: 'wren', t: '...Right. Of course.' }],
   core_sold: [{ set: 'core_sold' }, { rep: { office: -1 } }, { who: 'wren', t: "You'd sell it to the highest bidder? Fine. At least it isn't Helix." }],
 
+  // ---- optional side fights ----
+  smugglers: [
+    { who: 'smugglers', t: "This crate's spoken for, hunter. So's that one. And you, if you keep standing there." },
+    { choices: [{ t: 'Fight', do: 'fight', arg: 'smugglers' }, { t: 'Walk away' }] }
+  ],
+  loader: [
+    { who: null, t: 'A cargo loader is stuck on a loop, crushing empty crates. Its safety lights are blinking red. It turns towards you.' },
+    { choices: [{ t: 'Shut it down', do: 'fight', arg: 'loader' }, { t: 'Back away slowly' }] }
+  ],
+  alley: [
+    { who: 'alley', t: 'Nice ship you came in on. Be a shame if someone borrowed the codes.' },
+    { choices: [{ t: 'Fight', do: 'fight', arg: 'alley' }, { t: 'Keep walking' }] }
+  ],
+  maint: [
+    { who: null, t: 'A maintenance mech sits in the storeroom, humming. Its sensors flick on as you step closer.' },
+    { choices: [{ t: 'Fight', do: 'fight', arg: 'maint' }, { t: 'Leave it be' }] }
+  ],
+  jumpers: [
+    { who: 'jumpers', t: "Whatever you're digging for, it's ours now. Turn around, or get buried with it." },
+    { choices: [{ t: 'Fight', do: 'fight', arg: 'jumpers' }, { t: 'Turn around' }] }
+  ],
+  holo: [
+    { who: 'brushes', t: "My holo-rehearsal rig! Practise your timing against a holographic band. It grows with you. No chits, but plenty of experience." },
+    { choices: [{ t: 'Run a rehearsal', do: 'fight', arg: 'rehearsal' }, { t: 'Maybe later' }] }
+  ],
+
   door_done: [{ who: null, t: 'Warehouse 9-C is wrapped in Bounty Office tape. Somebody has drawn a tiny hat on it.' }],
 
   // ---- crew side chats (after Track 01) ----

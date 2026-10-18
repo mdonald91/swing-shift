@@ -111,6 +111,10 @@ export function lookPortrait(look) {
   );
 }
 
+function lookPortraitBody(id) {
+  return lookPortrait(NPC_LOOKS[id]).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+}
+
 export function playerPortrait(p) { return lookPortrait(resolveLook(p)); }
 
 // Fixed cast portraits.
@@ -169,6 +173,16 @@ export function npcPortrait(id) {
       <rect x="70" y="112" width="60" height="6" fill="#3a4258"/><rect x="70" y="124" width="60" height="6" fill="#3a4258"/>
       <path d="M100 54 V24" stroke="#5d6a80" stroke-width="5"/><circle cx="100" cy="20" r="7" fill="${P.crimson}"/>
       <rect class="mouth" x="80" y="136" width="40" height="5" fill="${P.crimson}" opacity=".7"/>`);
+    case 'mech': return svg(`
+      <rect x="20" y="170" width="160" height="70" rx="10" fill="#3a4258"/><rect x="34" y="180" width="132" height="10" fill="${P.mustard}"/>
+      <rect x="6" y="150" width="40" height="80" rx="8" fill="#5d6a80"/><rect x="154" y="150" width="40" height="80" rx="8" fill="#5d6a80"/>
+      <rect x="50" y="60" width="100" height="100" rx="12" fill="#5d6a80"/><rect x="50" y="60" width="100" height="16" rx="6" fill="#8d90a8"/>
+      <rect x="62" y="90" width="76" height="26" rx="4" fill="${INK}"/>
+      <g class="eyes"><circle cx="82" cy="103" r="8" fill="${P.crimson}"/><circle cx="118" cy="103" r="8" fill="${P.crimson}"/></g>
+      <rect class="mouth" x="74" y="130" width="52" height="8" fill="#3a4258"/><path d="M80 130 v8 M92 130 v8 M104 130 v8 M116 130 v8" stroke="${INK}" stroke-width="2"/>
+      <path d="M70 60 L60 36 M130 60 L140 36" stroke="#8d90a8" stroke-width="5"/><circle cx="60" cy="34" r="6" fill="${P.mustard}"/><circle cx="140" cy="34" r="6" fill="${P.mustard}"/>`);
+    case 'holo': return svg(`<g opacity=".85">${lookPortraitBody('holo')}</g>
+      <g stroke="#7fe0c8" stroke-width="2" opacity=".35">${Array.from({ length: 12 }, (_, i) => `<path d="M0 ${20 + i * 20} H200"/>`).join('')}</g>`);
     case 'drone': return svg(`<g class="bob">
       <ellipse cx="100" cy="128" rx="74" ry="44" fill="#3a4258"/><ellipse cx="100" cy="120" rx="74" ry="40" fill="#4a5470"/>
       <path d="M26 112 H174" stroke="#262a3a" stroke-width="6"/><rect x="20" y="104" width="22" height="12" fill="#262a3a"/><rect x="158" y="104" width="22" height="12" fill="#262a3a"/>
