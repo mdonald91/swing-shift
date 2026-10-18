@@ -63,7 +63,7 @@ export function openBoard() {
     const s = status(b);
     const anyActive = BOUNTIES.some(x => state.bounties[x.id] === 'active');
     let action;
-    if (s === 'locked') action = `<p class="lock">${esc(b.id === 'courier' && state.flags.ghost_done ? 'Track 03 arrives in the next build' : b.unlock)}</p>`;
+    if (s === 'locked') action = `<p class="lock">${esc(b.unlock)}</p>`;
     else if (s === 'active') action = `<p class="ok">In progress. Fly to the target from the cockpit.</p>`;
     else if (s === 'done') action = `<p class="ok">Completed.</p>`;
     else if (anyActive) action = `<p class="lock">Finish your current contract first.</p>`;

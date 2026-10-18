@@ -29,6 +29,8 @@ const MOODS = {
   victory: { bpm: 150, swing: .66, prog: [ch('F', 'maj7'), ch('D', 'dom7'), ch('G', 'm7'), ch('C', 'dom7')], ride: 1, horn: 1, comp: 1, kick: .3, always: 1 },
   // Cygnus Station: a rainy, neon bossa-swing
   station: { bpm: 112, swing: .56, prog: [ch('A', 'm7'), ch('D', 'dom7'), ch('G', 'maj7'), ch('C', 'maj7'), ch('Gb', 'm7b5'), ch('B', 'b9'), ch('E', 'm7'), ch('E', 'm7')], brush: 1, comp: 1, horn: 1, kick: .2 },
+  // Vesta: a dusty, minor-key mining-town groove
+  vesta: { bpm: 96, swing: .6, prog: [ch('D', 'm7'), ch('G', 'dom7'), ch('D', 'm7'), ch('G', 'dom7'), ch('C', 'm7'), ch('F', 'dom7'), ch('Bb', 'maj7'), ch('A', 'b9')], ride: 1, comp: 1, horn: 1, kick: .3 },
   // Brushes' song: which version plays depends on what the captain picked
   brushes_ballad: { bpm: 70, swing: .6, prog: [ch('Bb', 'maj7'), ch('G', 'm7'), ch('C', 'm7'), ch('F', 'dom7')], brush: 1, arp: 1, half: 1, horn: 1, always: 1 },
   brushes_bop: { bpm: 210, swing: .62, prog: [ch('Bb', 'maj7'), ch('G', 'b9'), ch('C', 'm7'), ch('F', 'dom7')], ride: 1, horn: 1, comp: 1, kick: .4, busy: 1, always: 1 }

@@ -192,7 +192,7 @@ export function droneSheet(hostile = false) {
 
 // ---- Ship tiles (16x16), in the order used by data/maps.js TILE ----
 export function tileSheet() {
-  const T = 16, cols = 8, count = 70;
+  const T = 16, cols = 8, count = 80;
   const cv = document.createElement('canvas');
   cv.width = T * cols; cv.height = T * Math.ceil(count / cols);
   const ctx = cv.getContext('2d');
@@ -338,6 +338,35 @@ export function tileSheet() {
   r = at(67); kwall(r); r(2, 2, 12, 8, '#5a647e'); r(3, 3, 10, 6, '#05060c'); [[4, 4], [9, 5], [11, 7], [6, 7]].forEach(([x, y]) => r(x, y, 1, 1, P.cream)); r(10, 3, 3, 2, '#f3c860');
   r = at(68); kfloor(r); r(0, 5, 16, 1, '#8a2a22'); r(0, 9, 16, 1, '#1d6663'); r(0, 7, 6, 1, '#a5741a'); r(9, 7, 7, 1, '#a5741a');
   r = at(69); kfloor(r); r(2, 3, 12, 11, '#5d6a80'); r(2, 3, 12, 2, '#8d90a8'); r(2, 8, 12, 1, '#46516a'); r(6, 5, 4, 2, P.mustard);
+
+  // ---- Vesta ----
+  const rock = r => { r(0, 0, 16, 16, '#1c1714'); [[3, 2], [11, 5], [6, 10], [13, 13], [1, 12], [9, 1]].forEach(([x, y]) => r(x, y, 2, 1, '#2a221e')); };
+  const dirt = r => {
+    r(0, 0, 16, 16, '#4a3a2e'); r(0, 15, 16, 1, '#3e3026');
+    [[2, 3], [9, 2], [13, 7], [5, 9], [11, 12], [3, 13]].forEach(([x, y]) => r(x, y, 1, 1, '#5e4a3a'));
+    [[7, 5], [12, 14]].forEach(([x, y]) => r(x, y, 2, 1, '#3a2c22'));
+  };
+  const market = r => {
+    r(0, 0, 16, 16, '#4c3e36'); r(0, 0, 16, 1, '#5a4a40'); r(0, 0, 1, 16, '#5a4a40'); r(15, 0, 1, 16, '#3c302a'); r(0, 15, 16, 1, '#3c302a');
+    r(7, 7, 2, 2, '#594a40');
+  };
+  const stall = (i, a, b) => {
+    r = at(i); market(r);
+    for (let x = 0; x < 16; x += 4) { r(x, 0, 2, 6, a); r(x + 2, 0, 2, 6, b); }
+    r(0, 6, 16, 1, '#2a1e18');
+    r(1, 7, 14, 8, '#6b4a2a'); r(1, 7, 14, 1, '#8a6a3a');
+    r(3, 9, 2, 2, P.mustard); r(7, 9, 3, 2, '#7fe0c8'); r(11, 9, 2, 2, P.crimson); r(1, 15, 14, 1, '#2a1e18');
+  };
+  r = at(70); rock(r);
+  r = at(71); r(0, 0, 16, 16, '#3a2e28'); r(0, 4, 16, 1, '#2e241f'); r(0, 9, 16, 1, '#2e241f'); r(3, 0, 1, 4, '#2e241f'); r(10, 5, 1, 4, '#2e241f'); r(6, 10, 1, 4, '#2e241f'); r(0, 14, 16, 2, '#1c1714'); r(0, 0, 16, 1, '#4a3c34');
+  r = at(72); dirt(r);
+  r = at(73); market(r);
+  stall(74, P.crimson, P.cream);
+  stall(75, P.teal, P.cream);
+  r = at(76); dirt(r); for (let x = 1; x < 16; x += 4) r(x, 4, 2, 9, '#3a2418'); r(0, 5, 16, 1, '#8d90a8'); r(0, 11, 16, 1, '#8d90a8'); r(0, 6, 16, 1, '#4a4e5e'); r(0, 12, 16, 1, '#4a4e5e');
+  r = at(77); dirt(r); r(7, 4, 2, 11, '#2c1e10'); r(5, 1, 6, 4, '#2c1e10'); r(6, 2, 4, 2, '#f3c860'); r(4, 0, 8, 1, '#2c1e10'); r(6, 14, 4, 2, '#1c1410');
+  r = at(78); r(0, 0, 16, 16, '#3a2e28'); r(0, 14, 16, 2, '#1c1714'); r(2, 2, 12, 14, '#2c1e10'); r(3, 3, 10, 13, '#6b4a2a');
+  for (let y = 5; y < 16; y += 3) r(3, y, 10, 1, '#4a321c'); r(10, 9, 2, 2, '#8d90a8'); r(2, 2, 12, 1, '#8a6a3a');
 
   r = at(31); dock(r); r(3, 3, 10, 12, '#2b8f8a'); r(3, 6, 10, 1, '#1d6663'); r(3, 11, 10, 1, '#1d6663'); r(3, 2, 10, 2, '#3fb0aa'); r(6, 2, 4, 1, '#1d6663'); r(3, 14, 10, 1, '#14403e');
   return cv;

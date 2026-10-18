@@ -41,6 +41,7 @@ Put MP3s in the `music/` folder with these names:
 | `ship.mp3` | Aboard the Hi-Hat | 76 bpm |
 | `tense.mp3` | Stakeouts and standoffs | 100 bpm |
 | `station.mp3` | Cygnus Station plaza | 112 bpm |
+| `vesta.mp3` | Vesta market and tunnels | 96 bpm |
 | `battle.mp3` | Combat | 192 bpm |
 | `victory.mp3` | Payday | 150 bpm |
 | `brushes.mp3` | Brushes' song (jukebox, after his side chat) | 120 bpm |
@@ -70,6 +71,7 @@ Saves are kept in the browser on each device (3 slots).
 - [x] **0.4 Hub life:** supply terminal and Ozzie's stall, new items (Hot Coffee, Patch Kit), gear upgrades, faction standing, crew side chats with bond perks, Brushes' song
 - [x] **0.5 Cygnus Station:** neon plaza in the rain, the Flat Ninth bar (rumours, Lou, Rhea), Kessler's Outfitters and Neon Noodle, busking with Old Sol, Helix Salvage offers Ghost Frequency
 - [x] **0.6 Track 02, Ghost Frequency:** Relay K-17 (dark until you restore power, doors, keycard, minimap), Rhea joins with her own skills, party selection, drone skirmish, the Warden boss, a choice with real consequences
-- [ ] **0.7 Track 03, The Missing Courier**
+- [x] **0.7 Track 03, The Missing Courier:** Vesta's market and mine tunnels, tailing a suspect using stalls as cover, the Sable and Vox duet boss, the first sign of the Conductor, what to do with the Helix tuning core
+- [ ] **0.8 Levels and skills** (see the full roadmap doc)
 
 Built with [Phaser 3](https://phaser.io) (MIT licence), included in `vendor/`.

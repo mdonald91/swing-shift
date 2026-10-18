@@ -48,7 +48,9 @@ export class WorldScene extends Phaser.Scene {
     this.player.body.setSize(10, 6).setOffset(3, 17);
     this.player.setCollideWorldBounds(true);
     this.physics.add.collider(this.player, this.layer);
-    this.facing = 'down';
+    this.facing = state.face || 'down';
+    state.face = null;
+    this.player.setFrame(DIRS.indexOf(this.facing) * 3);
 
     // crew
     this.npcs = [];
@@ -163,9 +165,93 @@ export class WorldScene extends Phaser.Scene {
     refresh();
     const off = bus.on('dialog-closed', refresh);
     this.events.once('shutdown', off);
+
+    // tailing a suspect (see the map's "tail" route)
+    this.tail = null;
+    const offTail = bus.on('tail-start', () => this.startTail());
+    this.events.once('shutdown', () => { offTail(); if (this.tail) bus.emit('tail-status', null); });
     Audio.setMood(map.music);
     bus.emit('area', map);
     bus.emit('minimap', map.minimap ? this.minimapData() : null);
+  }
+
+  startTail() {
+    const def = this.mapDef.tail;
+    if (!def || this.tail) return;
+    const key = 'npc-' + def.who;
+    if (!this.textures.exists(key)) addSheet(this, key, characterSheet(NPC_LOOKS[def.who]), 16, 24);
+    if (!this.anims.exists(key + '-walk-left')) this.makeAnims(key);
+    const [x0, y0] = def.path[0];
+    const spr = this.add.sprite(x0 * T + 8, y0 * T + 8, key, 0).setOrigin(0.5, 0.85);
+    const warn = this.add.image(spr.x, spr.y - 24, 'bubble').setDepth(5001).setVisible(false);
+    this.tail = {
+      def, key, spr, warn, i: 1, mode: 'walk', t: 0, close: 0, far: 0, look: null, sent: 0,
+      lost: state.flags.juno_protected ? 12 : 9      // Juno watches the market cameras for you
+    };
+    spr.anims.play(key + '-walk-right', true);
+  }
+
+  // Is there a solid tile between two points?
+  blocked(ax, ay, bx, by) {
+    const d = Math.hypot(bx - ax, by - ay), n = Math.ceil(d / 4);
+    for (let k = 1; k < n; k++) {
+      const t = this.layer.getTileAtWorldXY(ax + (bx - ax) * k / n, ay + (by - ay) * k / n);
+      if (t && SOLID.includes(t.index)) return true;
+    }
+    return false;
+  }
+
+  endTail(ok, reason) {
+    const tl = this.tail; if (!tl) return;
+    this.tail = null;
+    tl.warn.destroy();
+    if (ok) this.tweens.add({ targets: tl.spr, alpha: 0, duration: 500, onComplete: () => tl.spr.destroy() });
+    else tl.spr.destroy();
+    bus.emit('tail-status', null);
+    bus.emit('tail-end', { ok, reason });
+  }
+
+  updateTail(dt) {
+    const tl = this.tail, p = this.player, s = tl.spr, path = tl.def.path;
+    const toTile = v => v / T;
+    const dist = Math.hypot(p.x - s.x, p.y - s.y) / T;
+    const back = (from, to) => { const vx = from[0] - to[0], vy = from[1] - to[1], l = Math.hypot(vx, vy) || 1; return [vx / l, vy / l]; };
+    if (tl.mode === 'walk') {
+      const [tx, ty] = path[tl.i], gx = tx * T + 8, gy = ty * T + 8;
+      const dx = gx - s.x, dy = gy - s.y, d = Math.hypot(dx, dy), step = tl.def.speed * dt / 1000;
+      const dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
+      s.anims.play(tl.key + '-walk-' + dir, true);
+      if (d <= step) {
+        s.setPosition(gx, gy);
+        const pause = path[tl.i][2];
+        if (tl.i === path.length - 1) { this.endTail(true); return; }
+        if (pause) { tl.mode = 'warn'; tl.t = 650; tl.look = back(path[tl.i - 1], path[tl.i]); tl.pause = pause; s.anims.stop(); tl.warn.setVisible(true); }
+        tl.i++;
+      } else s.setPosition(s.x + dx / d * step, s.y + dy / d * step);
+    } else {
+      tl.t -= dt;
+      if (tl.mode === 'warn' && tl.t <= 0) {
+        tl.mode = 'look'; tl.t = tl.pause; tl.warn.setVisible(false);
+        const [lx, ly] = tl.look;
+        s.setFrame(DIRS.indexOf(Math.abs(lx) > Math.abs(ly) ? (lx < 0 ? 'left' : 'right') : (ly < 0 ? 'up' : 'down')) * 3);
+      } else if (tl.mode === 'look') {
+        const vx = (p.x - s.x) / T, vy = (p.y - s.y) / T, l = Math.hypot(vx, vy) || 1;
+        const facing = (vx * tl.look[0] + vy * tl.look[1]) / l > 0.2;
+        if (dist < 7 && facing && !this.blocked(s.x, s.y - 8, p.x, p.y - 8)) { this.endTail(false, 'spotted'); return; }
+        if (tl.t <= 0) tl.mode = 'walk';
+      }
+    }
+    tl.warn.setPosition(s.x, s.y - 24);
+    s.setDepth(s.y);
+    tl.close = dist < 1.5 ? tl.close + dt : 0;
+    tl.far = dist > tl.lost ? tl.far + dt : 0;
+    if (tl.close > 900) { this.endTail(false, 'close'); return; }
+    if (tl.far > 3000) { this.endTail(false, 'lost'); return; }
+    tl.sent -= dt;
+    if (tl.sent <= 0) {
+      tl.sent = 100;
+      bus.emit('tail-status', { dist, lost: tl.lost, mode: tl.mode, x: toTile(s.x), y: toTile(s.y) });
+    }
   }
 
   minimapData() {
@@ -272,6 +358,7 @@ export class WorldScene extends Phaser.Scene {
     this.npcs.forEach(n => n.setDepth(n.footY));
     state.pos = { px: Math.round(p.x), py: Math.round(p.y) };
     if (this.dark) this.dark.setPosition(p.x, p.y - 6);
+    if (this.tail) { this.updateTail(dt); if (!this.scene.isActive()) return; }
     if (this.mapDef.minimap && (!this._mm || time - this._mm > 150)) { this._mm = time; bus.emit('minimap-pos', p.x / T, p.y / T); }
 
     const target = this.findTarget();

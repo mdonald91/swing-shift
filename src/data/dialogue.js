@@ -20,7 +20,7 @@ export function entry(id, flags, location) {
   if (chatAvailable(id, flags, location)) return id + '_chat';
   switch (id) {
     case 'rook': return docks ? 'rook_docks' : flags.velvet_done ? 'rook_after' : flags.met_rook ? 'rook_idle' : 'rook_first';
-    case 'tam': return docks ? 'tam_docks' : flags.velvet_done ? 'tam_after' : flags.met_tam ? 'tam_idle' : 'tam_first';
+    case 'tam': return location === 'vesta' ? 'tam_vesta' : docks ? 'tam_docks' : flags.velvet_done ? 'tam_after' : flags.met_tam ? 'tam_idle' : 'tam_first';
     case 'brushes': return location === 'relay' ? 'brushes_relay' : flags.velvet_done ? 'brushes_after' : flags.met_brushes ? 'brushes_idle' : 'brushes_first';
     case 'ozzie': return flags.met_ozzie ? 'ozzie_idle' : 'ozzie_first';
     case 'cockpit':
@@ -30,10 +30,17 @@ export function entry(id, flags, location) {
     case 'sax': return flags.busked_visit ? 'sax_after' : 'sax';
     case 'rhea':
       if (location === 'relay') return 'rhea_relay';
+      if (location === 'vesta') return 'rhea_vesta';
       if (location === 'ship') return 'rhea_ship';
       return flags.rhea_met ? 'rhea_idle' : 'rhea_first';
     case 'drone': return 'drones';
     case 'juno': return 'juno';
+    case 'pell': return flags.tail_done ? 'pell_idle' : flags.met_pell ? 'pell_retry' : 'pell_first';
+    case 'wren': return 'wren';
+    case 'quill': return 'quill';
+    case 'scav': return 'scavs';
+    case 'chest_vesta': return flags.vesta_chest ? 'chest_vesta_done' : flags.scavs_cleared ? 'chest_vesta' : 'chest_vesta_blocked';
+    case 'door_hideout': return flags.tail_done ? 'door_hideout_open' : 'door_hideout';
     case 'generator': return flags.power_on ? 'generator_done' : 'generator';
     case 'lockers': return flags.k17_keycard ? 'lockers_done' : flags.power_on ? 'lockers' : 'lockers_dark';
     case 'cryo': return flags.cryo_found ? 'cryo_done' : 'cryo';
@@ -185,10 +192,15 @@ export const DIALOGUE = {
       { t: 'Cygnus Station', go: 'nav_cygnus' },
       { t: 'Dock 9, Ganymede', go: 'cockpit_back' },
       { t: 'Relay K-17', if: 'bounty_ghost', go: 'nav_k17' },
+      { t: 'Vesta', if: 'bounty_courier', go: 'nav_vesta' },
       { t: 'Stay put' }
     ] }
   ],
   nav_cygnus: [{ do: 'toCygnus' }],
+  nav_vesta: [
+    { if: 'vesta_arrived', do: 'toVesta' },
+    { ifNot: 'vesta_arrived', do: 'departVesta' }
+  ],
   nav_k17: [
     { if: 'ghost_done', who: null, t: 'Relay K-17 is sealed by the Bounty Office now. Nothing left out there but static.' },
     { ifNot: 'ghost_done', if: 'k17_arrived', do: 'toRelay' },
@@ -390,6 +402,96 @@ export const DIALOGUE = {
     { who: 'hale', t: 'A professional. How refreshing. Payment in full is on its way.' },
     { who: 'juno', t: '...I thought you were different.' }
   ],
+
+  // ---- Vesta: Track 03 ----
+  lift_vesta: [
+    { who: null, t: 'A cage lift rattles down to the docking bay, where the Hi-Hat is parked. Head back aboard?' },
+    { choices: [{ t: 'Ride down to the Hi-Hat', go: 'ship_board' }, { t: 'Stay in the market' }] }
+  ],
+  tam_vesta: [{ who: 'tam', pick: [
+    "Vesta's got the best scrap market in the belt. If we live, I'm shopping.",
+    "Pell's the broker in the purple suit, top left. He sells information by the gram.",
+    "Rook's minding the ship. By which I mean asleep in the cockpit."
+  ] }],
+  rhea_vesta: [
+    { who: 'rhea', ifNot: 'tail_done', t: 'If you tail someone, use the stalls. Line of sight is everything. Trust me, I used to watch people for a living.' },
+    { who: 'rhea', if: 'tail_done', t: "Nice work. You're a natural sneak, Captain. I'm choosing to find that reassuring." }
+  ],
+  pell_first: [
+    { set: 'met_pell' },
+    { who: 'pell', t: 'Wren Castillo? Lovely girl. Paid me to forget her face.' },
+    { who: 'pell', t: 'Then a gentleman in a grey coat paid me double to remember it. Fennick. He has been asking where she is hiding.' },
+    { who: 'pell', t: 'I told him nothing, of course. But he found out anyway. He is leaving for her hideout right now.' },
+    { go: 'pell_offer' }
+  ],
+  pell_offer: [
+    { choices: [
+      { t: "I'll follow him.", go: 'pell_tail' },
+      { t: 'Any tips for tailing someone?', go: 'pell_tips' },
+      { t: 'Why are you helping me?', temp: 'Calm', go: 'pell_why' },
+      { t: 'And how much do I owe you for this?', temp: 'Sarcastic', go: 'pell_owe' },
+      { t: 'Wren could be in danger. Which way?', temp: 'Idealistic', go: 'pell_tail' },
+      { t: 'You sold her out. I should cuff you too.', temp: 'Ruthless', go: 'pell_threat' }
+    ] }
+  ],
+  pell_tips: [
+    { who: 'pell', t: 'Not too close, not too far. Fennick stops to check behind him. When he does, be behind a stall, or a crate, or another person with excellent posture.' },
+    { go: 'pell_offer' }
+  ],
+  pell_why: [{ who: 'pell', t: 'Fennick paid me in counterfeit chits. Velvet Moreau specials. I take that personally.' }, { go: 'pell_offer' }],
+  pell_owe: [{ who: 'pell', t: "Nothing. Fennick's chits were fake. Consider this my revenge." }, { go: 'pell_offer' }],
+  pell_threat: [{ who: 'pell', t: 'You could. But then who would tell you he is leaving right now?' }, { go: 'pell_offer' }],
+  pell_tail: [{ who: 'pell', t: 'There. Grey coat, by the stalls. Go.' }, { set: 'tail_started' }, { do: 'tail' }],
+  pell_retry: [
+    { who: 'pell', t: 'Fennick doubled back to the noodle cart to sulk. He is about to leave again. Another try?' },
+    { choices: [{ t: 'Follow him', go: 'pell_tail' }, { t: 'Tips, please', go: 'pell_tips2' }, { t: 'Not yet' }] }
+  ],
+  pell_tips2: [{ who: 'pell', t: 'When the ! appears over his head, he is about to look back. Get a stall between you, or get far away.' }, { go: 'pell_retry' }],
+  pell_idle: [{ who: 'pell', t: 'Information is like noodles, hunter. Best served hot, and never ask what is in it.' }],
+  tail_done: [
+    { who: null, t: 'Fennick slips through a battered door at the end of the tunnel. The lock does not catch behind him.' },
+    { who: 'brushes', t: 'Captain, the door is open. Somebody inside is humming. Badly.' }
+  ],
+  tail_fail_spotted: [{ who: null, t: 'Fennick turns, sees you and melts into the crowd. Pell waves you over from his stall.' }],
+  tail_fail_close: [{ who: null, t: 'You get so close you could read his collar tag. He notices. He bolts. Pell sighs at you from across the market.' }],
+  tail_fail_lost: [{ who: null, t: 'The grey coat disappears into the crowd. You lost him. Back to Pell.' }],
+  door_hideout: [{ who: null, t: 'A heavy wooden door, bolted from the inside.' }],
+  door_hideout_open: [{ who: null, t: 'The hideout door hangs open.' }],
+  wren: [
+    { who: 'wren', t: 'Stay back! ...Wait. You are not Fennick. You are not Helix either. Helix wears nicer shoes.' },
+    { do: 'courierFound' }
+  ],
+  quill: [{ who: 'quill', pick: [
+    'Helix Salvage values its partners, Captain. I am simply here to observe. Do carry on.',
+    'A courier with a sealed case. How intriguing. Helix is always interested in sealed cases.',
+    'Director Hale sends her warmest regards. She is not a warm person, so they are lukewarm.'
+  ] }],
+  scavs: [
+    { who: 'scav', t: "This tunnel's ours. Toll is everything in your pockets." },
+    { choices: [{ t: 'Fight', do: 'fightScavs' }, { t: 'Back off' }] }
+  ],
+  chest_vesta_blocked: [{ who: null, t: 'A crate behind the scavengers. You would have to get past them first.' }],
+  chest_vesta: [{ set: 'vesta_chest' }, { do: 'vestaChest' }, { who: null, t: 'Inside the crate: a scavenger stash. 500 chits and two Neon Curries, still warm somehow.' }],
+  chest_vesta_done: [{ who: null, t: 'An empty crate. Somebody has drawn a sad face inside it.' }],
+  hideout_crates: [{ who: null, t: 'Packing crates labelled HELIX SALVAGE: FRAGILE: DO NOT OPEN. One has been opened.' }],
+  stall: [{ who: null, pick: ['A stall selling drill bits, glow-moss and suspicious meat on sticks.', 'Second-hand spacesuits. One still has a name tag: DAVE.', 'A noodle cart. The cook is arguing with a robot about broth.'] }],
+  lantern: [{ who: null, t: 'A mining lantern. It flickers like it has opinions.' }],
+  rockwall: [{ who: null, t: 'Raw asteroid rock, carved by a hundred years of drills.' }],
+  case_choice: [
+    { who: 'wren', t: 'The core in my case is a Helix tuning core. One piece of the listening array. Without it, the next relay stays deaf.' },
+    { who: 'quill', if: 'juno_handed', t: 'Helix will pay handsomely for its property, Captain. Handsomely.' },
+    { who: 'wren', t: "I can't keep running with it. You decide what happens to it." },
+    { choices: [
+      { t: 'The Bounty Office gets it, as evidence.', go: 'core_office' },
+      { t: 'Keep it aboard the Hi-Hat. Brushes wants a look.', go: 'core_kept' },
+      { t: 'Hand it to Mr Quill for Helix.', if: 'juno_handed', go: 'core_helix' },
+      { t: 'Sell it to Kessler. Parts are parts.', temp: 'Ruthless', go: 'core_sold' }
+    ] }
+  ],
+  core_office: [{ set: 'core_office' }, { rep: { office: 1, helix: -1 } }, { who: 'wren', t: "Evidence. Good. Let them try to explain this one away." }],
+  core_kept: [{ set: 'core_kept' }, { do: 'bond', arg: 'brushes' }, { who: 'brushes', t: 'It hums in four-four. I already like it. I am naming it Kevin.' }],
+  core_helix: [{ set: 'core_helix' }, { rep: { helix: 2, office: -1 } }, { who: 'quill', t: 'A sensible choice. Helix remembers its friends.' }, { who: 'wren', t: '...Right. Of course.' }],
+  core_sold: [{ set: 'core_sold' }, { rep: { office: -1 } }, { who: 'wren', t: "You'd sell it to the highest bidder? Fine. At least it isn't Helix." }],
 
   door_done: [{ who: null, t: 'Warehouse 9-C is wrapped in Bounty Office tape. Somebody has drawn a tiny hat on it.' }],
 

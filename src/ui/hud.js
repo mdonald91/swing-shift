@@ -15,7 +15,16 @@ export function objective() {
     if (!f.cygnus_arrived) return chats < 3 ? `Catch up with your crew (${chats}/3), then fly to Cygnus Station` : 'Fly to Cygnus Station from the cockpit';
     if (!f.ghost_offered) return 'Visit Helix Salvage on the Cygnus plaza';
     if (!f.bounty_ghost) return 'Accept Ghost Frequency on the bounty board';
-    if (f.ghost_done) return 'Track 02 complete. Track 03 is coming.';
+    if (f.courier_done) return 'Track 03 complete. Levels and skills arrive next build.';
+    if (f.ghost_done) {
+      if (!f.bounty_courier) return 'Accept The Missing Courier on the bounty board';
+      if (state.location === 'vesta') {
+        if (!f.met_pell) return 'Find Pell the broker in the market';
+        if (!f.tail_done) return 'Tail the man in the grey coat';
+        return 'Find Wren behind the hideout door';
+      }
+      return 'Fly to Vesta from the cockpit';
+    }
     if (state.location === 'relay') {
       if (!f.power_on) return 'Restore power at the generator';
       if (!f.k17_keycard) return 'Search the crew quarters';
@@ -47,6 +56,11 @@ export const Hud = {
         <button class="hud-menu" id="hud-menu" type="button">Menu</button>
       </div>
       <canvas class="minimap" id="minimap" hidden aria-label="Map"></canvas>
+      <div class="tailmeter panel" id="tailmeter" hidden>
+        <p class="eyebrow">Tailing Fennick</p>
+        <div class="tm-bar"><i class="tm-zone"></i><i class="tm-mark"></i></div>
+        <p class="tm-status"></p>
+      </div>
       <div class="hud-hint" id="hud-hint" hidden><kbd class="k-key">Space</kbd><kbd class="k-touch">A</kbd><span></span></div>
       <div class="stick-zone" id="stick-zone"><div class="stick" id="stick" hidden><i class="knob" id="knob"></i></div></div>
       <button class="btn-a" id="btn-a" type="button" aria-label="Interact">A</button>
@@ -81,8 +95,31 @@ export const Hud = {
       mmData.forEach((row, y) => row.forEach((v, x) => { if (v) { c.fillStyle = col[v]; c.fillRect(x * C, y * C, C, C); } }));
       if (mmPos) { c.fillStyle = '#e9b23a'; c.fillRect(Math.floor(mmPos[0]) * C - 1, Math.floor(mmPos[1]) * C - 1, C + 2, C + 2); }
     };
-    bus.on('minimap', d => { mmData = d; drawMM(); });
-    bus.on('minimap-pos', (x, y) => { mmPos = [x, y]; drawMM(); });
+    let mmMark = null;
+    const drawMark = () => {
+      if (!mmMark || !mmData) return;
+      const c = mm.getContext('2d'), C = 3;
+      c.fillStyle = '#d5473b'; c.fillRect(Math.floor(mmMark[0]) * C - 1, Math.floor(mmMark[1]) * C - 1, C + 2, C + 2);
+    };
+    bus.on('minimap', d => { mmData = d; drawMM(); drawMark(); });
+    bus.on('minimap-pos', (x, y) => { mmPos = [x, y]; drawMM(); drawMark(); });
+    const tm = root.querySelector('#tailmeter');
+    bus.on('tail-status', st => {
+      tm.hidden = !st;
+      mmMark = st && state.flags.juno_protected ? [st.x, st.y] : null;
+      if (!st) return;
+      const max = st.lost + 2, pct = v => Math.max(0, Math.min(100, v / max * 100));
+      tm.querySelector('.tm-zone').style.left = pct(2.5) + '%';
+      tm.querySelector('.tm-zone').style.width = (pct(st.lost - 1) - pct(2.5)) + '%';
+      tm.querySelector('.tm-mark').style.left = pct(st.dist) + '%';
+      let msg, cls;
+      if (st.mode === 'warn') { msg = "He's about to look back. Get behind a stall!"; cls = 'warn'; }
+      else if (st.mode === 'look') { msg = 'He is looking back. Stay out of sight.'; cls = 'bad'; }
+      else if (st.dist < 2) { msg = 'Too close!'; cls = 'bad'; }
+      else if (st.dist > st.lost - 1) { msg = 'Losing him...'; cls = 'warn'; }
+      else { msg = 'Good distance'; cls = 'good'; }
+      const el = tm.querySelector('.tm-status'); el.textContent = msg; el.className = 'tm-status ' + cls;
+    });
   },
   show() { root.hidden = false; Hud.refresh(); },
   hide() { root.hidden = true; },
@@ -97,10 +134,13 @@ export const Hud = {
     if (text) hintEl.querySelector('span').textContent = text;
   },
   area(map) {
+    const same = Hud._lastArea === map.name;
+    Hud._lastArea = map.name;
     locEl.name.textContent = map.name; locEl.jp.textContent = map.jp;
     areaEl.querySelector('.ac-jp').textContent = map.jp;
     areaEl.querySelector('.ac-name').textContent = map.name;
     areaEl.querySelector('.ac-where').textContent = map.where;
+    if (same) { Hud.refresh(); return; }
     areaEl.hidden = true; void areaEl.offsetWidth; areaEl.hidden = false;
     clearTimeout(areaEl._t);
     areaEl._t = setTimeout(() => { areaEl.hidden = true; }, 3200);

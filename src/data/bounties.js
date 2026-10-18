@@ -14,14 +14,14 @@ export const BOUNTIES = [
   },
   {
     id: 'courier', name: 'The Missing Courier', sub: 'Person of interest · Vesta',
-    reward: 18000, risk: 'C', portrait: 'unknown', track: 'Track 03',
-    client: 'Private', wanted: 'Found and returned', unlock: 'Opens after Track 02',
-    desc: 'A courier vanished between Vesta and the inner belt with a sealed case nobody will describe.'
+    reward: 18000, risk: 'C', portrait: 'wren', track: 'Track 03',
+    client: 'Ada Castillo, her sister', wanted: 'Found and returned', requires: 'ghost_done', unlock: 'Finish Track 02 first',
+    desc: 'Wren Castillo, a courier, vanished on Vesta with a sealed case nobody will describe. Her sister wants her home.'
   },
   {
     id: 'mantis', name: 'Iron Mantis', sub: 'Security mech · Targon',
     reward: 32000, risk: 'A', portrait: 'unknown', track: 'Track 04',
-    client: 'Targon Mining Co.', wanted: 'Disabled', unlock: 'Needs a full crew',
+    client: 'Targon Mining Co.', wanted: 'Disabled', unlock: 'Track 04 arrives in a later build',
     desc: 'A mining security mech has gone rogue and claimed a whole shaft as its own.'
   },
   {

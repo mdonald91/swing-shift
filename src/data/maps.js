@@ -12,18 +12,22 @@ export const TILE = {
   's': 32, 'w': 33, 'S': 34, 'N': 35, 'M': 36, 'Y': 37, 'd': 38, 'Q': 39, 'u': 40, 'l': 41,
   'k': 43, 'X': 44, 'F': 45, 'A': 46, 'z': 47, 'I': 48, 'J': 49, 'n': 50, 'U': 51, 'h': 52, 'E': 53,
   // Relay K-17 (1 and 2 are doors that open later)
-  'q': 54, 'Z': 55, 'm': 56, 'y': 57, '1': 58, '2': 59, '3': 61, '4': 62, '5': 63, '6': 64, '7': 65, '8': 66, '9': 67, '!': 68, '$': 69
+  'q': 54, 'Z': 55, 'm': 56, 'y': 57, '1': 58, '2': 59, '3': 61, '4': 62, '5': 63, '6': 64, '7': 65, '8': 66, '9': 67, '!': 68, '$': 69,
+  // Vesta
+  '%': 70, '&': 71, '-': 72, ':': 73, '(': 74, ')': 75, '|': 76, '*': 77, '+': 78
 };
 export const DOOR_OPEN = 60;
 // Tiles you can't walk through.
 export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31,
   34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 46, 48, 49, 50, 51, 52, 53,
-  54, 55, 58, 59, 61, 62, 63, 64, 65, 66, 67, 69];
+  54, 55, 58, 59, 61, 62, 63, 64, 65, 66, 67, 69,
+  70, 71, 74, 75, 77, 78];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
 export const TILE_LOOKS = {
   20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
   34: 'storefront', 35: 'neon', 36: 'neon', 37: 'neon', 41: 'neonlamp', 43: 'planter', 44: 'railing',
   48: 'piano', 49: 'bottles', 50: 'bartable', 51: 'booth',
+  74: 'stall', 75: 'stall', 77: 'lantern', 71: 'rockwall',
   61: 'console_k17', 63: 'racks', 64: 'cryo_look', 65: 'bunk', 66: 'locker', 67: 'window_k17', 69: 'crate_k17'
 };
 
@@ -237,6 +241,64 @@ export const MAPS = {
       { id: 'door_power', x: 28, y: 9, label: 'Door' },
       { id: 'door_key', x: 28, y: 6, label: 'Comms hub door' },
       { id: 'airlock_k17', x: 6, y: 15, label: 'Airlock to the Hi-Hat' }
+    ]
+  },
+
+  vesta: {
+    name: 'Vesta',
+    jp: 'ベスタ',
+    where: 'Mining colony, market ring',
+    music: 'vesta',
+    minimap: true,
+    rows: [
+      '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',
+      '%&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&%',
+      '%:*:::::::::*:::::::::*::::::::*:%',
+      '%:::::((:::::::)):::::::((:::::::%',
+      '%::::::::::::::::::::::::::::::::%',
+      '%::::::::::::::::::::::::::::::::%',
+      '%::)):::::(((::::::)):::::::((:::%',
+      '%::::::::::::::::::::::::::::::::%',
+      '%::::::((:::::::)):::::((::::::::%',
+      '%::::::::::::::::::::::::::::::::%',
+      '%&&D&&&&&&&&&&&&&&&&&&&&&&&--&&&&%',
+      '%%&&&&&&%&&&&&&&&&&&&&&&&&&--&&&%%',
+      '%%xx---*&----xx-*---x---o-----x-%%',
+      '%%------+-----------------------%%',
+      '%%------&|||||||||||||||||||||||%%',
+      '%%------%%%%%%%%%%--%%%%%%%%%%%%%%',
+      '%%------%%%%%%%--------x%%%%%%%%%%',
+      '%%o-----%%%%%%%xo-------%%%%%%%%%%',
+      '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',
+      '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+    ],
+    doors: [{ x: 8, y: 13, flag: 'tail_done' }],
+    spawns: { default: { x: 3, y: 9, face: 'up' }, pell: { x: 5, y: 5, face: 'right' } },
+    // the man in the grey coat walks this route; "look" makes him stop and check behind him (ms)
+    tail: {
+      who: 'fennick',
+      path: [[9, 4], [13, 4], [13, 5], [18, 5], [22, 5, 1600], [22, 7], [26, 7, 1600], [27, 7], [27, 9], [27, 12], [27, 13, 1700], [18, 13], [12, 13, 1600], [9, 13], [8, 13]],
+      speed: 34
+    },
+    npcs: [
+      { id: 'pell', x: 4, y: 4, face: 'right' },
+      { id: 'tam', x: 5, y: 9, face: 'up' },
+      { id: 'rhea', x: 7, y: 9, face: 'up', if: 'rhea_joined' },
+      { id: 'quill', x: 20, y: 3, face: 'down', if: 'juno_handed', ifNot: 'courier_done' },
+      { id: 'wren', x: 4, y: 14, face: 'right', ifNot: 'courier_done' },
+      { id: 'scav', x: 18, y: 15, face: 'up', look: 'scav', ifNot: 'scavs_cleared' },
+      { id: 'scav', x: 19, y: 15, face: 'up', look: 'scav2', ifNot: 'scavs_cleared' }
+    ],
+    walkers: [
+      { look: 'v1', y: 5, x1: 3, x2: 30, speed: 20 },
+      { look: 'v2', y: 7, x1: 29, x2: 4, speed: 17 },
+      { look: 'v3', y: 9, x1: 10, x2: 25, speed: 15 }
+    ],
+    objects: [
+      { id: 'lift_vesta', x: 3, y: 10, label: 'Lift to the docking bay' },
+      { id: 'chest_vesta', x: 23, y: 16, label: 'Search the crate' },
+      { id: 'hideout_crates', x: 2, y: 12, w: 2, label: 'Look' },
+      { id: 'door_hideout', x: 8, y: 13, label: 'Door' }
     ]
   }
 };

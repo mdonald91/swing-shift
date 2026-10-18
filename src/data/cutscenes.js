@@ -118,5 +118,53 @@ export const CUTSCENES = {
     { l: 'player', who: 'player', line: 'We did what we came to do.',
       byTemp: { Calm: 'We did what we had to. Get some rest, everyone.', Sarcastic: 'Another relaxing day at the office.', Idealistic: 'Whatever comes next, we face it together.', Ruthless: 'Next job pays better. It has to.' } },
     { l: null, r: null, card: { track: 'Next session', name: 'The Missing Courier' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+
+  vesta_depart: [
+    { bg: 'lounge', mood: 'ship', l: 'player', r: 'brushes', who: 'brushes', line: 'Vesta. Most tunnels per person of any rock in the belt. Also most noodle carts. Coincidence? Yes.' },
+    { r: 'tam', who: 'tam', line: "Wren Castillo's a courier. Her sister Ada posted the bounty. Wren went quiet on Vesta four days ago." },
+    { r: 'rhea', if: 'rhea_joined', who: 'rhea', line: 'A courier carrying something nobody will name. In my experience, that means it is worth a lot to someone horrible.' },
+    { r: 'rook', who: 'rook', line: "I'll mind the ship. Somebody has to." },
+    { r: 'brushes', who: 'brushes', sfx: 'countin', line: 'Vesta, locked in. One... two... one, two, three, four!' },
+    { l: null, r: null, card: { track: 'Track 03', name: 'The Missing Courier' }, mood: 'title', sfx: 'cymbal', fx: 'flash' },
+    { bg: 'vesta', mood: 'vesta', caption: 'Vesta, the market ring. Drill dust, lantern light and a thousand people minding their own business.' }
+  ],
+
+  vesta_arrive: [
+    { bg: 'vesta', mood: 'vesta', l: 'tam', r: 'brushes', who: 'tam', line: 'Pell the broker trades in gossip. Purple suit, top of the market. Start with him.' },
+    { if: 'juno_protected', r: 'juno', who: 'juno', line: "Captain, it's Juno. I owe you. I'm in Vesta's market cameras. Anyone you follow, I'll mark on your map." },
+    { if: 'juno_protected', who: 'juno', line: 'Also, I bought you a present. Two Patch Kits, left with your crew. Use them.' },
+    { if: 'juno_handed', r: 'quill', who: 'quill', line: 'Captain. Mr Quill, Helix Salvage. Director Hale asked me to observe your work. Please, pretend I am not here.' },
+    { if: 'juno_handed', l: 'tam', who: 'tam', line: "He's going to stand right there the whole time, isn't he." }
+  ],
+
+  courier_found: [
+    { bg: 'tunnel', mood: 'tense', l: 'player', r: 'wren', who: 'wren', line: 'Ada sent you? My sister worries. She is usually right to.' },
+    { who: 'wren', line: "Helix hired me to carry a sealed case. I peeked. I wasn't supposed to peek. Now everyone wants me dead." },
+    { r: 'sable', fx: 'shake', who: 'sable', line: 'Wren, darling. The Conductor wants his property back.' },
+    { r: 'vox', who: 'vox', line: '...And the bounty hunters gone.' },
+    { l: 'player', who: 'player', line: "Who's the Conductor?",
+      byTemp: { Calm: "Nobody needs to get hurt. Who's the Conductor?", Sarcastic: 'A singer and a bass player. Did we walk into an open mic?', Idealistic: "You're not taking her anywhere.", Ruthless: 'Two more bounties, walking right up to me. Convenient.' } },
+    { r: 'sable', who: 'sable', line: 'Someone who appreciates harmony. Vox, darling. From the top.', sfx: 'cymbal' }
+  ],
+
+  duet_victory: [
+    { bg: 'tunnel', mood: 'tense', l: 'player', r: 'vox', who: 'vox', line: '...Missed the cue.' },
+    { r: 'conductor', who: 'conductor', fx: 'shake', line: "Vox. Sable. I do hate loose ends. You're both off the programme." },
+    { r: 'sable', who: 'sable', line: "That's the Conductor, on Vox's earpiece. Darling, I think we've been fired." },
+    { l: 'rhea', if: 'rhea_joined', who: 'rhea', line: 'That signal routes through Helix. Same encryption as K-17. The Conductor is inside Helix, or owns it.' },
+    { l: 'player', r: 'wren', who: 'wren', line: "You saved my life. Now let's talk about the case." }
+  ],
+
+  courier_ending: [
+    { bg: 'lounge', mood: 'ship', l: 'tam', r: 'brushes', who: 'tam', line: 'Wren is home with Ada. Ada sent noodles. Proper ones.' },
+    { if: 'core_kept', who: 'brushes', line: 'Kevin the tuning core is humming in the cargo bay. I believe Kevin is trying to say something.' },
+    { if: 'core_office', who: 'brushes', line: "The Bounty Office logged the core as evidence. Someone at Helix is having a very bad day." },
+    { if: 'core_helix', who: 'brushes', line: 'Mr Quill took the core and left a fruit basket. The fruit is very expensive and very sad.' },
+    { if: 'core_sold', who: 'brushes', line: 'Kessler paid well for the core. He asked no questions. I asked several. He did not answer them.' },
+    { l: 'rhea', if: 'rhea_joined', r: 'brushes', who: 'rhea', line: 'The Conductor. Whoever they are, they know our names now.' },
+    { l: 'player', who: 'player', line: "Then we'd better get stronger.",
+      byTemp: { Calm: 'Then we prepare. Rest up, everyone.', Sarcastic: 'Great. Fan mail.', Idealistic: "Then we'll be ready when they come.", Ruthless: 'Good. Let them come.' } },
+    { l: null, r: null, card: { track: 'Next session', name: 'Iron Mantis' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
   ]
 };

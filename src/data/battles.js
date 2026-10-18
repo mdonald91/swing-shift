@@ -62,8 +62,26 @@ export const ITEMS = {
 
 // Encounter fields: bg backdrop; noRun text if you can't flee; bounty id for story fights
 // (cutscene + ledger after); otherwise flag + reward for a skirmish.
-// Enemy ai: velvet | warden | grunt (default). machine: true makes Feedback Loop hit harder.
+// Enemy ai: velvet | warden | duet | grunt (default). machine: true makes Feedback Loop hit harder.
 export const ENCOUNTERS = {
+  scavs: {
+    bg: 'tunnel', intro: 'Two tunnel scavengers crack their knuckles. One of them has a pickaxe. The other has a bigger pickaxe.',
+    flag: 'scavs_cleared', reward: { chits: 600, items: { noodle: 2 } },
+    enemies: [
+      { id: 'scav', name: 'Tunnel scavenger', hp: 70, atk: 14, def: 3, word: 'THUNK!' },
+      { id: 'scav2', name: 'Tunnel scavenger', hp: 70, atk: 14, def: 3, word: 'THUNK!' }
+    ]
+  },
+  // Sable and Vox fight as a duet: every third round they tune up for a Harmony that hits everyone.
+  // Stun either of them while they're tuning to break it. Beat one and the other plays on, furious.
+  duet: {
+    bg: 'tunnel', bounty: 'courier', intro: 'Sable hums a note. Vox thumbs a low string. The tunnel walls hum back.',
+    noRun: 'Vox is standing in the only doorway. He is a very wide man.',
+    enemies: [
+      { id: 'sable', name: 'Sable', hp: 220, atk: 18, def: 4, boss: true, ai: 'duet', role: 'sable' },
+      { id: 'vox', name: 'Vox', hp: 250, atk: 22, def: 6, boss: true, ai: 'duet', role: 'vox' }
+    ]
+  },
   drones: {
     bg: 'relay_in', intro: 'Two security drones swivel their red eyes towards you.',
     flag: 'drones_cleared', reward: { chits: 450, items: { coffee: 1 } },

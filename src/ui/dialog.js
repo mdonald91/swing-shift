@@ -36,6 +36,12 @@ const ACTIONS = {
       Hud.refresh();
     });
   },
+  departVesta() { after = () => playCut('vesta_depart', { restoreMood: false }).then(() => travel('vesta')); },
+  toVesta() { after = () => travel('vesta'); },
+  tail() { after = () => bus.emit('tail-start'); },
+  courierFound() { after = () => playCut('courier_found', { restoreMood: false }).then(() => startBattle('duet')); },
+  fightScavs() { after = () => startBattle('scavs'); },
+  vestaChest() { state.chits += 500; state.items.curry = (state.items.curry || 0) + 2; Audio.sfx('save'); Hud.refresh(); },
   departK17() { after = () => playCut('k17_depart', { restoreMood: false }).then(() => { joinRhea(); travel('relay'); }); },
   toRelay() { after = () => travel('relay'); },
   power() { Audio.sfx('save'); },

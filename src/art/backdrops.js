@@ -120,6 +120,33 @@ const BUILD = {
     <g fill="#10121a">${[60, 200, 1300, 1440].map(x => `<rect x="${x}" y="300" width="110" height="420"/>`).join('')}</g>
     ${[60, 200, 1300, 1440].map(x => Array.from({ length: 6 }, (_, k) => `<rect x="${x + 16}" y="${330 + k * 60}" width="8" height="8" fill="${k % 2 ? P.crimson : '#5fe3d4'}"/>`).join('')).join('')}
     <rect x="0" y="120" width="1600" height="8" fill="${P.crimson}" opacity=".6"/><rect x="0" y="120" width="1600" height="60" fill="${P.crimson}" opacity=".06"/></svg>`,
+  vesta: () => {
+    let stalls = '', lamps = '';
+    const cols = [[P.crimson, P.cream], [P.teal, P.cream], [P.mustard, '#6b4a2a']];
+    for (let i = 0; i < 7; i++) {
+      const x = 40 + i * 225, [a, b] = cols[i % 3], y = 600 + (i % 2) * 30;
+      stalls += `<rect x="${x}" y="${y}" width="170" height="130" fill="#3a2a20"/>`;
+      for (let k = 0; k < 170; k += 34) stalls += `<rect x="${x + k}" y="${y - 40}" width="17" height="44" fill="${a}"/><rect x="${x + k + 17}" y="${y - 40}" width="17" height="44" fill="${b}"/>`;
+      stalls += `<rect x="${x + 20}" y="${y + 30}" width="30" height="20" fill="${P.mustard}"/><rect x="${x + 70}" y="${y + 26}" width="40" height="24" fill="#7fe0c8"/>`;
+    }
+    for (let i = 0; i < 9; i++) { const x = 90 + i * 180, y = 300 + (i % 3) * 40; lamps += `<path d="M${x} 0 V${y}" stroke="#2c1e10" stroke-width="3"/><circle cx="${x}" cy="${y + 12}" r="12" fill="#f3c860"/><circle cx="${x}" cy="${y + 12}" r="46" fill="#f3c860" opacity=".12"/>`; }
+    return `${open}<rect width="1600" height="900" fill="#1c1714"/>
+      <path d="M0 0 H1600 V260 Q1300 180 1100 240 Q800 140 500 230 Q250 170 0 250Z" fill="#2a221e"/>
+      <path d="M0 520 Q400 440 800 500 Q1200 430 1600 510 V900 H0Z" fill="#2e241f"/>
+      <path d="M-50 900 V380 Q200 120 520 380 V900Z M1080 900 V380 Q1400 120 1650 380 V900Z" fill="#3a2e28"/>
+      <path d="M0 740 H1600 V900 H0Z" fill="#4c3e36"/>${lamps}${stalls}
+      <text x="800" y="200" text-anchor="middle" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="64" fill="${P.mustard}" opacity=".85">ベスタ市場</text></svg>`;
+  },
+  tunnel: () => `${open}<rect width="1600" height="900" fill="#120e0c"/>
+    <path d="M0 0 H1600 V900 H0Z M400 220 Q800 60 1200 220 V900 H400Z" fill="#2a221e" fill-rule="evenodd"/>
+    <path d="M400 220 Q800 60 1200 220" stroke="#3a2e28" stroke-width="40" fill="none"/>
+    ${[460, 640, 960, 1140].map(x => `<rect x="${x - 14}" y="160" width="28" height="740" fill="#3a2418"/>`).join('')}
+    <rect x="420" y="150" width="760" height="30" fill="#3a2418"/>
+    <path d="M560 900 L760 420 M1040 900 L840 420" stroke="#8d90a8" stroke-width="10"/>
+    ${Array.from({ length: 8 }, (_, i) => { const y = 440 + i * 60, w = 120 + i * 60; return `<rect x="${800 - w / 2}" y="${y}" width="${w}" height="10" fill="#3a2418"/>`; }).join('')}
+    <circle cx="800" cy="320" r="22" fill="#f3c860"/><circle cx="800" cy="320" r="120" fill="#f3c860" opacity=".08"/>
+    <rect x="160" y="560" width="200" height="200" fill="#6b4a2a" stroke="#120e0c" stroke-width="6"/><rect x="1240" y="600" width="220" height="160" fill="#6b4a2a" stroke="#120e0c" stroke-width="6"/>
+    <rect x="1300" y="520" width="90" height="80" fill="#4a5470" stroke="#120e0c" stroke-width="6"/><circle cx="1345" cy="560" r="10" fill="${P.crimson}"/></svg>`,
   black: () => ''
 };
 

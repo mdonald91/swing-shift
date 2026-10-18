@@ -111,7 +111,7 @@ function update() {
     c.classList.toggle('ko', u.ko);
     c.classList.toggle('low', !u.ko && u.hp / u.max < .3);
     const tags = [];
-    if (u.guard) tags.push('Guard'); if (u.stun) tags.push('Stunned'); if (u.jammed > 0) tags.push('Jammed'); if (u.weak > 0) tags.push('Weakened');
+    if (u.guard) tags.push('Guard'); if (u.stun) tags.push('Stunned'); if (u.tuning && !u.ko) tags.push('Tuning'); if (u.jammed > 0) tags.push('Jammed'); if (u.weak > 0) tags.push('Weakened');
     if (!u.boss && u.spMax && B.overclock > 0 && !u.ko) tags.push('Overclocked');
     c.querySelector('.bt-tags').innerHTML = tags.map(t => `<em>${t}</em>`).join('');
   });
@@ -258,7 +258,10 @@ function applySkill(a, sk, target, m) {
         if (sk.sfx) Audio.sfx(sk.sfx);
       }
       if (!t.ko) {
-        if (sk.stun && Math.random() < sk.stun * Math.min(m, 1.4) * (t.boss ? .5 : 1)) { t.stun = true; notes.push(`${t.name} is stunned`); }
+        if (sk.stun && Math.random() < sk.stun * Math.min(m, 1.4) * (t.boss ? .5 : 1)) {
+          t.stun = true; notes.push(`${t.name} is stunned`);
+          if (t.tuning && B.duetPending && !B.duetBroken) { B.duetBroken = true; notes.push('The duet loses the key'); pop(cardOf(t), 'OFF KEY'); }
+        }
         if (sk.jam) { t.jammed = sk.jam; notes.push(`${t.name} takes extra damage`); }
         if (sk.weaken) { t.weak = sk.weaken; notes.push(`${t.name} is weakened`); }
       }
@@ -383,16 +386,56 @@ async function doJam(a) {
 
 async function enemyPhase() {
   B.mode = 'busy'; clearMarks(); cmd('<p class="bt-who">Their solo</p>');
+  let duetDone = false;
+  const duo = B.enemies.filter(e => e.ai === 'duet' && !e.ko);
+  if (duo.length === 2) {
+    B.duet = (B.duet || 0) + 1;
+    if (B.duetPending) {
+      B.duetPending = false; duo.forEach(e => { e.tuning = false; });
+      if (B.duetBroken) { log('The harmony falls apart. Sable glares at Vox. Vox glares at the floor.'); Audio.sfx('clam'); update(); await sleep(900); }
+      else {
+        duetDone = true;
+        duo.forEach(e => cardOf(e)?.classList.add('acting'));
+        log('HARMONY. Sable and Vox hit the same note, and the whole tunnel shakes.');
+        Audio.sfx('cymbal');
+        const power = { atk: (duo[0].atk + duo[1].atk) / 2 };
+        living(B.party).forEach((p, i) => setTimeout(() => root && hitParty(power, p, .9, 'HARMONY!'), i * 140));
+        await sleep(1100);
+      }
+      B.duetBroken = false;
+      if (!root) return;
+      if (checkEnd()) return;
+    } else if (B.duet % 3 === 2) {
+      B.duetPending = true; duo.forEach(e => { e.tuning = true; pop(cardOf(e), 'TUNING'); });
+      log('Sable and Vox start tuning up together. Stun either one before their next turn!');
+      Audio.sfx('zap'); update(); await sleep(1100);
+    }
+  }
   for (const e of B.enemies) {
     if (!root) return;
     if (e.ko) continue;
+    if (duetDone && e.ai === 'duet') continue;
     if (checkEnd()) return;
     await sleep(650);
     if (!root) return;
     if (e.stun) { e.stun = false; log(`${e.name} is still seeing stars. Turn skipped.`); update(); continue; }
     clearMarks(); cardOf(e).classList.add('acting');
     const targets = living(B.party); if (!targets.length) break;
-    if (e.ai === 'warden') {
+    if (e.ai === 'duet') {
+      const partner = B.enemies.find(x => x.ai === 'duet' && x !== e && !x.ko);
+      if (!partner && !e.solo) { e.solo = true; e.atk = Math.round(e.atk * 1.3); pop(cardOf(e), 'SOLO!'); log(`${e.name} plays on alone, faster and angrier.`); await sleep(700); }
+      if (e.role === 'sable' && partner && partner.hp < partner.max * .45 && !e.sang) {
+        e.sang = true; partner.hp = Math.min(partner.max, partner.hp + 60);
+        pop(cardOf(partner), '+60', 'num heal'); Audio.sfx('heal');
+        log('Sable sings a low, sweet line. Vox shakes his head and stands back up straighter. +60 HP.');
+      } else if (e.role === 'sable') {
+        const p = pick(targets); const v = hitParty(e, p, 1, 'LA!');
+        log(`Sable hits a note so high it hurts. ${p.name} takes ${v}.`);
+      } else {
+        const p = pick(targets); const v = hitParty(e, p, 1.1, 'BWOOM!');
+        log(`Vox swings his bass like a club at ${p.name}. ${v} damage.`);
+      }
+    } else if (e.ai === 'warden') {
       if (e.hp < e.max * .5 && !e.overclocked) {
         e.overclocked = true; e.atk += 5;
         pop(cardOf(e), 'OVERCLOCK'); Audio.sfx('zap');
@@ -489,7 +532,8 @@ function backToWorld() {
 /* ---------------- story fights: aftermath and payday ---------------- */
 const AFTER = {
   velvet: { cut: 'victory', ending: 'ending', title: 'Track 01 · Counterfeit Swing' },
-  ghost: { cut: 'k17_victory', choice: 'k17_choice', ending: 'k17_ending', title: 'Track 02 · Ghost Frequency' }
+  ghost: { cut: 'k17_victory', choice: 'k17_choice', ending: 'k17_ending', title: 'Track 02 · Ghost Frequency' },
+  courier: { cut: 'duet_victory', choice: 'case_choice', ending: 'courier_ending', title: 'Track 03 · The Missing Courier' }
 };
 
 async function finishBounty(res) {
@@ -503,6 +547,24 @@ async function finishBounty(res) {
 function ledgerFor(res) {
   const b = BOUNTIES.find(x => x.id === res.id) || { name: 'Bounty', reward: 0 };
   const style = [`Style bonus: ${res.perfects} ${res.perfects === 1 ? 'hit' : 'hits'} on the beat`, res.perfects * 150];
+  if (res.id === 'courier') {
+    const f = state.flags;
+    const core = f.core_office ? ['Bounty Office evidence reward', 3000]
+      : f.core_helix ? ['Helix Salvage "finder\'s fee"', 5000]
+      : f.core_sold ? ['Sold the tuning core to Kessler', 6000] : null;
+    return {
+      outcome: 'Wren Castillo found and returned home.',
+      extra: f.core_kept ? 'Kept: Helix tuning core' : f.core_office ? 'Core logged as evidence' : f.core_helix ? 'Core handed to Helix' : 'Core sold',
+      items: [
+        [`Bounty: ${b.name}`, b.reward],
+        ...(core ? [core] : []),
+        style,
+        ['Fuel to Vesta and back', -3600],
+        ['Market stall you knocked over', -420],
+        ['Noodles for the crew (Ada insisted)', 0]
+      ].filter(it => it[1] !== 0)
+    };
+  }
   if (res.id === 'ghost') {
     const f = state.flags, prot = f.juno_protected;
     return {
@@ -564,7 +626,7 @@ function showLedger(res) {
       unblock();
       travel('ship', 'lounge');
       const ok = saveGame();
-      const label = res.id === 'ghost' ? 'Track 02' : 'Track 01';
+      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03' }[res.id] || 'Track';
       setTimeout(() => { toast(ok ? `${label} complete. Game saved.` : `${label} complete.`); Hud.refresh(); }, 800);
     });
   });

@@ -19,7 +19,15 @@ export const CREW = {
     bio: 'Ex-Helix comms tech. Speaks fluent relay, sarcasm and three kinds of static.', skillKeys: ['tap', 'feedback'] },
   juno: { name: 'Juno Reyes', short: 'Juno', color: 'var(--smoke)', blip: 520 },
   drone: { name: 'Security drone', short: 'Drone', color: 'var(--crimson)', blip: 900 },
-  warden: { name: 'The Warden', short: 'Warden', color: 'var(--crimson)', blip: 120 }
+  warden: { name: 'The Warden', short: 'Warden', color: 'var(--crimson)', blip: 120 },
+  wren: { name: 'Wren Castillo', short: 'Wren', color: 'var(--mustard)', blip: 480 },
+  pell: { name: 'Pell', short: 'Pell', color: 'var(--violet)', blip: 300 },
+  fennick: { name: 'Fennick', short: 'Fennick', color: 'var(--smoke)', blip: 220 },
+  sable: { name: 'Sable', short: 'Sable', color: 'var(--crimson)', blip: 560 },
+  vox: { name: 'Vox', short: 'Vox', color: 'var(--teal)', blip: 150 },
+  quill: { name: 'Mr Quill', short: 'Quill', color: 'var(--cream)', blip: 380 },
+  scav: { name: 'Tunnel scavenger', short: 'Scavenger', color: 'var(--smoke)', blip: 200 },
+  conductor: { name: 'The Conductor', short: '???', color: 'var(--crimson)', blip: 110 }
 };
 
 // What the captain brings to a fight, based on temperament.

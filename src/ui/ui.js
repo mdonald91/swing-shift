@@ -42,10 +42,23 @@ export const UI = {
       if (id === 'bar_exit') { Audio.sfx('back'); return travel('cygnus', 'bar'); }
       runDialogue(entry(id, state.flags, state.location));
     });
+    bus.on('tail-end', ({ ok, reason }) => {
+      if (ok) { setFlag('tail_done'); Audio.sfx('confirm'); setTimeout(() => runDialogue('tail_done'), 300); return; }
+      Audio.sfx('scratch');
+      travel('vesta', 'pell');
+      setTimeout(() => runDialogue('tail_fail_' + reason), 700);
+    });
     bus.on('menu', () => { if (!modals.length && !document.querySelector('.dlg')) openPauseMenu(); });
     bus.on('hint', t => Hud.hint(t));
     bus.on('area', map => {
       Hud.area(map);
+      if (state.location === 'vesta' && !flag('vesta_arrived')) {
+        setTimeout(() => playCut('vesta_arrive').then(() => {
+          setFlag('vesta_arrived');
+          if (flag('juno_protected') && !flag('juno_gift')) { setFlag('juno_gift'); state.items.patch = (state.items.patch || 0) + 2; toast("Juno's gift: 2 Patch Kits"); }
+          Hud.refresh();
+        }), 400);
+      }
       if (state.location === 'relay' && !flag('k17_arrived')) {
         setTimeout(() => playCut('k17_arrive').then(() => { setFlag('k17_arrived'); Hud.refresh(); }), 400);
       }
@@ -104,6 +117,7 @@ export function travel(location, spawn = 'default') {
   if (state.location === 'ship' && location !== 'ship') delete state.flags.busked_visit;   // a fresh crowd each trip
   state.location = location;
   state.pos = { px: s.x * 16 + 8, py: s.y * 16 + 8 };
+  state.face = s.face || null;
   if (game.scene.isActive('world') || game.scene.isPaused('world')) game.scene.stop('world');
   game.scene.start('world');
 }
