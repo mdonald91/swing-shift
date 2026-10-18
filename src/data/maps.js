@@ -180,6 +180,7 @@ export const MAPS = {
       '########E#########'
     ],
     spawns: { default: { x: 8, y: 8 } },
+    offLimits: [[1, 2]],        // behind the bar counter, on purpose (tools/check-maps.mjs skips it)
     npcs: [
       { id: 'mags', x: 4, y: 2, face: 'down' },
       { id: 'lou', x: 15, y: 3, face: 'up' },
@@ -210,8 +211,8 @@ export const MAPS = {
       'qyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyq',
       'qyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyq',
       'qqqqqqyqqqqqqqqqqyqqqqqqqqqq1qqqqq',
-      'qZZZZZZZZZZZZqZZZZZZZqZZZZZZZZZZZq',
-      'qmmmmmmmmmmmmq$m$$m$mq6m6m6m6mmmmq',
+      'qZZZZZmZZZZZZqZZZmZZZqZZZZZZmZZZZq',
+      'qmmmmmmmmmmmmq$m$mm$mq6m6m6mmmmmmq',
       'qmmmmmmmmmmmmqmmmmmmmqmmmmmmmmmmmq',
       'qmmm!!!!!!mmmq$mmmm$$q6m6m6m6mm3mq',
       'qmmmmmmmmmmmmqmmmmmmmqmmmmmmmmmmmq',

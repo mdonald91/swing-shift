@@ -1,0 +1,71 @@
+// Map checker: walks every map from its spawn points and reports anything a player can't reach.
+// Run with:  node tools/check-maps.mjs      (exits with an error if a problem is found)
+// Doors that open later (map.doors) count as open, since the story opens them.
+import { MAPS, TILE, SOLID } from '../src/data/maps.js';
+
+let problems = 0;
+const say = (map, msg) => { problems++; console.log(`  ✗ ${map}: ${msg}`); };
+
+for (const [name, m] of Object.entries(MAPS)) {
+  const H = m.rows.length, W = m.rows[0].length;
+  m.rows.forEach((r, y) => { if (r.length !== W) say(name, `row ${y} is ${r.length} wide, expected ${W}`); });
+  const doors = new Set((m.doors || []).map(d => d.x + ',' + d.y));
+  const solid = (x, y) => {
+    if (x < 0 || y < 0 || x >= W || y >= H) return true;
+    if (doors.has(x + ',' + y)) return false;
+    const t = TILE[m.rows[y][x]];
+    return t === undefined || t < 0 || SOLID.includes(t);
+  };
+  // NPCs who are always there block their tile; ones who leave later (if/ifNot) don't count as walls
+  const npcAt = new Set(m.npcs.filter(n => !n.if && !n.ifNot).map(n => n.x + ',' + n.y));
+
+  // flood fill from every spawn
+  const seen = new Set(), queue = [];
+  for (const [k, s] of Object.entries(m.spawns)) {
+    if (solid(s.x, s.y)) say(name, `spawn "${k}" at ${s.x},${s.y} is inside a wall`);
+    queue.push([s.x, s.y]); seen.add(s.x + ',' + s.y);
+  }
+  while (queue.length) {
+    const [x, y] = queue.shift();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy, key = nx + ',' + ny;
+      if (seen.has(key) || solid(nx, ny) || npcAt.has(key)) continue;
+      seen.add(key); queue.push([nx, ny]);
+    }
+  }
+  const touchable = (x, y, w = 1, h = 1) => {
+    for (let yy = y - 1; yy <= y + h; yy++) for (let xx = x - 1; xx <= x + w; xx++) {
+      const inside = xx >= x && xx < x + w && yy >= y && yy < y + h;
+      const edge = !inside && (xx >= x && xx < x + w || yy >= y && yy < y + h);   // not diagonal
+      if ((inside || edge) && seen.has(xx + ',' + yy)) return true;
+    }
+    return false;
+  };
+  for (const o of m.objects) if (!touchable(o.x, o.y, o.w || 1, o.h || 1)) say(name, `can't reach object "${o.id}" at ${o.x},${o.y}`);
+  for (const n of m.npcs) if (!touchable(n.x, n.y)) say(name, `can't reach ${n.id} at ${n.x},${n.y}`);
+  for (const d of m.doors || []) if (!touchable(d.x, d.y)) say(name, `can't reach door at ${d.x},${d.y}`);
+  if (m.tail) for (const [x, y] of m.tail.path) {
+    const t = TILE[m.rows[y][x]];
+    if (!doors.has(x + ',' + y) && SOLID.includes(t)) say(name, `tail route passes through a wall at ${x},${y}`);
+  }
+  // any sealed-off pocket of floor bigger than a couple of tiles is almost certainly a mistake
+  const lost = new Set();
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const k = x + ',' + y;
+    if (solid(x, y) || seen.has(k) || lost.has(k)) continue;
+    const pocket = [[x, y]]; lost.add(k);
+    for (let i = 0; i < pocket.length; i++) {
+      const [px, py] = pocket[i];
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nk = (px + dx) + ',' + (py + dy);
+        if (!solid(px + dx, py + dy) && !seen.has(nk) && !lost.has(nk)) { lost.add(nk); pocket.push([px + dx, py + dy]); }
+      }
+    }
+    const meant = (m.offLimits || []).some(([ox, oy]) => pocket.some(([px, py]) => px === ox && py === oy));
+    if (pocket.length > 3 && !meant) say(name, `${pocket.length} floor tiles around ${x},${y} can't be reached`);
+  }
+  const floor = m.rows.flatMap((r, y) => [...r].map((c, x) => [x, y])).filter(([x, y]) => !solid(x, y)).length;
+  console.log(`${problems ? '' : '✓'} ${name}: ${seen.size} of ${floor} floor tiles reachable`);
+}
+console.log(problems ? `\n${problems} problem(s) found` : '\nAll maps fully reachable');
+process.exit(problems ? 1 : 0);

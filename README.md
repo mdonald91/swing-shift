@@ -60,7 +60,7 @@ Any file that's missing is covered by the built-in generated jazz combo. If a tr
 
 **Writing dialogue:** see the notes at the top of `src/data/dialogue.js`. Choices can be tied to a temperament (`temp: 'Sarcastic'`) so only captains with that temperament see them.
 
-**Editing the ship:** `src/data/maps.js` draws the map with one character per tile. The key is at the top of that file.
+**Editing maps:** `src/data/maps.js` draws each map with one character per tile. The key is at the top of that file. After changing a map, run `node tools/check-maps.mjs`: it walks every map from its spawn points and reports anything a player can't reach.
 
 Saves are kept in the browser on each device (3 slots).
 
