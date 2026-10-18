@@ -169,6 +169,7 @@ function update() {
     if (u.stance && !u.ko) tags.push(STANCES[u.stance].label + ' stance');
     if (u.drillPending && !u.ko) tags.push('Spinning up');
     if (u.shielded && !u.ko) tags.push('Shield up');
+    if (u.ai === 'nocturne' && !u.ko && B.enemies.some(x => x.accomp && !x.ko)) tags.push('Accompanied');
     if (u.spMax && B.overclock > 0 && !u.ko) tags.push('Overclocked');
     if (u.spMax && B.shield > 0 && !u.ko) tags.push('Shielded');
     c.querySelector('.bt-tags').innerHTML = tags.map(t => `<em>${t}</em>`).join('');
@@ -377,11 +378,11 @@ async function rhythm(wide) {
     R = { target, res, wide, armedAt: performance.now() + 140, done: false };
     const ring = $('.ring');
     ring.classList.remove('perfect');
-    $('.ring-label').textContent = autoRhythm() ? 'Auto rhythm' : 'Tap on the beat';
+    $('.ring-label').textContent = autoRhythm() ? 'Auto rhythm' : B.rubato ? 'Rubato! Tight timing' : 'Tap on the beat';
     ring.hidden = false;
   });
 }
-const perfectWindow = () => rhythmWindow(R.wide ? .28 : .2);
+const perfectWindow = () => rhythmWindow(R.wide ? .28 : .2) * (B && B.rubato ? .6 : 1);
 function rhythmPress(at) {
   if (!R || R.done || autoRhythm() || performance.now() < R.armedAt) return;
   const d = Math.abs(Audio.beatPos(at) - R.target);
@@ -427,6 +428,7 @@ function hitEnemy(a, e, mult, word, snd, { type, pierce } = {}) {
   const typeMult = weak ? 1.5 : resist ? .6 : 1;
   let v = a.atk * mult * typeMult * rnd(.9, 1.1) * (B.overclock > 0 ? 1.3 : 1) * (e.jammed > 0 ? 1.25 : 1) - (pierce ? 0 : e.def);
   if (e.shielded) v *= .6;
+  if (e.ai === 'nocturne' && B.enemies.some(x => x.accomp && !x.ko)) v *= .65;
   v = Math.max(1, Math.round(v));
   e.hp = Math.max(0, e.hp - v);
   const c = cardOf(e); pop(c, weak ? 'WEAK!' : resist ? 'RESIST' : word, weak ? 'weak' : resist ? 'resist' : ''); pop(c, '-' + v, 'num'); shake(c);
@@ -478,7 +480,7 @@ async function doJam(a) {
   B.groove = 0;
   const st = JAM_STYLES[B.jam] || JAM_STYLES.bigband;
   const total = band.reduce((s, p) => s + p.atk, 0);
-  const words = { bigband: ['BWAAP!', 'KA-POW!', 'SHA-BOOM!'], ballad: ['MMMM...', 'SIGH', 'LA-LA'], bebop: ['BE!', 'BOP!', 'SKID!', 'DOO!'], bossa: ['SWAY', 'CHA!', 'SAMBA'] }[B.jam] || ['BWAAP!'];
+  const words = { halcyon: ['HALCYON', 'AAAH', 'RESOLVE'], bigband: ['BWAAP!', 'KA-POW!', 'SHA-BOOM!'], ballad: ['MMMM...', 'SIGH', 'LA-LA'], bebop: ['BE!', 'BOP!', 'SKID!', 'DOO!'], bossa: ['SWAY', 'CHA!', 'SAMBA'] }[B.jam] || ['BWAAP!'];
   let n = 0;
   if (st.hits) {
     for (let i = 0; i < st.hits; i++) setTimeout(() => { const t = pick(living(B.enemies)); if (t && root) hitEnemy({ name: 'The band', atk: total * st.hit }, t, m, pick(words), 'tok'); }, i * 120);
@@ -494,7 +496,8 @@ async function doJam(a) {
     bigband: 'The whole crew lands it together. The press itself seems to applaud.',
     ballad: 'A slow, aching ballad. The enemies stagger. The crew stands up a little straighter.',
     bebop: 'A blur of bebop, every note a punch. Somewhere, a saxophone weeps with joy.',
-    bossa: 'A lazy bossa nova. The enemies sway along without meaning to, and their guard drops.'
+    bossa: 'A lazy bossa nova. The enemies sway along without meaning to, and their guard drops.',
+    halcyon: 'Four bars of question and one of answer. For a moment, everything in the room is in tune.'
   };
   setTimeout(() => {
     if (!root) return;
@@ -505,6 +508,7 @@ async function doJam(a) {
 
 async function enemyPhase() {
   B.mode = 'busy'; clearMarks(); cmd('<p class="bt-who">Their solo</p>');
+  B.rubato = 0;
   let duetDone = false;
   const duo = B.enemies.filter(e => e.ai === 'duet' && !e.ko);
   if (duo.length === 2) {
@@ -560,6 +564,32 @@ async function enemyPhase() {
       } else {
         const p = pick(targets); const v = hitParty(e, p, 1.1, 'BWOOM!');
         log(`Vox swings his bass like a club at ${p.name}. ${v} damage.`);
+      }
+    } else if (e.ai === 'nocturne') {
+      B.nround = (B.nround || 0) + 1;
+      const fallen = B.enemies.find(x => x.accomp && x.ko);
+      if (e.hp < e.max * .5 && !e.encored && fallen) {
+        e.encored = true; fallen.ko = false; fallen.hp = Math.round(fallen.max * .5);
+        pop(cardOf(fallen), 'ENCORE!'); Audio.sfx('cymbal');
+        log(`"ENCORE!" Nocturne snaps his fingers and the ${fallen.name} sits back up, still in tune.`); update();
+        await sleep(1000); continue;
+      }
+      if (B.nround % 2 === 0) {
+        B.rubato = 1; pop(cardOf(e), 'RUBATO'); Audio.sfx('scratch');
+        log('Nocturne bends the tempo, rubato. Your next beats will be harder to land.'); update(); await sleep(900); if (!root) return;
+      }
+      const r = Math.random();
+      if (r < .3 && B.groove > 0) {
+        const p = pick(targets); const stolen = Math.min(B.groove, 30); B.groove -= stolen;
+        const v = hitParty(e, p, .9, 'MINE!');
+        log(`Nocturne lifts ${stolen} Groove straight out of the band and hits ${p.name} with it. ${v} damage.`);
+      } else if (r < .6) {
+        log('Nocturne plays a nocturne in B-flat minor. It is beautiful. It is also very, very loud.');
+        targets.forEach((p, i) => setTimeout(() => root && hitParty(e, p, .58, 'LAAA!'), i * 150));
+        await sleep(500);
+      } else {
+        const p = pick(targets); const v = hitParty(e, p, 1.15, 'SFORZANDO!');
+        log(`Nocturne's cane-sword flashes at ${p.name}. ${v} damage.`);
       }
     } else if (e.ai === 'sentinel') {
       if (!e.shielded && --e.shieldT <= 0) {
@@ -769,6 +799,7 @@ const AFTER = {
   velvet: { cut: 'victory', ending: 'ending', title: 'Track 01 · Counterfeit Swing' },
   ghost: { cut: 'k17_victory', choice: 'k17_choice', ending: 'k17_ending', title: 'Track 02 · Ghost Frequency' },
   courier: { cut: 'duet_victory', choice: 'case_choice', ending: 'courier_ending', title: 'Track 03 · The Missing Courier' },
+  nocturne: { cut: 'nocturne_victory', choice: 'halcyon_choice', ending: 'nocturne_ending', title: 'Track 06 · Mister Nocturne' },
   proto: { cut: 'sentinel_victory', choice: 'proto_choice', ending: 'proto_ending', title: 'Track 05 · Runaway Prototype' },
   mantis: { cut: 'mantis_victory', choice: 'mantis_choice', ending: 'mantis_ending', title: 'Track 04 · Iron Mantis' }
 };
@@ -784,6 +815,22 @@ async function finishBounty(res) {
 function ledgerFor(res) {
   const b = BOUNTIES.find(x => x.id === res.id) || { name: 'Bounty', reward: 0 };
   const style = [`Style bonus: ${res.perfects} ${res.perfects === 1 ? 'hit' : 'hits'} on the beat`, res.perfects * 150];
+  if (res.id === 'nocturne') {
+    const f = state.flags;
+    return {
+      outcome: 'Mister Nocturne delivered alive. Forty-one instruments recovered.',
+      extra: f.piano_sol ? 'The Halcyon went home to Old Sol' : f.piano_kept ? 'The Halcyon is aboard the Hi-Hat' : 'The Halcyon was sold',
+      items: [
+        [`Bounty: ${b.name}, alive`, b.reward],
+        ...(f.piano_sold ? [['Sold the Halcyon to an anonymous collector', 20000]] : []),
+        ...(f.piano_sol ? [["Old Sol insists on paying you. It's mostly coins.", 380]] : []),
+        style,
+        ['Fuel to Titan and back', -5400],
+        ['Lyceum stage repairs (the trapdoor, the curtain, the chandelier)', -3100],
+        ['Tickets you did not use', -240]
+      ]
+    };
+  }
   if (res.id === 'proto') {
     const f = state.flags;
     return {
@@ -897,7 +944,7 @@ function showLedger(res) {
       unblock();
       travel('ship', 'lounge');
       const ok = saveGame();
-      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04', proto: 'Track 05' }[res.id] || 'Track';
+      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04', proto: 'Track 05', nocturne: 'Track 06' }[res.id] || 'Track';
       setTimeout(() => { toast(ok ? `${label} complete. Game saved.` : `${label} complete.`); Hud.refresh(); }, 800);
     });
   });

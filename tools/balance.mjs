@@ -8,7 +8,8 @@ import { crewStats } from '../src/systems/party.js';
 const STUN = .35;   // how often the party stuns the Mantis mid-drill
 const SMART = process.argv.includes('--smart');   // players who switch attackers to match the Mantis's weak spot
 const TIMING = [[1.5, .3], [1.2, .4], [1.0, .2], [.85, .1]];   // perfect, good, late, miss
-const timing = () => { let r = Math.random(); for (const [m, p] of TIMING) { if ((r -= p) <= 0) return m; } return 1; };
+const TIMING_RUBATO = [[1.5, .18], [1.2, .45], [1.0, .25], [.85, .12]];   // Nocturne's rubato: the perfect window shrinks
+const timing = (rub) => { let r = Math.random(); for (const [m, p] of (rub ? TIMING_RUBATO : TIMING)) { if ((r -= p) <= 0) return m; } return 1; };
 const rnd = (a, b) => a + Math.random() * (b - a);
 
 function fight(encId, lv, crew) {
@@ -24,17 +25,19 @@ function fight(encId, lv, crew) {
   foes.filter(e => e.ai === 'sentinel').forEach(e => { e.shield = 1; e.summons = 0; });
   const alive = a => a.filter(u => !u.ko);
   const hitParty = (e, mult) => { const t = alive(party); const p = t[Math.floor(Math.random() * t.length)]; p.hp -= Math.max(1, Math.round(e.atk * mult * rnd(.9, 1.1) - p.def)); if (p.hp <= 0) { p.hp = 0; p.ko = true; } };
-  let round = 0, duet = 0;
+  let round = 0, duet = 0, rub = 0;
   while (alive(party).length && alive(foes).length && round < 60) {
     round++;
     for (const p of alive(party)) {
       const t = alive(foes); if (!t.length) break;
       const e = t.reduce((a, b) => (a.boss ? b : a.hp < b.hp ? a : b));   // finish off minions first
       const type = p.attack.type, typeMult = (e.weakTo || []).includes(type) ? 1.5 : (e.resists || []).includes(type) ? .6 : 1;
-      e.hp -= Math.max(1, Math.round((p.atk * timing() * typeMult * rnd(.9, 1.1) - e.def) * (e.shield ? .6 : 1)));
+      const accomp = e.ai === 'nocturne' && foes.some(x => x.accomp && !x.ko);
+      e.hp -= Math.max(1, Math.round((p.atk * timing(rub) * typeMult * rnd(.9, 1.1) - e.def) * (e.shield ? .6 : 1) * (accomp ? .65 : 1)));
       if (e.shield && type === 'shock') { e.shield = 0; e.st = 3; }
       if (e.hp <= 0) { e.hp = 0; e.ko = true; }
     }
+    rub = 0;
     const duo = alive(foes).filter(e => e.ai === 'duet');
     let skipDuet = false;
     if (duo.length === 2 && ++duet % 3 === 0) { alive(party).forEach(() => alive(party).length && hitParty({ atk: (duo[0].atk + duo[1].atk) / 2 }, .9)); skipDuet = true; }
@@ -50,6 +53,15 @@ function fight(encId, lv, crew) {
         if (e.hp < e.max * .5 && !e.o) { e.o = 1; e.atk += 5; }
         if (alive(foes).length === 1 && e.summons < 2) { e.summons++; const d = { ...ENEMIES.labdrone, hp: 170, max: 170, ko: false }; foes.push(d); continue; }
         if (Math.random() < .3) alive(party).forEach(() => alive(party).length && hitParty(e, .55)); else hitParty(e, 1.1);
+        continue;
+      }
+      if (e.ai === 'nocturne') {
+        e.nr = (e.nr || 0) + 1;
+        const fallen = foes.find(x => x.accomp && x.ko);
+        if (e.hp < e.max * .5 && !e.enc && fallen) { e.enc = 1; fallen.ko = false; fallen.hp = Math.round(fallen.max * .5); continue; }
+        if (e.nr % 2 === 0) rub = 1;
+        const r = Math.random();
+        if (r < .3) hitParty(e, .9); else if (r < .6) alive(party).forEach(() => alive(party).length && hitParty(e, .58)); else hitParty(e, 1.15);
         continue;
       }
       if (e.ai === 'mantis') {
@@ -89,7 +101,10 @@ const plan = [
   ['labbots', [10, 11, 12], ['rook', 'rhea', 'tam']],
   ['moths', [10, 11, 12], ['rook', 'rhea', 'tam']],
   ['sentinel', [10, 11, 12, 13, 14], ['rook', 'rhea', 'tam']],
-  ['sentinel', [12], ['rook', 'brushes', 'tam']]
+  ['sentinel', [12], ['rook', 'brushes', 'tam']],
+  ['ushers', [12, 13, 14], ['rook', 'rhea', 'tam']],
+  ['nocturne', [12, 13, 14, 15, 16], ['rook', 'rhea', 'tam']],
+  ['nocturne', [14], ['rhea', 'brushes', 'lyra']]
 ];
 const N = 600;
 console.log('fight       lvl  win%  rounds  HP left');

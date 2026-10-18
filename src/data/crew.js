@@ -52,7 +52,13 @@ export const CREW = {
   labsec: { name: 'Lab security', short: 'Security', color: 'var(--crimson)', blip: 130 },
   labbots: { name: 'Cleaning drones', short: 'Cleaning drone', color: 'var(--crimson)', blip: 820 },
   moths: { name: 'Frost moths', short: 'Frost moth', color: '#9fd6e8', blip: 900 },
-  sentinel: { name: 'The Sentinel', short: 'Sentinel', color: 'var(--crimson)', blip: 110 }
+  sentinel: { name: 'The Sentinel', short: 'Sentinel', color: 'var(--crimson)', blip: 110 },
+  // 0.13: Titan
+  nocturne: { name: 'Mister Nocturne', short: 'Nocturne', color: '#c79bf0', blip: 240 },
+  fitz: { name: 'Fitz', short: 'Fitz', color: 'var(--mustard)', blip: 360 },
+  tickets: { name: 'Box office', short: 'Box office', color: 'var(--cream)', blip: 500 },
+  ushers: { name: "Nocturne's ushers", short: 'Usher', color: 'var(--smoke)', blip: 190 },
+  clockwork: { name: 'Clockwork player', short: 'Clockwork player', color: 'var(--mustard)', blip: 700 }
 };
 
 // What the captain brings to a fight, based on temperament.

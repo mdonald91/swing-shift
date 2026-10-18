@@ -35,6 +35,12 @@ export const TIPS = {
     title: 'New skills',
     lines: ['Someone has reached a new tier of their skill tree.', 'Open the <b>Menu</b>, then <b>Crew</b>, then <b>Learn a new skill</b>. Each tier has two choices.']
   }),
+  spots: () => ({
+    title: 'Spotlights',
+    lines: settings.rhythm === 'normal'
+      ? ['The follow-spots move with the beat of the show: two beats on, two beats off. A light flickers just before it switches on.', 'Wait in the dark between lights, then move on the dark beats. If a light catches you, you start that stretch again.']
+      : ['The follow-spots move with the beat of the show. A light flickers just before it switches on.', 'Your rhythm setting is easier, so each light only stays on for one beat. Wait in the dark, then move.']
+  }),
   echo: () => ({
     title: 'Echo lock',
     lines: ['Someone sings a short phrase on the four pads. Watch and listen, then tap the same pads in the same order.', 'Each pad has its own colour, shape and number (keys 1 to 4), so you can follow it without sound too. A wrong note just plays the phrase again.']

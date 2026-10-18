@@ -64,6 +64,17 @@ function tracks() {
         f.proto_free && 'Set Lyra free in the network, to play the wrong note at the right time.',
         f.lyra_joined && 'Lyra joined the Hi-Hat as its conductor.'
       ]
+    },
+    {
+      n: '06', side: 'B', name: 'Mister Nocturne', where: 'Titan, the Lyceum', done: done('nocturne'), started: f.bounty_nocturne,
+      notes: [
+        'Crossed the Lyceum backstage in the dark between spotlight cues, mid-show, and dropped the Halcyon through the stage.',
+        'Learned the four bars are the first four of five: "Halcyon", written by Mae Halloway, Old Sol\'s teacher.',
+        'Brought Mister Nocturne in, and forty-one stolen instruments with him.',
+        f.piano_sol && 'Sent the Halcyon home with Old Sol, who played you the fifth bar.',
+        f.piano_kept && 'Kept the Halcyon aboard the Hi-Hat. Old Sol taught Brushes the fifth bar.',
+        f.piano_sold && 'Sold the Halcyon. The Conductor was the buyer.'
+      ]
     }
   ].map(t => ({ ...t, notes: t.notes.filter(Boolean) }));
 }
@@ -82,10 +93,11 @@ function offClock() {
   ].filter(Boolean);
 }
 
-function html({ finale }) {
+function html({ finale, side }) {
   const p = state.player, temp = temperament(p);
   const crew = CREW_KEYS.filter(k => k !== 'captain' && available(k));
-  const all = tracks(), sideB = flag('act1_done') && !finale;
+  side ||= flag('act1_done') ? 'B' : 'A';
+  const all = tracks(), sideB = side === 'B' && !(finale && side === 'A');
   const ts = all.filter(t => (t.side === 'B') === sideB);
   const off = offClock();
   const sideA = all.filter(t => !t.side);
@@ -113,9 +125,11 @@ function html({ finale }) {
         <li><b>${esc(fa.n)}</b> <span>${esc(tier(state.rep[k] || 0))}</span></li>`).join('')}
       </ul></section>
     </div>
-    ${sideB ? `<section class="ln-sec ln-next"><h3>Side A, in short</h3>
+    ${sideB && finale ? `<section class="ln-sec ln-next"><h3>Coming up: the Encore</h3>
+      <p>07 · The Conductor &nbsp; 08 · Blue Note &nbsp; 09 · Last Set. ${flag('fifth_bar') ? 'And you know something he does not: the fifth bar.' : 'And he knows exactly where you are.'}</p></section>`
+      : sideB ? `<section class="ln-sec ln-next"><h3>Side A, in short</h3>
       <p>${sideA.map(t => `${t.n} · ${esc(t.name)}`).join(' &nbsp; ')}: ${esc(sideA.flatMap(t => t.notes).filter(n => /Juno|core|Rhea/.test(n)).join(' '))}</p></section>
-      <section class="ln-sec ln-next"><h3>Still to come on Side B</h3><p>${flag('proto_done') ? '' : '05 · Runaway Prototype &nbsp; '}06 · Mister Nocturne &nbsp; and the Conductor, still listening.</p></section>`
+      <section class="ln-sec ln-next"><h3>${flag('act2_done') ? 'Coming up: the Encore' : 'Still to come on Side B'}</h3><p>${flag('act2_done') ? '07 · The Conductor &nbsp; 08 · Blue Note &nbsp; 09 · Last Set' : `${flag('proto_done') ? '' : '05 · Runaway Prototype &nbsp; '}${flag('nocturne_done') ? '' : '06 · Mister Nocturne &nbsp; '}and the Conductor, still listening.`}</p></section>`
       : finale ? `<section class="ln-sec ln-next"><h3>Coming up on Side B</h3>
       <p>04 · Iron Mantis &nbsp; 05 · Runaway Prototype &nbsp; and a quarter of a million chits on the Conductor.</p></section>` : ''}
   </div>`;
@@ -132,13 +146,13 @@ export function openRecap() {
   return m;
 }
 
-// The full-screen version at the end of Side A.
-function finaleRecap() {
+// The full-screen version at the end of a side.
+function finaleRecap(side = 'A') {
   return new Promise(resolve => {
     block();
     const node = el(`<div class="recap-screen" role="dialog" aria-label="Story so far">
-      <div class="recap-scroll">${html({ finale: true })}
-        <div class="recap-btns"><button class="btn primary big" type="button" data-flip>Flip the record</button></div>
+      <div class="recap-scroll">${html({ finale: true, side })}
+        <div class="recap-btns"><button class="btn primary big" type="button" data-flip>${side === 'A' ? 'Flip the record' : 'Wait for the encore'}</button></div>
       </div>
     </div>`);
     sceneLayer().append(node);
@@ -167,4 +181,21 @@ export async function playFinale() {
   playing = false;
   setTimeout(() => toast(ok ? 'Side A complete. Game saved.' : 'Side A complete.'), 300);
   setTimeout(() => toast('New on the bounty board: The Conductor'), 2900);
+}
+
+// Act 2 finale: the Conductor names the Hi-Hat a loose end, then the Side B liner notes. Plays once per save.
+let playing2 = false;
+export async function playFinale2() {
+  if (playing2 || flag('act2_done') || !flag('nocturne_done')) return;
+  playing2 = true;
+  await playCut('act2_finale', { restoreMood: false });
+  Audio.setMood('finale');
+  await finaleRecap('B');
+  setFlag('act2_done');
+  Audio.setMood('ship');
+  const ok = saveGame();
+  Hud.refresh();
+  playing2 = false;
+  setTimeout(() => toast(ok ? 'Side B complete. Game saved.' : 'Side B complete.'), 300);
+  setTimeout(() => toast('The Encore, Act 3, arrives in later builds'), 2900);
 }

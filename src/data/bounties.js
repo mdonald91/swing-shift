@@ -21,8 +21,14 @@ export const BOUNTIES = [
   {
     id: 'conductor', name: 'The Conductor', sub: 'Wanted · Whereabouts unknown',
     reward: 250000, risk: 'S', portrait: 'conductor', track: 'Side B',
-    client: 'Bounty Office, system-wide', wanted: 'Alive, preferably', showIf: 'act1_done', unlock: 'The hunt continues on Side B',
+    client: 'Bounty Office, system-wide', wanted: 'Alive, preferably', showIf: 'act1_done', unlock: 'The hunt continues on Side B', lockedText: 'Hunted in the Encore, Act 3',
     desc: 'Hijacked every speaker in the system to introduce himself. Linked to the counterfeit chits, Relay K-17 and the Helix tuning core. Nobody has seen his face.'
+  },
+  {
+    id: 'nocturne', name: 'Mister Nocturne', sub: 'Instrument thief · Titan',
+    reward: 34000, risk: 'A', portrait: 'nocturne', track: 'Track 06',
+    client: 'Bounty Office (and Old Sol)', wanted: 'Alive, and the piano back', requires: 'proto_done', unlock: 'Finish Track 05 first',
+    desc: 'A collector who steals instruments: forty-one so far, every one of them famous for playing the same four bars. Tonight he plays a stolen grand piano live at the Lyceum on Titan.'
   },
   {
     id: 'mantis', name: 'Iron Mantis', sub: 'Rogue rescue mech · Targon',

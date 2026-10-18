@@ -22,7 +22,10 @@ export const TILE = {
   '¤': 97, '¶': 98, '©': 99,
   // Nyx: labs and the frozen garden dome
   'α': 100, 'β': 101, 'γ': 102, 'δ': 103, 'ε': 104, 'ζ': 105, 'η': 106, 'θ': 107, 'ι': 108, 'κ': 109,
-  'λ': 110, 'μ': 111, 'ν': 112, 'ξ': 113, 'ο': 114
+  'λ': 110, 'μ': 111, 'ν': 112, 'ξ': 113, 'ο': 114,
+  // Titan and the Lyceum
+  'π': 115, 'ρ': 116, 'σ': 117, 'τ': 118, 'υ': 119, 'φ': 120, 'χ': 121, 'ψ': 122, 'ω': 123,
+  'Γ': 124, 'Δ': 125, 'Θ': 126, 'Λ': 127, 'Ξ': 128, 'Π': 129, 'Σ': 130, 'Φ': 131, 'Ψ': 132, 'Ω': 133
 };
 export const RUBBLE = 90;
 export const DOOR_OPEN = 60;
@@ -32,13 +35,16 @@ export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 2
   54, 55, 58, 59, 61, 62, 63, 64, 65, 66, 67, 69,
   70, 71, 74, 75, 77, 78,
   80, 82, 83, 87, 88, 89, 90, 91, 92, 94, 95, 96, 97, 98, 99,
-  101, 102, 103, 104, 105, 106, 108, 109, 110, 111, 112, 113];
+  101, 102, 103, 104, 105, 106, 108, 109, 110, 111, 112, 113,
+  116, 117, 118, 119, 120, 121, 122, 123, 125, 126, 127, 129, 130, 131, 132];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
 export const TILE_LOOKS = {
   20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
   34: 'storefront', 35: 'neon', 36: 'neon', 37: 'neon', 41: 'neonlamp', 43: 'planter', 44: 'railing',
   48: 'piano', 49: 'bottles', 50: 'bartable', 51: 'booth',
   74: 'stall', 75: 'stall', 77: 'lantern', 71: 'rockwall',
+  116: 'titanwall', 117: 'column', 119: 'poster', 120: 'cafe', 121: 'titanlamp', 122: 'hedge', 123: 'titanfountain',
+  125: 'curtain', 126: 'flats', 127: 'roadcase', 129: 'footlights', 132: 'mirror',
   102: 'labglass', 103: 'labbench', 104: 'servers', 105: 'specimen', 108: 'icepond', 109: 'frozentree', 110: 'crystals', 111: 'domeglass',
   80: 'basalt', 82: 'mineface', 83: 'timber', 87: 'chasm', 88: 'orecart', 90: 'rubble', 91: 'minelamp', 92: 'winch', 95: 'hutwall',
   61: 'console_k17', 63: 'racks', 64: 'cryo_look', 65: 'bunk', 66: 'locker', 67: 'window_k17', 69: 'crate_k17'
@@ -514,6 +520,104 @@ export const MAPS = {
       { id: 'dome_exit', x: 0, y: 9, label: 'Back to the labs' },
       { id: 'dome_cache', x: 28, y: 2, label: 'Search the crate' },
       { id: 'fountain', x: 21, y: 8, w: 2, h: 2, label: 'Look' }
+    ]
+  },
+  titan: {
+    name: 'Titan',
+    jp: 'タイタン',
+    where: 'Lyceum Square, under an orange sky',
+    music: 'titan',
+    rows: [
+      'ρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρ',
+      'ρρρρρρρρρρρσρσττσρσρρρρρρρρρρρρρ',
+      'ρππππππππππππππππππππππππππππππρ',
+      'ρππυππππππππππππππππππππππππυππρ',
+      'ρππππππππππππππππππππππππππππππρ',
+      'ρπχππππππππππχππππχππππππππππχπρ',
+      'ρππππππππππππππππππππππππππππππρ',
+      'ρπφππφπππππππππωωπππππππππφππφπρ',
+      'ρππππππππππππππωωππππππππππππππρ',
+      'ρππππππππππππππππππππππππππππππρ',
+      'ρψψψψππππππππππππππππππππππψψψψρ',
+      'ρππππππππππππππππππππππππππππππρ',
+      'ρπππPPPPPππππππππππππππππππππππρ',
+      'ρπππPPPPPππππππππππππππππππππππρ',
+      'ρπππPPPPPππππππππππππππππππππππρ',
+      'ρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρ'
+    ],
+    spawns: { default: { x: 10, y: 13, face: 'up' }, stagedoor: { x: 30, y: 13, face: 'left' } },
+    ship: { x: 6, y: 13 },
+    npcs: [
+      { id: 'sax', x: 10, y: 6, face: 'down', ifNot: 'nocturne_done' },
+      { id: 'fitz', x: 29, y: 11, face: 'left' },
+      { id: 'tickets', x: 15, y: 3, face: 'down' },
+      { id: 'rhea', x: 20, y: 11, face: 'up', if: 'rhea_joined', ifNot: 'nocturne_done' },
+      { id: 'lyra', x: 22, y: 11, look: 'lyra', if: 'lyra_joined', ifNot: 'nocturne_done' },
+      { id: 'ushers', x: 25, y: 4, face: 'left', look: 'goon', ifNot: 'ushers_cleared' }
+    ],
+    walkers: [
+      { look: 't1', y: 4, x1: 4, x2: 22, speed: 16 },
+      { look: 't2', y: 9, x1: 27, x2: 3, speed: 20 },
+      { look: 't3', y: 6, x1: 20, x2: 28, speed: 14 }
+    ],
+    objects: [
+      { id: 'ship', x: 4, y: 12, w: 5, h: 3, label: 'Board the Hi-Hat' },
+      { id: 'lyceum_doors', x: 15, y: 1, w: 2, label: 'The Lyceum' },
+      { id: 'stage_door', x: 31, y: 13, label: 'Stage door' }
+    ]
+  },
+
+  lyceum: {
+    name: 'The Lyceum, backstage',
+    jp: '劇場の舞台裏',
+    where: 'Titan, during the show',
+    music: 'nocturne',
+    minimap: true,
+    rows: [
+      'ΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘ',
+      'ΘΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΘ',
+      'ΘΓΦΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΘ',
+      'ΘΓΓΓΓΛΓΓΓΓΓΛΓΓΓΓΓΛΓΓΓΓΓΛΓΓΓΓΓΓΓΓΓΘ',
+      'ΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΓΓΓΓΘ',
+      'ΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΘΓΓΓΓΘ',
+      'ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΘΓΓΓΓΘ',
+      'ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΘΓΛΓΓΘ',
+      'ΩΩΩΩΩΩΩΩΩΩΩΩΩΣΣΩΩΩΩΩΩΩΩΩΩΩΩΩΘΓΓΓΓΘ',
+      'ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΘΓΓΛΓΘ',
+      'ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΘΓΓΓΓΘ',
+      'ΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΠΘΓΓΓΓΘ',
+      'ΘΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΘ',
+      'ΘΓΓΓΛΓΓΓΓΓΛΓΓΓΓΓΛΓΓΓΓΓΛΓΓΓΓΓΓΓΓΓΓΘ',
+      'ΘΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΘ',
+      'ΘΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΘ',
+      'ΘΓΨΨΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΘ',
+      'ΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘ'
+    ],
+    offLimits: [[5, 7]],          // the stage itself: you see the show, you don't walk on it
+    // spotlights that switch on with the beat of the show (beats 0-3 of each bar); get caught and you start the section again
+    spots: [
+      { x: 6, y: 12, w: 3, h: 5, beats: [0, 1], reset: 'default' },
+      { x: 12, y: 12, w: 3, h: 5, beats: [2, 3], reset: 'default' },
+      { x: 18, y: 12, w: 3, h: 5, beats: [0, 1], reset: 'default' },
+      { x: 24, y: 12, w: 3, h: 5, beats: [2, 3], reset: 'default' },
+      { x: 29, y: 9, w: 4, h: 2, beats: [0, 1], reset: 'column' },
+      { x: 29, y: 5, w: 4, h: 2, beats: [2, 3], reset: 'column' },
+      { x: 24, y: 1, w: 3, h: 3, beats: [1, 2], reset: 'gallery' },
+      { x: 18, y: 1, w: 3, h: 3, beats: [3, 0], reset: 'gallery' },
+      { x: 12, y: 1, w: 3, h: 3, beats: [1, 2], reset: 'gallery' },
+      { x: 6, y: 1, w: 3, h: 3, beats: [3, 0], reset: 'gallery' }
+    ],
+    spawns: { default: { x: 2, y: 15, face: 'right' }, column: { x: 30, y: 12, face: 'up' }, gallery: { x: 30, y: 2, face: 'left' } },
+    npcs: [
+      { id: 'tam', x: 3, y: 14, face: 'right', ifNot: 'nocturne_done' },
+      { id: 'nocturne', x: 18, y: 8, face: 'down', deco: true, ifNot: 'heist_done' },
+      { id: 'clockwork', x: 10, y: 7, face: 'down', look: 'mech', deco: true, ifNot: 'heist_done' },
+      { id: 'clockwork', x: 23, y: 7, face: 'down', look: 'mech', deco: true, ifNot: 'heist_done' }
+    ],
+    objects: [
+      { id: 'stage_exit', x: 0, y: 15, label: 'Stage door' },
+      { id: 'lift_lever', x: 2, y: 2, label: 'Piano lift lever' },
+      { id: 'mirror', x: 2, y: 16, w: 2, label: 'Look' }
     ]
   }
 };

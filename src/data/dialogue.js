@@ -26,13 +26,14 @@ export function entry(id, flags, location) {
     case 'cass': return 'cass';
     // ---- Nyx ----
     case 'sato': return flags.proto_done ? 'sato_done' : flags.met_sato ? 'sato_idle' : 'sato';
-    case 'lyra': return location === 'ship' ? 'lyra_ship' : flags.lyra_met ? 'lyra_wait' : 'lyra_first';
+    case 'lyra': return location === 'titan' ? 'lyra_titan' : location === 'ship' ? 'lyra_ship' : flags.lyra_met ? 'lyra_wait' : 'lyra_first';
     case 'dome_door': return flags.nyx_dome_open ? 'dome_enter' : flags.labsec_cleared ? 'dome_lock' : 'dome_guarded';
     case 'dome_cache': return flags.dome_cache ? 'dome_cache_done' : 'dome_cache';
     case 'dutch': return 'dutch';
     case 'pip': return 'pip';
     case 'tam':
       if (location === 'targon') return flags.tg_photo ? 'tam_site_after' : 'tam_site';
+      if (location === 'lyceum') return 'tam_lyceum';
       if (location === 'ship' && flags.bounty_mantis && !flags.mantis_done) return 'tam_targon';
       return location === 'vesta' ? 'tam_vesta' : docks ? 'tam_docks' : flags.velvet_done ? 'tam_after' : flags.met_tam ? 'tam_idle' : 'tam_first';
     case 'brushes': return location === 'nyx' ? 'brushes_nyx' : deep ? 'brushes_deep' : location === 'relay' ? 'brushes_relay' : flags.velvet_done ? 'brushes_after' : flags.met_brushes ? 'brushes_idle' : 'brushes_first';
@@ -41,12 +42,19 @@ export function entry(id, flags, location) {
       if (flags.velvet_done) return 'cockpit_nav';
       if (flags.velvet_course) return 'cockpit_return';
       return flags.bounty_velvet ? 'cockpit_go' : 'cockpit_none';
-    case 'sax': return flags.busked_visit ? 'sax_after' : 'sax';
+    case 'sax':
+      if (flags.bounty_nocturne && !flags.sol_story) return 'sol_story';
+      if (location === 'titan') return 'sol_titan';
+      return flags.busked_visit ? 'sax_after' : 'sax';
+    case 'lift_lever': return flags.nocturne_done ? 'lift_lever_done' : 'lift_lever';
+    case 'fitz': return flags.heist_ready ? 'fitz_idle' : 'fitz';
+    case 'stage_door': return flags.nocturne_done ? 'stage_door_done' : flags.heist_ready ? 'stage_door' : 'stage_door_locked';
     case 'rhea':
       if (location === 'relay') return 'rhea_relay';
       if (location === 'vesta') return 'rhea_vesta';
       if (location === 'targon') return 'rhea_targon';
       if (location === 'nyx') return 'rhea_nyx';
+      if (location === 'titan') return 'rhea_titan';
       if (location === 'ship') return 'rhea_ship';
       return flags.rhea_met ? 'rhea_idle' : 'rhea_first';
     case 'drone': return 'drones';
@@ -221,6 +229,7 @@ export const DIALOGUE = {
       { t: 'Vesta', if: 'bounty_courier', go: 'nav_vesta' },
       { t: 'Targon', if: 'bounty_mantis', go: 'nav_targon' },
       { t: 'Nyx', if: 'bounty_proto', go: 'nav_nyx' },
+      { t: 'Titan', if: 'bounty_nocturne', go: 'nav_titan' },
       { t: 'Stay put' }
     ] }
   ],
@@ -228,6 +237,10 @@ export const DIALOGUE = {
   nav_vesta: [
     { if: 'vesta_arrived', do: 'toVesta' },
     { ifNot: 'vesta_arrived', do: 'departVesta' }
+  ],
+  nav_titan: [
+    { if: 'titan_arrived', do: 'toTitan' },
+    { ifNot: 'titan_arrived', do: 'departTitan' }
   ],
   nav_nyx: [
     { if: 'nyx_arrived', do: 'toNyx' },
@@ -1152,6 +1165,116 @@ export const DIALOGUE = {
   brushes_origin_end: [
     { who: 'brushes', t: "...Thank you, Captain. I have decided I am not a fault. I am a feature. A swinging feature." },
     { set: 'brushes_s2' }, { do: 'bond', arg: 'brushes' }
+  ],
+
+  // ---- Titan looks ----
+  titanwall: [{ who: null, t: 'Sandstone, warm from a sun that is very far away. Somebody has carved a treble clef into it, very carefully.' }],
+  column: [{ who: null, t: 'A marble column, wrapped in posters for shows that closed fifty years ago.' }],
+  poster: [{ who: null, t: 'MISTER NOCTURNE. ONE NIGHT ONLY. A lifetime of genius in ninety minutes. No interval. No refunds. No questions.' }],
+  cafe: [{ who: null, t: 'A pavement café. Every table has a tiny lamp and a tiny pianist playing on a tiny screen. Coffee costs more than the Hi-Hat.' }],
+  titanlamp: [{ who: null, t: 'A lamp post shaped like a tuning fork. It hums an A when the wind blows.' }],
+  hedge: [{ who: null, t: 'A hedge clipped into the shape of a treble clef. Someone on Titan has a lot of time and very sharp scissors.' }],
+  titanfountain: [{ who: null, t: 'A fountain whose jets rise and fall in time with the music from the Lyceum. Right now it is rushing a little.' }],
+  curtain: [{ who: null, t: 'Heavy red curtains. On the other side, two thousand people are holding their breath.' }],
+  flats: [{ who: null, t: 'Painted scenery flats: a moonlit garden, a ballroom, a very unconvincing sea.' }],
+  roadcase: [{ who: null, t: "Road cases, stencilled NOCTURNE WORLD TOUR. One is labelled 'Instruments: 41'. It is empty." }],
+  footlights: [{ who: null, t: "The footlights, glowing in time. Fitz said they're on the same cue as the spots." }],
+  mirror: [{ who: null, t: 'A dressing-room mirror ringed with bulbs. Your reflection looks like it is about to steal a piano. Correct.' }],
+  lift_lever_done: [{ who: null, t: 'The piano-lift lever. The stage above is empty and someone has left a single rose on it.' }],
+  // ---- Titan: Track 06 ----
+  sol_story: [
+    { set: 'sol_story' },
+    { who: 'sax', t: "You took the Nocturne job. I saw it on the board in the Flat Ninth. Sit down a minute, hunter." },
+    { who: 'sax', t: "Those four bars you keep hearing? My teacher wrote them. Mae Halloway. On Titan, fifty years ago, on a grand piano called the Halcyon." },
+    { who: 'sax', t: "It's not four bars. It's five. Four bars of question, one bar of answer. She only ever played the fifth bar to her students. I'm the last one left." },
+    { who: 'sax', t: "Nocturne stole the Halcyon. He plays it at the Lyceum tonight. I want it home. I'm coming with you, and that's not a question." },
+    { choices: [{ t: "Then pack your sax, Sol.", go: 'sol_story_end' }, { t: "What's in the fifth bar?", go: 'sol_fifth' }] }
+  ],
+  sol_fifth: [{ who: 'sax', t: "The answer, kid. Get me my teacher's piano back, and maybe I'll play it for you." }, { go: 'sol_story_end' }],
+  sol_story_end: [
+    { who: 'sax', ifNot: 'titan_arrived', t: "I'll meet you on Titan. I've got a cousin with a very slow tram. Don't wait up." },
+    { who: 'sax', if: 'titan_arrived', t: "Fitz, the stagehand by the stage door, used to tune her for Mae. Talk to him." }
+  ],
+  sol_titan: [
+    { who: 'sax', ifNot: 'heist_ready', t: "Fitz, the stagehand by the stage door, used to tune the Halcyon for Mae. He hates Nocturne more than I do. Talk to him." },
+    { who: 'sax', if: 'heist_ready', t: "The show's started. I can hear the Halcyon from here. He's playing her too fast. Go on, hunter." }
+  ],
+  rhea_titan: [{ who: 'rhea', pick: [
+    "Forty-one stolen instruments, all of them famous for the same four bars. He's not a collector. He's working through a shopping list.",
+    "I'll be on the lighting desk frequency. If those follow-spots are on a network, I'll be listening to them."
+  ] }],
+  lyra_titan: [{ who: 'lyra', t: "The show music has a very steady beat, Captain. Two on, two off. Whoever runs the spotlights is a metronome. I like them already." }],
+  fitz: [
+    { set: 'met_fitz' },
+    { who: 'fitz', t: "You're the hunters? Fitz, stagehand. Thirty years at the Lyceum. Nocturne fired the whole crew last month and replaced us with clockwork players." },
+    { who: 'fitz', t: "I tuned the Halcyon for Mae Halloway when I was a boy. Watching him play her makes me want to drop a sandbag on him. A heavy one." },
+    { who: 'fitz', t: "Here's how you do it. The piano sits on the stage lift. The lift lever is up on the fly gallery, top left of backstage. Pull it mid-show and the Halcyon drops straight through the floor." },
+    { who: 'fitz', t: "Your mechanic can wait under the stage to catch it. Getting to the lever's the hard part. The follow-spots sweep backstage in time with the show. Two beats on, two off." },
+    { choices: [
+      { t: "We'll move on the dark beats.", go: 'fitz_end' },
+      { t: "A heist in time with the music. Very on brand.", temp: 'Sarcastic', go: 'fitz_end' },
+      { t: "Thank you, Fitz. We'll get her back.", temp: 'Idealistic', go: 'fitz_end' },
+      { t: "And if we're spotted?", temp: 'Calm', go: 'fitz_spot' },
+      { t: "What's your cut?", temp: 'Ruthless', go: 'fitz_cut' }
+    ] }
+  ],
+  fitz_spot: [{ who: 'fitz', t: "Then you duck back into the dark and try again. The audience will think it's part of the show. Nocturne does a lot of weird stuff." }, { go: 'fitz_end' }],
+  fitz_cut: [{ who: 'fitz', t: "My cut is watching his face when the piano drops. That's worth more than chits." }, { go: 'fitz_end' }],
+  fitz_end: [{ who: 'fitz', t: "The stage door's open. Your mechanic's already inside. Break a leg. Not literally. We're short-staffed." }, { set: 'heist_ready' }],
+  fitz_idle: [{ who: 'fitz', pick: ['Two beats on, two beats off. Count it in your head. Everybody counts in their head backstage.', 'The lever is top left, on the fly gallery. Big red handle. You cannot miss it. People have.'] }],
+  tickets: [{ who: 'tickets', pick: [
+    "Mister Nocturne, one night only, is completely sold out. Standing room is also sold out. Sitting on the floor is sold out.",
+    "No, you can't just listen from the lobby. Several people have tried. They were removed. Gently. Mostly."
+  ] }],
+  lyceum_doors: [{ who: null, t: 'The Lyceum. Gold doors, a sold-out sign and a doorman built like a wardrobe. Not this way.' }],
+  stage_door_locked: [{ who: null, t: 'A stage door with a keypad. You hear an orchestra warming up inside. Someone who works here might let you in.' }],
+  stage_door: [
+    { who: null, t: "The stage door is propped open with a fire extinguisher. Somewhere inside, a grand piano is being played much too fast." },
+    { choices: [{ t: 'Slip inside', do: 'toLyceum' }, { t: 'Not yet' }] }
+  ],
+  stage_door_done: [{ who: null, t: "The stage door. Fitz has taped up a sign: STAFF ONLY (AND THE HI-HAT CREW, FOREVER)." }],
+  stage_exit: [{ who: null, t: 'The stage door, out to the square.' }, { choices: [{ t: 'Back to the square', do: 'fromLyceum' }, { t: 'Stay backstage' }] }],
+  lyceum_arrive: [
+    { who: 'tam', t: "Cap! Over here. I'll be under the stage with the lift. You get to that lever and pull it, and I'll catch the piano." },
+    { who: 'tam', t: "The follow-spots are on the show's beat. Wait in the dark, move in the dark. The lever's all the way up on the fly gallery." }
+  ],
+  tam_lyceum: [{ who: 'tam', pick: [
+    "Go right along the wings, up the back stairs, then left along the gallery to the lever. Dark beats only.",
+    "I've greased the lift. I've greased me. Everything's ready to drop."
+  ] }],
+  ushers: [
+    { who: 'ushers', t: "The Lyceum is closed to people in boots like that. Turn around, or be escorted around." },
+    { choices: [{ t: 'Fight', do: 'fight', arg: 'ushers' }, { t: 'Turn around' }] }
+  ],
+  lift_lever: [
+    { who: null, t: "The piano-lift lever. Through a gap in the flats you can see the stage: Nocturne at the Halcyon, mid-flourish, two thousand people holding their breath." },
+    { choices: [{ t: 'Pull the lever', do: 'heist' }, { t: 'Wait' }] }
+  ],
+  halcyon_choice: [
+    { who: 'sax', t: "That's her. The Halcyon. Same scratch on the lid where Mae dropped her cigarette holder in seventy-one." },
+    { who: null, t: "The Halcyon is yours to decide. The Bounty Office only wants Nocturne." },
+    { choices: [
+      { t: 'It goes home with Old Sol.', go: 'halcyon_sol' },
+      { t: "Keep it aboard the Hi-Hat. If the Conductor wants it, he can come to us.", go: 'halcyon_keep' },
+      { t: "Sell it. There's more than one buyer for a piano like this.", go: 'halcyon_sell' }
+    ] }
+  ],
+  halcyon_sol: [
+    { set: 'piano_sol' }, { set: 'fifth_bar' },
+    { who: 'sax', t: "...Thank you, hunter. Sit down. All of you. Mae would want an audience." },
+    { who: null, t: 'Old Sol plays the four bars. Then, softly, a fifth. It resolves everything. The whole room exhales.' },
+    { who: 'brushes', t: "Captain. I have recorded it. I have recorded it nine times. I may have cried. Drums do not cry. I am revising that." }
+  ],
+  halcyon_keep: [
+    { set: 'piano_kept' }, { set: 'fifth_bar' }, { do: 'halcyonStyle' },
+    { who: 'sax', t: "...Fine. Better on a ship full of jazz than in his collection. But you learn the fifth bar properly, or I take her back." },
+    { who: null, t: 'Old Sol teaches Brushes the fifth bar, right there on the loading dock. It resolves everything.' },
+    { who: 'tam', t: "I'll bolt her down in the lounge. Gerald gets the spot by the window, though. Non-negotiable." }
+  ],
+  halcyon_sell: [
+    { set: 'piano_sold' },
+    { who: 'sax', t: "...Sell her. Right. Of course. I'll be on the slow tram, hunter. Don't wait up." },
+    { who: 'brushes', t: 'Captain, Old Sol did not play the fifth bar. I do not think he will.' }
   ],
 
   ship: [

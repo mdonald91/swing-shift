@@ -89,7 +89,7 @@ export function openBooth() {
   node.querySelector('[data-close]').addEventListener('click', () => m.close());
   const list = node.querySelector('.shop-list');
   const render = () => {
-    list.innerHTML = Object.entries(JAM_STYLES).filter(([, s]) => !s.booth || state.flags.up_booth).map(([k, s]) => {
+    list.innerHTML = Object.entries(JAM_STYLES).filter(([, s]) => (!s.booth || state.flags.up_booth) && (!s.needs || state.flags[s.needs])).map(([k, s]) => {
       const on = state.jamStyle === k;
       return `<li class="shop-row ${on ? 'on' : ''}"><div class="sr-main"><b>${esc(s.n)}</b><small>${esc(s.d)}</small></div>
         <span></span><span></span>

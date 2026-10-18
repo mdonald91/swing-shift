@@ -216,6 +216,22 @@ export function npcPortrait(id) {
       <path d="M162 240 L168 172 C168 162 178 158 182 166 L184 176" fill="${P.cream}" stroke="${INK}" stroke-width="2"/>
       <path d="M170 168 L128 34" stroke="${P.cream}" stroke-width="3.5" stroke-linecap="round"/>
       <circle cx="128" cy="34" r="3" fill="#fff"/>`);
+    case 'nocturne': return svg(`
+      <defs><radialGradient id="ptNocSpot" cx="50%" cy="30%" r="60%"><stop offset="0" stop-color="#f3c860" stop-opacity=".3"/><stop offset="1" stop-color="#f3c860" stop-opacity="0"/></radialGradient></defs>
+      <rect width="200" height="240" fill="url(#ptNocSpot)"/>
+      <path d="M10 240 C20 184 60 166 100 166 C140 166 180 184 190 240Z" fill="#2a1240"/>
+      <path d="M60 178 L100 240 L86 240 L48 192Z M140 178 L100 240 L114 240 L152 192Z" fill="#3d1d5a"/>
+      <path d="M86 170 L100 210 L114 170Z" fill="${P.cream}"/><path d="M88 176 L100 182 L88 188Z M112 176 L100 182 L112 188Z" fill="#5a2a8a"/>
+      <path d="M36 200 l10 -6 l4 10 M150 204 l10 -8 l4 10" stroke="${P.mustard}" stroke-width="3" fill="none"/>
+      <rect x="89" y="138" width="22" height="32" fill="#d9b8a0"/>
+      <ellipse cx="100" cy="106" rx="35" ry="44" fill="#e6c6ae"/>
+      <path d="M62 102 C56 46 146 46 138 102 C134 76 122 62 106 60 C120 70 120 80 112 84 C100 72 80 70 62 102Z" fill="#1a1020"/>
+      <path d="M118 84 C140 70 150 90 146 112" stroke="#1a1020" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M70 92 Q100 84 130 92 L126 112 Q100 104 74 112Z" fill="#0d0814" opacity=".9"/>
+      <g class="eyes"><ellipse cx="86" cy="102" rx="6" ry="3.5" fill="${P.mustard}"/><ellipse cx="114" cy="102" rx="6" ry="3.5" fill="${P.mustard}"/></g>
+      <path d="M86 128 q14 -6 28 0" stroke="#5a3a3a" stroke-width="3" fill="none"/>
+      <path class="mouth" d="M90 136 q10 6 20 0" stroke="#7a2a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M150 50 l6 -14 l6 14 l-6 14Z" fill="#f3c860" opacity=".8"/><path d="M40 70 l4 -9 l4 9 l-4 9Z" fill="#f3c860" opacity=".6"/>`);
     case 'mantis': return svg(`
       <path d="M40 240 L60 190 L140 190 L160 240Z" fill="#3a4258"/>
       <path d="M70 196 H130 V240 H70Z" fill="#5d6a80"/><path d="M78 206 H122" stroke="${P.mustard}" stroke-width="4"/>

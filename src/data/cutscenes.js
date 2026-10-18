@@ -306,5 +306,69 @@ export const CUTSCENES = {
     { l: 'player', who: 'player', line: "Then let's flip the record.",
       byTemp: { Calm: "Then let's flip the record. Carefully.", Sarcastic: 'Great. I always hated the B-sides.', Idealistic: 'Then Side B is ours.', Ruthless: "Then let's go collect." } },
     { l: null, r: null, card: { track: 'End of', name: 'Side A' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+  // ---- Track 06: Mister Nocturne ----
+  nocturne_depart: [
+    { bg: 'lounge', mood: 'ship', l: 'player', r: 'brushes', who: 'brushes', line: 'Titan, Captain. The Lyceum. Mister Nocturne plays there tonight, one night only, on a stolen grand piano.' },
+    { r: 'rook', who: 'rook', line: "Forty-one stolen instruments. Every one of them famous for playing the same four bars. That's not a hobby. That's a list." },
+    { if: 'sol_story', r: 'tam', who: 'tam', line: "And Old Sol's coming. By tram. I don't think trams go to Titan, Cap. I didn't have the heart to tell him." },
+    { if: 'lyra_joined', r: 'lyra', who: 'lyra', line: 'I have read the show programme. Ninety minutes, no interval, and the lighting cues are on the beat. Interesting.' },
+    { r: 'brushes', who: 'brushes', sfx: 'countin', line: 'Titan, locked in. One... two... one, two, three, four.' },
+    { l: null, r: null, card: { track: 'Track 06', name: 'Mister Nocturne' }, mood: 'title', sfx: 'cymbal', fx: 'flash' },
+    { bg: 'titan', mood: 'titan', caption: 'Titan. An orange sky, a city of concert halls, and a whole moon that dresses up for the evening.' }
+  ],
+  titan_arrive: [
+    { bg: 'titan', mood: 'titan', l: 'player', r: 'sax', if: 'sol_story', who: 'sax', line: "Took you long enough. The tram was very slow. I don't want to talk about the tram." },
+    { l: 'player', r: 'tam', who: 'tam', line: "Lyceum Square, Cap. The stage door's round the right-hand side. I'll go and make friends with the stage crew. Whoever's left of them." },
+    { r: 'rhea', if: 'rhea_joined', who: 'rhea', line: "Front of house is all ushers. Nocturne's people. Let's not go in the front." }
+  ],
+  heist: [
+    { bg: 'lyceum', mood: 'nocturne', l: 'player', r: null, caption: 'You wait for the downbeat. Nocturne raises both hands over the Halcyon for the big finish.' },
+    { sfx: 'clank', fx: 'shake', caption: 'You pull the lever. The stage lift drops. So does the Halcyon. So, briefly, does the music.' },
+    { l: 'tam', who: 'tam', line: 'Got her! Got her! She is heavy and I love her!' },
+    { r: 'nocturne', who: 'nocturne', fx: 'flash', sfx: 'scratch', line: 'My piano. You took my piano in the middle of my nocturne.' },
+    { who: 'nocturne', line: "Do you know what that instrument is? It's the only one left that remembers the whole song. He will pay anything for it." },
+    { l: 'player', who: 'player', line: 'Who will?',
+      byTemp: { Calm: 'Who is he paying you for?', Sarcastic: 'Let me guess. A man with a baton.', Idealistic: "It doesn't belong to you. Or him.", Ruthless: 'Thirty-four thousand chits says you come quietly.' } },
+    { who: 'nocturne', line: 'The Conductor, of course. Now, an encore. Players! From the top!' },
+    { l: 'brushes', who: 'brushes', line: 'Captain, those clockwork players are his accompaniment. While they play, he is hard to hurt. Stop the band, then stop the bandleader.' }
+  ],
+  nocturne_victory: [
+    { bg: 'lyceum', mood: 'ship', l: 'player', r: 'nocturne', who: 'nocturne', line: '...Unaccompanied. How humiliating.' },
+    { who: 'nocturne', line: "He only wanted the four bars. Forty-one instruments, and none of them could play the rest. The rest died with Mae Halloway." },
+    { l: 'sax', if: 'sol_story', who: 'sax', line: "No it didn't, you fraud." },
+    { l: 'tam', who: 'tam', line: "Cap, the audience is giving us a standing ovation. I think they think this was the show." }
+  ],
+  nocturne_ending: [
+    { bg: 'lounge', mood: 'ship', l: 'brushes', r: 'tam', if: 'piano_kept', who: 'tam', line: "The Halcyon's bolted down in the lounge. Gerald's in his spot by the window. Everybody's happy. Gerald's happiest." },
+    { if: 'piano_kept', l: 'brushes', r: 'lyra', who: 'brushes', line: 'Captain, I can play the fifth bar now. All five bars together are called Halcyon. They sound like coming home.' },
+    { if: 'piano_sol', l: 'brushes', r: 'tam', who: 'brushes', line: 'Old Sol sent a recording. The whole song, five bars, on the Halcyon, in the Flat Ninth. The bar was full. Nobody talked.' },
+    { if: 'piano_sold', l: 'rook', r: 'tam', who: 'rook', line: "The buyer paid in full and didn't haggle. Didn't leave a name, either. Just a little drawing of a baton." },
+    { if: 'piano_sold', who: 'tam', line: "...Cap. I think we just sold it to him." },
+    { r: 'rhea', if: 'rhea_joined', who: 'rhea', line: "Nocturne is singing to the Bounty Office. Forty-one instruments, one buyer, and every one of them for the same four bars." },
+    { l: 'player', who: 'player', line: 'Then he only needs the fifth bar.',
+      byTemp: { Calm: "Then the last piece is the fifth bar. We should keep it safe.", Sarcastic: "Great. A supervillain who can't finish a song.", Idealistic: "He'll never have it. Not the whole song.", Ruthless: 'Then the fifth bar is worth more than his bounty.' } }
+  ],
+
+  // Act 2 finale: the Conductor names the Hi-Hat a loose end. Plays once, on the ship, after Track 06.
+  act2_finale: [
+    { bg: 'lounge', mood: 'tense', l: 'brushes', r: 'tam', who: 'brushes', sfx: 'scratch', line: 'Captain. The speakers have switched themselves on again. I am noting it again.' },
+    { bg: 'broadcast', mood: 'finale', l: null, r: 'conductor', who: 'conductor', fx: 'flash', sfx: 'cymbal', line: 'Good evening, Captain. A private broadcast, this time. Only your ship. I thought you had earned it.' },
+    { who: 'conductor', line: 'The Mantis. My Nyx girl. Forty-one instruments and a piano. You have been dismantling my orchestra, one player at a time.' },
+    { who: 'conductor', if: 'lyra_joined', line: 'And you kept her. L-7, conducting a jukebox on a cargo ship. What a waste of perfect time.' },
+    { who: 'conductor', if: 'piano_sold', line: 'Though I must thank you for the Halcyon. Very reasonably priced. Not that it helps me. She will not play the fifth bar for me.' },
+    { who: 'conductor', if: 'fifth_bar', line: 'And now you have heard the fifth bar. Which makes you the last people alive who know the end of my song.' },
+    { l: 'player', who: 'player', line: 'So what are we to you?',
+      byTemp: { Calm: 'So what happens now?', Sarcastic: "Let me guess. We're your biggest fans.", Idealistic: "We're the people who are going to stop you.", Ruthless: "We're the people collecting a quarter of a million chits." } },
+    { who: 'conductor', fx: 'shake', line: 'You, Captain, are a loose end. And the Hi-Hat is the last note out of tune in my system.' },
+    { who: 'conductor', line: 'I tidy up loose ends. Enjoy the intermission.' },
+    { bg: 'lounge', mood: 'tense', l: 'rook', r: 'tam', who: 'rook', line: '...I liked it better when he was talking to everybody.' },
+    { r: 'rhea', if: 'rhea_joined', who: 'rhea', line: "He's scared. People who aren't scared don't make house calls." },
+    { r: 'lyra', if: 'lyra_joined', who: 'lyra', line: "His broadcast ran half a beat late. He's rushing. I have never heard him rush." },
+    { l: 'brushes', r: 'tam', who: 'brushes', line: 'Captain, this is the end of Side B. After this comes the encore. I have checked. There is always an encore.' },
+    { l: 'player', who: 'player', line: 'Then we play it loud.',
+      byTemp: { Calm: "Then we'll be ready for it.", Sarcastic: 'Great. I love audience participation.', Idealistic: "Then the encore's ours.", Ruthless: 'Then he can come and collect.' } },
+    { l: null, r: null, card: { track: 'End of', name: 'Side B' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
   ]
+
 };

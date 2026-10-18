@@ -72,6 +72,13 @@ const ACTIONS = {
     setTimeout(() => toast(flag('cass_jailed') ? `Cass handed in: ₡ 5,000. Bond with Rook deepened.` : 'Cass is gone, with a head start. Bond with Rook deepened.'), 300);
     after = () => bus.emit('dialog-closed');
   },
+  // ---- Titan ----
+  departTitan() { after = () => playCut('nocturne_depart', { restoreMood: false }).then(() => travel('titan')); },
+  toTitan() { after = () => travel('titan'); },
+  toLyceum() { after = () => travel('lyceum'); },
+  fromLyceum() { after = () => travel('titan', 'stagedoor'); },
+  heist() { after = () => playCut('heist', { restoreMood: false }).then(() => { setFlag('heist_done'); startBattle('nocturne'); }); },
+  halcyonStyle() { state.jamStyle = 'halcyon'; setTimeout(() => toast('New Jam Session arrangement: Halcyon'), 1200); },
   // ---- Nyx ----
   departNyx() { after = () => playCut('proto_depart', { restoreMood: false }).then(() => travel('nyx')); },
   toNyx() { after = () => travel('nyx'); },

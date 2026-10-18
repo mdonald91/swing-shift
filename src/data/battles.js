@@ -178,6 +178,7 @@ export const JAM_STYLES = {
   bigband: { n: 'Big Band', d: 'Everyone hits every enemy hard.', hit: .7 },
   ballad: { n: 'Ballad', d: 'A softer hit on every enemy. Heals the crew a third of their HP and revives anyone down.', hit: .4, heal: .33, revive: true, booth: true },
   bebop: { n: 'Bebop', d: 'Eight fast hits on random enemies, then the Groove meter starts a third full again.', hit: .26, hits: 8, groove: 35, booth: true },
+  halcyon: { n: 'Halcyon', d: "Mae Halloway's song, all five bars: a big hit on every enemy, and the crew heals a little.", hit: .62, heal: .15, needs: 'piano_kept' },
   bossa: { n: 'Bossa Nova', d: 'A smooth hit on every enemy. The crew takes less damage and the enemies hit softer for 2 rounds.', hit: .5, shield: 2, weaken: 2, booth: true }
 };
 
@@ -197,6 +198,8 @@ export const ENEMIES = {
   labdrone: { id: 'drone', name: 'Lab security drone', hp: 210, atk: 33, def: 9, xp: 62, weakTo: ['shock'], resists: ['shot'], machine: true, word: 'ZZT!', verb: 'fires a stun bolt at' },
   labmech: { id: 'mech', name: 'Containment unit', hp: 330, atk: 36, def: 12, xp: 90, weakTo: ['shock'], resists: ['blunt'], machine: true, word: 'KRUNCH!', verb: 'clamps down on' },
   moth: { id: 'holo', name: 'Frost moth', hp: 150, atk: 31, def: 5, xp: 48, weakTo: ['shot'], resists: ['blunt'], word: 'FWSSH', verb: 'beats frozen wings at' },
+  usher: { id: 'goon', name: 'Usher', hp: 260, atk: 38, def: 9, xp: 70, weakTo: ['blunt'], word: 'SHHH!', verb: 'escorts' },
+  clockwork: { id: 'holo', name: 'Clockwork player', hp: 260, atk: 30, def: 10, xp: 80, weakTo: ['shock'], resists: ['shot'], machine: true, accomp: true, word: 'TICK-TOCK', verb: 'plays a sharp at' },
   holo: { id: 'holo', name: 'Holo-player', hp: 75, atk: 14, def: 2, xp: 20, weakTo: ['shock'], machine: true, word: 'BLIP!' }
 };
 const E = (key, over = {}) => ({ ...ENEMIES[key], ...over });
@@ -290,6 +293,19 @@ export const ENCOUNTERS = {
     ]
   },
 
+  // Mister Nocturne: while either clockwork player is still playing, he takes 40% less damage.
+  // Every other round he plays rubato (the next beat ring is harder to hit), and once hurt he calls
+  // an encore that brings a player back. He also steals Groove.
+  nocturne: {
+    bg: 'lyceum', bounty: 'nocturne', intro: 'Mister Nocturne bows to an audience that is screaming. His clockwork players lift their instruments in perfect time.',
+    noRun: 'Two thousand people are watching. You are not leaving by the front.',
+    enemies: [
+      E('clockwork', { name: 'Clockwork violinist' }),
+      { id: 'nocturne', name: 'Mister Nocturne', hp: 1100, atk: 36, def: 10, boss: true, ai: 'nocturne', xp: 360, weakTo: ['shot'], resists: ['blunt'] },
+      E('clockwork', { name: 'Clockwork cellist', hp: 300 })
+    ]
+  },
+
   // ---- optional side fights ----
   smugglers: {
     bg: 'docks', intro: 'Two smugglers draw on you before you have finished saying hello.',
@@ -335,6 +351,11 @@ export const ENCOUNTERS = {
     bg: 'dome', intro: 'A cloud of frost moths lifts off a frozen tree. They are very beautiful and very bitey.',
     flag: 'moths_cleared', reward: { chits: 1100, items: { curry: 1 } },
     enemies: [E('moth'), E('moth', { name: 'Frost queen', hp: 260, atk: 35, def: 7, xp: 80 }), E('moth')]
+  },
+  ushers: {
+    bg: 'titan', intro: "Nocturne's ushers. Velvet ropes, velvet jackets, brass knuckles. 'Tickets, please.'",
+    flag: 'ushers_cleared', reward: { chits: 1300, items: { curry: 1, coffee: 1 } },
+    enemies: [E('usher'), E('usher', { name: 'Head usher', hp: 320, atk: 41 }), E('usher')]
   },
   // Brushes' holo-rehearsal on the Hi-Hat: repeatable, grows with the crew, XP only.
   rehearsal: {

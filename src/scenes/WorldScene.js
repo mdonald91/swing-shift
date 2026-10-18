@@ -84,6 +84,11 @@ export class WorldScene extends Phaser.Scene {
       spr.npcId = n.id; spr.homeFace = n.face || 'down'; spr.footY = y + 4;
       spr.bubble = this.add.image(x, y - (n.id === 'brushes' ? 22 : 24), 'bubble').setDepth(5000).setVisible(false);
       this.tweens.add({ targets: spr.bubble, y: spr.bubble.y - 2, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+      if (n.deco) {      // part of the scenery (performers on stage): no collision, nothing to talk to
+        spr.npcId = n.id; spr.def = n; spr.footY = y + 4; spr.zone = { body: null }; spr.bubble = this.add.image(0, 0, 'bubble').setVisible(false);
+        this.tweens.add({ targets: spr, y: spr.y - 1, duration: 420 + Math.random() * 200, yoyo: true, repeat: -1 });
+        this.npcs.push(spr); continue;
+      }
       const z = lookId === 'mantis' ? this.add.zone(x, y, 28, 14) : this.add.zone(x, y + 3, 12, 8);
       blockers.add(z);
       spr.zone = z; spr.def = n;
@@ -181,6 +186,13 @@ export class WorldScene extends Phaser.Scene {
     const off = bus.on('dialog-closed', refresh);
     this.events.once('shutdown', off);
 
+    // spotlights that switch on with the beat (the Lyceum heist)
+    this.spots = null;
+    if (map.spots) {
+      this.spots = map.spots.map(sp => ({ ...sp, g: this.add.graphics().setDepth(8500).setBlendMode(Phaser.BlendModes.ADD) }));
+      this.spotGrace = this.time.now + 1200;
+    }
+
     // tailing a suspect (see the map's "tail" route)
     this.tail = null;
     const offShake = bus.on('shake', () => this.cameras.main.shake(settings.reduceShake ? 250 : 500, settings.reduceShake ? .002 : .012));
@@ -206,6 +218,38 @@ export class WorldScene extends Phaser.Scene {
       lost: state.flags.juno_protected ? 12 : 9      // Juno watches the market cameras for you
     };
     spr.anims.play(key + '-walk-right', true);
+  }
+
+  // Lights on, lights off, in time with the show. Returns true if the player was caught.
+  updateSpots(time) {
+    const bp = Audio.beatPos(), beat = ((Math.floor(bp) % 4) + 4) % 4, frac = bp - Math.floor(bp), next = (beat + 1) % 4;
+    const easy = settings.rhythm !== 'normal';
+    const p = this.player, tx = Math.floor(p.x / T), ty = Math.floor((p.y - 2) / T);
+    let caught = null;
+    for (const sp of this.spots) {
+      const beats = easy ? sp.beats.slice(0, 1) : sp.beats;
+      const lit = beats.includes(beat), warn = !lit && beats.includes(next) && frac > .5;
+      const g = sp.g; g.clear();
+      const x = sp.x * T, y = sp.y * T, w = sp.w * T, h = sp.h * T;
+      if (lit) {
+        g.fillStyle(0xfff2c0, 0.32).fillRect(x, y, w, h);
+        g.fillStyle(0xfff2c0, 0.22).fillEllipse(x + w / 2, y + h / 2, w * .9, h * .9);
+        g.lineStyle(1, 0xffe08a, 0.8).strokeRect(x + .5, y + .5, w - 1, h - 1);
+        if (tx >= sp.x && tx < sp.x + sp.w && ty >= sp.y && ty < sp.y + sp.h) caught = sp;
+      } else if (warn) {
+        g.fillStyle(0xfff2c0, (Math.floor(time / 90) % 2) ? 0.1 : 0.04).fillRect(x, y, w, h);
+        g.lineStyle(1, 0xffe08a, 0.35).strokeRect(x + .5, y + .5, w - 1, h - 1);
+      } else {
+        g.lineStyle(1, 0x8d90a8, 0.25).strokeRect(x + .5, y + .5, w - 1, h - 1);
+      }
+    }
+    if (caught && time > this.spotGrace) {
+      this.spotGrace = time + 99999;
+      p.setVelocity(0, 0);
+      bus.emit('spotted', caught.reset);
+      return true;
+    }
+    return false;
   }
 
   // Is there a solid tile between two points?
@@ -316,7 +360,7 @@ export class WorldScene extends Phaser.Scene {
     const f = this.facingPoint();
     let best = null, bd = 15;
     for (const n of this.npcs) {
-      if (!n.active) continue;
+      if (!n.active || n.def.deco) continue;
       const big = n.def.look === 'mantis';
       const dist = Phaser.Math.Distance.Between(f.x, f.y, n.x, n.footY - 4) - (big ? 12 : 0);
       if (dist < bd) { bd = dist; best = { kind: 'npc', id: n.npcId, spr: n, label: 'Talk to ' + (CREW[n.npcId]?.short || n.npcId) }; }
@@ -387,6 +431,7 @@ export class WorldScene extends Phaser.Scene {
     state.pos = { px: Math.round(p.x), py: Math.round(p.y) };
     if (this.dark) this.dark.setPosition(p.x, p.y - 6);
     if (this.tail) { this.updateTail(dt); if (!this.scene.isActive()) return; }
+    if (this.spots && this.updateSpots(time)) return;
     if (this.mapDef.minimap && (!this._mm || time - this._mm > 150)) { this._mm = time; bus.emit('minimap-pos', p.x / T, p.y / T); }
 
     // tiles that start a conversation the first time you step on them

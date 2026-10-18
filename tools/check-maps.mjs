@@ -46,13 +46,15 @@ for (const [name, m] of Object.entries(MAPS)) {
     return false;
   };
   for (const o of m.objects) if (!touchable(o.x, o.y, o.w || 1, o.h || 1)) say(name, `can't reach object "${o.id}" at ${o.x},${o.y}`);
-  for (const n of m.npcs) if (!touchable(n.x, n.y)) say(name, `can't reach ${n.id} at ${n.x},${n.y}`);
+  for (const n of m.npcs) if (!n.deco && !touchable(n.x, n.y)) say(name, `can't reach ${n.id} at ${n.x},${n.y}`);
   for (const d of m.doors || []) if (!touchable(d.x, d.y)) say(name, `can't reach door at ${d.x},${d.y}`);
   // odd-job markers must stand somewhere you can reach and talk to
   for (const j of JOB_SPOTS.filter(j => j.map === name)) {
     if (solid(j.at.x, j.at.y)) say(name, `odd job "${j.id}" marker at ${j.at.x},${j.at.y} is inside a wall`);
     else if (!touchable(j.at.x, j.at.y)) say(name, `can't reach odd job "${j.id}" at ${j.at.x},${j.at.y}`);
   }
+  // spotlights must leave somewhere dark to wait: no two spots in the same place
+  for (const sp of m.spots || []) if (!m.spawns[sp.reset]) say(name, `spotlight at ${sp.x},${sp.y} resets to a missing spawn "${sp.reset}"`);
   if (m.tail) for (const [x, y] of m.tail.path) {
     const t = TILE[m.rows[y][x]];
     if (!doors.has(x + ',' + y) && SOLID.includes(t)) say(name, `tail route passes through a wall at ${x},${y}`);

@@ -12,7 +12,18 @@ export function objective() {
   if (!f.intro_done) return '';
   const met = ['met_rook', 'met_tam', 'met_brushes'].filter(k => f[k]).length;
   if (f.act1_done) {
-    if (f.proto_done) return 'Track 05 complete. Track 06, Mister Nocturne, arrives in a later build.';
+    if (f.act2_done) return 'Side B complete. The Encore (Track 07, The Conductor) arrives in a later build.';
+    if (f.nocturne_done) return 'Head back to the Hi-Hat';
+    if (f.proto_done) {
+      if (!f.bounty_nocturne) return 'Accept Mister Nocturne on the bounty board';
+      if (state.location === 'lyceum') return f.heist_done ? 'Stop Mister Nocturne' : 'Cross backstage on the dark beats and pull the piano-lift lever';
+      if (state.location === 'titan') {
+        if (!f.heist_ready) return 'Find a way into the Lyceum. Try the stagehand by the stage door';
+        return 'Slip in through the stage door, on the right of the square';
+      }
+      if (!f.sol_story && state.location === 'cygnus') return 'Old Sol on the plaza wants a word, or fly to Titan from the cockpit';
+      return f.titan_arrived ? 'Fly back to Titan from the cockpit' : 'Fly to Titan from the cockpit';
+    }
     if (f.mantis_done) {
       if (!f.bounty_proto) return 'Accept Runaway Prototype on the bounty board';
       if (state.location === 'nyx') {

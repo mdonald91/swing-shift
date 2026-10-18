@@ -192,7 +192,7 @@ export function droneSheet(hostile = false) {
 
 // ---- Ship tiles (16x16), in the order used by data/maps.js TILE ----
 export function tileSheet() {
-  const T = 16, cols = 8, count = 120;   // room to grow: 0-119
+  const T = 16, cols = 8, count = 136;   // room to grow: 0-135
   const cv = document.createElement('canvas');
   cv.width = T * cols; cv.height = T * Math.ceil(count / cols);
   const ctx = cv.getContext('2d');
@@ -453,6 +453,47 @@ export function tileSheet() {
   r = at(113); labf(r); r(2, 1, 12, 10, '#262a40'); r(3, 2, 10, 7, '#0d3b3a'); r(4, 3, 6, 1, '#5fe3d4'); r(4, 5, 8, 1, '#5fe3d4'); r(4, 7, 4, 1, P.mustard); r(6, 11, 4, 4, '#9298aa');
   // stepping stones through the snow
   r = at(114); snow(r); r(2, 2, 5, 4, '#aab0c0'); r(9, 8, 5, 5, '#aab0c0'); r(3, 2, 3, 1, '#c8cdd8'); r(10, 8, 3, 1, '#c8cdd8');
+
+  // ---- Titan: warm stone under an orange sky ----
+  const pave = r => { r(0, 0, 16, 16, '#b8865a'); r(0, 0, 16, 1, '#c99a6a'); r(0, 7, 16, 1, '#9a6e48'); r(7, 0, 1, 7, '#9a6e48'); r(3, 8, 1, 8, '#9a6e48'); r(11, 8, 1, 8, '#9a6e48'); r(0, 15, 16, 1, '#9a6e48'); [[4, 3], [12, 11]].forEach(([x, y]) => r(x, y, 1, 1, '#d4ac80')); };
+  r = at(115); pave(r);
+  // building wall: dark stone with a lit window
+  r = at(116); r(0, 0, 16, 16, '#5a3428'); r(0, 0, 16, 2, '#6e4232'); r(0, 13, 16, 3, '#3e2218'); r(4, 4, 8, 7, '#2a1812'); r(5, 5, 6, 5, '#f3a850'); r(8, 5, 1, 5, '#2a1812'); r(5, 7, 6, 1, '#2a1812');
+  // column
+  r = at(117); pave(r); r(4, 0, 8, 16, '#e8dcc4'); r(4, 0, 2, 16, '#f8f0dc'); r(10, 0, 2, 16, '#c8b89c'); r(3, 0, 10, 2, '#d8ccb4'); r(3, 14, 10, 2, '#c8b89c'); for (let x = 6; x < 10; x += 2) r(x, 2, 1, 12, '#d8ccb4');
+  // the Lyceum's grand door
+  r = at(118); r(0, 0, 16, 16, '#5a3428'); r(1, 1, 14, 15, '#7a2a24'); r(7, 1, 2, 15, '#3e1410'); r(1, 1, 14, 2, P.mustard); r(4, 8, 2, 2, P.mustard); r(10, 8, 2, 2, P.mustard); r(2, 4, 4, 2, '#9a3a30'); r(10, 4, 4, 2, '#9a3a30');
+  // poster board: MISTER NOCTURNE, ONE NIGHT ONLY
+  r = at(119); pave(r); r(2, 0, 12, 13, '#1b1e30'); r(3, 1, 10, 11, '#2c2440'); r(5, 3, 6, 5, '#e8e0cc'); r(6, 4, 4, 2, '#1b1e30'); r(4, 9, 8, 1, P.mustard); r(5, 11, 6, 1, '#c79bf0'); r(7, 13, 2, 3, '#3a2418');
+  // café table and chairs
+  r = at(120); pave(r); r(4, 5, 8, 6, '#e8e0cc'); r(4, 5, 8, 1, '#ffffff'); r(7, 11, 2, 4, '#3a2418'); r(1, 7, 2, 6, '#7a2a24'); r(13, 7, 2, 6, '#7a2a24'); r(6, 6, 2, 2, '#8a5a34'); r(9, 7, 2, 1, P.mustard);
+  // street lamp
+  r = at(121); pave(r); r(7, 3, 2, 12, '#2a1812'); r(4, 0, 8, 4, '#2a1812'); r(5, 1, 6, 2, '#ffd890'); r(6, 14, 4, 2, '#1c1410');
+  // hedge planter
+  r = at(122); pave(r); r(1, 7, 14, 8, '#7a4a32'); r(1, 7, 14, 1, '#9a6a48'); r(1, 1, 14, 8, '#3f6a3a'); r(3, 0, 4, 3, '#4f8a4a'); r(9, 2, 5, 3, '#4f8a4a'); r(6, 4, 2, 2, '#e9b23a');
+  // fountain basin
+  r = at(123); pave(r); r(0, 2, 16, 13, '#c8b89c'); r(1, 3, 14, 11, '#5fb0c8'); r(3, 5, 4, 1, '#a8e0f0'); r(9, 9, 5, 1, '#a8e0f0'); r(6, 6, 4, 4, '#e8dcc4'); r(7, 4, 2, 3, '#a8e0f0');
+  // ---- the Lyceum, backstage ----
+  // wooden stage boards (backstage)
+  r = at(124); r(0, 0, 16, 16, '#4a3020'); for (let y = 0; y < 16; y += 4) r(0, y, 16, 1, '#3a2418'); r(5, 1, 1, 3, '#3a2418'); r(11, 5, 1, 3, '#3a2418'); r(3, 9, 1, 3, '#3a2418'); r(13, 13, 1, 3, '#3a2418'); r(8, 2, 2, 1, '#5a3a26');
+  // red velvet curtain
+  r = at(125); r(0, 0, 16, 16, '#8a1e1e'); for (let x = 1; x < 16; x += 4) { r(x, 0, 2, 16, '#a82a28'); r(x + 2, 0, 1, 16, '#6a1414'); } r(0, 14, 16, 2, '#5a1010'); r(0, 0, 16, 1, P.mustard);
+  // scenery flats and rigging (backstage walls)
+  r = at(126); r(0, 0, 16, 16, '#2a1c16'); r(0, 0, 16, 1, '#3a2a20'); r(2, 2, 12, 11, '#3a2a20'); r(3, 3, 10, 9, '#4a3a2a'); r(2, 7, 12, 1, '#2a1c16'); r(7, 0, 1, 16, '#8d90a8'); r(0, 14, 16, 2, '#1c1410');
+  // road case
+  r = at(127); r(0, 0, 16, 16, '#4a3020'); r(1, 2, 14, 12, '#262a40'); r(1, 2, 14, 2, '#3a4258'); r(1, 7, 14, 1, '#8d90a8'); r(2, 12, 2, 2, '#8d90a8'); r(12, 12, 2, 2, '#8d90a8'); r(5, 4, 6, 2, '#e8e0cc'); r(6, 4, 4, 1, '#d5473b');
+  // piano lift platform
+  r = at(128); r(0, 0, 16, 16, '#3a2a20'); r(1, 1, 14, 14, '#5d6a80'); for (let x = 2; x < 15; x += 3) r(x, 1, 1, 14, '#46516a'); r(0, 0, 16, 1, P.mustard); r(0, 15, 16, 1, P.mustard);
+  // footlights along the stage edge
+  r = at(129); r(0, 0, 16, 16, '#2a1c16'); r(0, 0, 16, 6, '#4a3020'); for (let x = 1; x < 16; x += 5) { r(x, 6, 3, 3, '#ffd890'); r(x - 1, 9, 5, 3, '#3a2418'); }
+  // the Halcyon grand piano (on stage)
+  r = at(130); r(0, 0, 16, 16, '#d8a860'); r(0, 0, 16, 1, '#f0c880'); r(1, 2, 14, 10, '#10121e'); r(2, 3, 12, 2, '#262a40'); r(2, 9, 12, 3, '#f1e8d4'); for (let x = 3; x < 14; x += 2) r(x, 9, 1, 2, '#10121e'); r(3, 12, 1, 4, '#10121e'); r(12, 12, 1, 4, '#10121e');
+  // lighting switchboard with the piano-lift lever
+  r = at(131); r(0, 0, 16, 16, '#2a1c16'); r(1, 1, 14, 14, '#3a4258'); r(2, 2, 12, 5, '#151a28'); for (let x = 3; x < 13; x += 2) r(x, 3, 1, 3, x % 4 === 1 ? '#5fe3d4' : P.mustard); r(6, 8, 4, 6, '#262a40'); r(7, 8, 2, 4, P.crimson); r(6, 7, 4, 2, '#d5473b');
+  // dressing-room mirror with bulbs
+  r = at(132); r(0, 0, 16, 16, '#4a3020'); r(2, 1, 12, 11, '#f3d890'); r(3, 2, 10, 9, '#9fc6e0'); r(4, 3, 3, 1, '#e8f6fb'); [[2, 1], [13, 1], [2, 11], [13, 11], [7, 1]].forEach(([x, y]) => r(x, y, 2, 1, '#ffffff')); r(1, 12, 14, 3, '#6b4a2a');
+  // the stage itself (lit boards, out of reach)
+  r = at(133); r(0, 0, 16, 16, '#7a4e2c'); for (let y = 0; y < 16; y += 4) r(0, y, 16, 1, '#6a4024'); r(4, 2, 1, 2, '#6a4024'); r(10, 6, 1, 2, '#6a4024'); r(0, 0, 16, 16, 'rgba(255,216,144,.12)');
 
   r = at(31); dock(r); r(3, 3, 10, 12, '#2b8f8a'); r(3, 6, 10, 1, '#1d6663'); r(3, 11, 10, 1, '#1d6663'); r(3, 2, 10, 2, '#3fb0aa'); r(6, 2, 4, 1, '#1d6663'); r(3, 14, 10, 1, '#14403e');
   return cv;

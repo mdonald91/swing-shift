@@ -240,6 +240,49 @@ const BUILD = {
       <path d="M760 700 V560 M840 700 V560" stroke="#c8cdd8" stroke-width="22"/><path d="M720 560 H880 V600 H720Z" fill="#aab0c0"/><path d="M745 540 Q800 470 855 540" fill="#e8f6fb"/>
       ${flakes}</svg>`;
   },
+  // Titan: Lyceum Square under an orange sky, Saturn on the horizon
+  titan: () => {
+    let city = '', lamps = '';
+    [[0, 470, 150], [140, 420, 120], [1290, 430, 140], [1420, 480, 180], [250, 500, 110], [1200, 510, 100]].forEach(([x, y, w]) => {
+      city += `<rect x="${x}" y="${y}" width="${w}" height="${700 - y}" fill="#6e3a24"/><path d="M${x - 8} ${y} Q${x + w / 2} ${y - 50} ${x + w + 8} ${y}Z" fill="#5a2c1c"/>`;
+      for (let k = 18; k < w - 16; k += 30) city += `<rect x="${x + k}" y="${y + 40}" width="14" height="26" fill="#f3c860" opacity=".8"/>`;
+    });
+    [360, 1240].forEach(x => { lamps += `<path d="M${x} 830 V610" stroke="#2a1a12" stroke-width="10"/><path d="M${x - 16} 600 V560 M${x + 16} 600 V560" stroke="#2a1a12" stroke-width="8"/><circle cx="${x}" cy="604" r="12" fill="#f3c860"/><circle cx="${x}" cy="604" r="60" fill="#f3c860" opacity=".15"/>`; });
+    return `${open}<defs><linearGradient id="bdTitanSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b2a1a"/><stop offset=".55" stop-color="#d9772f"/><stop offset="1" stop-color="#f4b860"/></linearGradient></defs>
+      <rect width="1600" height="900" fill="url(#bdTitanSky)"/>
+      <g opacity=".75"><ellipse cx="1300" cy="200" rx="230" ry="40" fill="none" stroke="#f6d9a0" stroke-width="16" transform="rotate(-12 1300 200)"/>
+        <circle cx="1300" cy="200" r="96" fill="#e8b878"/><path d="M1206 186 Q1300 170 1394 186" stroke="#c9905a" stroke-width="10" fill="none"/>
+        <path d="M1080 250 Q1300 150 1520 150" stroke="#f6d9a0" stroke-width="16" fill="none" transform="rotate(-12 1300 200)"/></g>
+      ${city}
+      <path d="M520 700 V330 H1080 V700Z" fill="#c9a074"/><path d="M490 330 L800 170 L1110 330Z" fill="#e0b98a"/><path d="M540 330 L800 200 L1060 330Z" fill="#b48a5e"/>
+      ${[560, 660, 760, 840, 940, 1040].map(x => `<rect x="${x - 18}" y="360" width="36" height="300" fill="#ead2a8"/><rect x="${x - 26}" y="348" width="52" height="16" fill="#f4e0bc"/>`).join('')}
+      <rect x="740" y="520" width="120" height="180" fill="#3a1c14"/><rect x="752" y="532" width="46" height="168" fill="#d9a94a" opacity=".85"/><rect x="802" y="532" width="46" height="168" fill="#d9a94a" opacity=".85"/>
+      <text x="800" y="312" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="40" fill="#5a2c1c">LYCEUM</text>
+      <rect x="580" y="410" width="80" height="110" fill="#1d1430"/><text x="620" y="452" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="15" fill="#f3c860">MISTER</text><text x="620" y="476" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="15" fill="#f3c860">NOCTURNE</text>
+      <path d="M0 700 H1600 V900 H0Z" fill="#8a5a3a"/>${Array.from({ length: 12 }, (_, i) => `<path d="M${i * 140} 700 L${i * 180 - 200} 900" stroke="#7a4a2e" stroke-width="3"/>`).join('')}
+      <path d="M0 700 H1600" stroke="#5a3420" stroke-width="6"/>
+      ${lamps}
+      <text x="150" y="130" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="52" fill="#fff1d0" opacity=".55">タイタン</text></svg>`;
+  },
+  // Backstage at the Lyceum: rigging, flats, follow-spot cones, the show glowing through the wings
+  lyceum: () => {
+    let ropes = '';
+    for (let i = 0; i < 14; i++) ropes += `<path d="M${80 + i * 110} 0 V${260 + (i % 3) * 60}" stroke="#4a3a2a" stroke-width="4"/><rect x="${72 + i * 110}" y="${260 + (i % 3) * 60}" width="16" height="30" fill="#5a4630"/>`;
+    return `${open}<defs><linearGradient id="bdLyCone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4d0" stop-opacity=".55"/><stop offset="1" stop-color="#fff4d0" stop-opacity="0"/></linearGradient>
+        <radialGradient id="bdLyStage" cx="50%" cy="60%" r="50%"><stop offset="0" stop-color="#f3c860" stop-opacity=".55"/><stop offset="1" stop-color="#f3c860" stop-opacity="0"/></radialGradient></defs>
+      <rect width="1600" height="900" fill="#0f0a10"/>
+      <rect x="0" y="120" width="1600" height="26" fill="#2a1e1a"/><rect x="0" y="146" width="1600" height="6" fill="#4a3a2a"/>
+      ${ropes}
+      <rect x="440" y="180" width="720" height="560" fill="url(#bdLyStage)"/>
+      <path d="M380 0 H520 Q470 400 500 900 H380Z" fill="#6a1616"/><path d="M1220 0 H1080 Q1130 400 1100 900 H1220Z" fill="#6a1616"/>
+      <path d="M700 0 L560 740 H1040 L900 0Z" fill="url(#bdLyCone)"/>
+      <path d="M690 640 Q690 560 800 560 H930 Q960 560 960 600 V640Z" fill="#0a0608"/><path d="M700 640 V700 M940 640 V700" stroke="#0a0608" stroke-width="10"/>
+      <circle cx="780" cy="510" r="22" fill="#0a0608"/><path d="M770 530 L752 600 H812 Z" fill="#0a0608"/><path d="M790 545 L860 580" stroke="#0a0608" stroke-width="10"/>
+      <path d="M0 260 H340 V900 H0Z" fill="#3a3046"/><path d="M40 300 H300 V860 H40Z" fill="#4a5a7a" opacity=".55"/><circle cx="170" cy="420" r="60" fill="#e8e0c0" opacity=".5"/>
+      <path d="M1260 300 H1600 V900 H1260Z" fill="#2c2420"/><rect x="1300" y="620" width="200" height="140" fill="#1a1412" stroke="#8a7a5a" stroke-width="6"/><text x="1400" y="700" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="22" fill="#8a7a5a">NOCTURNE</text>
+      <path d="M0 760 H1600 V900 H0Z" fill="#1c1410"/>${[460, 600, 740, 880, 1020, 1140].map(x => `<ellipse cx="${x}" cy="748" rx="26" ry="8" fill="#f3c860" opacity=".8"/>`).join('')}
+      <text x="1540" y="90" text-anchor="end" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="44" fill="#f3c860" opacity=".6">舞台裏</text></svg>`;
+  },
   black: () => ''
 };
 

@@ -11,7 +11,7 @@ import { Hud } from './hud.js';
 import { runDialogue } from './dialog.js';
 import { openBoard, openPauseMenu, openJukebox, openShop, applyDisplay } from './menus.js';
 import { tip } from './tips.js';
-import { playFinale } from './recap.js';
+import { playFinale, playFinale2 } from './recap.js';
 import { openUpgrades, openWorkshop, openBooth } from './hihat.js';
 import { jobDialogue } from '../systems/jobs.js';
 
@@ -59,6 +59,11 @@ export const UI = {
       setTimeout(() => runDialogue('tail_fail_' + reason), 700);
     });
     bus.on('trigger', id => runDialogue(id));
+    bus.on('spotted', reset => {
+      Audio.sfx('scratch');
+      toast(['Spotted! Back into the shadows.', 'A spotlight catches you. Try again, on the dark beats.', "The crowd gasps. Not for Nocturne. Back you go."][Math.floor(Math.random() * 3)]);
+      setTimeout(() => travel('lyceum', reset), 250);
+    });
     bus.on('menu', () => { if (!modals.length && !document.querySelector('.dlg')) openPauseMenu(); });
     bus.on('hint', t => Hud.hint(t));
     bus.on('area', map => {
@@ -78,6 +83,13 @@ export const UI = {
         setTimeout(() => playCut('cygnus_arrive').then(() => { setFlag('cygnus_arrived'); Hud.refresh(); }), 400);
       }
       if (state.location === 'ship' && flag('courier_done') && !flag('act1_done')) setTimeout(playFinale, 1200);
+      if (state.location === 'ship' && flag('nocturne_done') && !flag('act2_done')) setTimeout(playFinale2, 1200);
+      if (state.location === 'titan' && !flag('titan_arrived')) {
+        setTimeout(() => playCut('titan_arrive').then(() => { setFlag('titan_arrived'); Hud.refresh(); }), 400);
+      }
+      if (state.location === 'lyceum' && !flag('lyceum_arrived')) {
+        setTimeout(async () => { setFlag('lyceum_arrived'); await tip('spots'); runDialogue('lyceum_arrive'); }, 600);
+      }
       if (state.location === 'nyx' && !flag('nyx_arrived')) {
         setTimeout(() => playCut('nyx_arrive').then(() => { setFlag('nyx_arrived'); Hud.refresh(); }), 400);
       }

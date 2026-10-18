@@ -35,6 +35,10 @@ const MOODS = {
   targon: { bpm: 104, swing: .64, prog: [ch('E', 'dom7'), ch('E', 'dom7'), ch('A', 'dom7'), ch('E', 'dom7'), ch('B', 'b9'), ch('A', 'dom7'), ch('E', 'dom7'), ch('B', 'b9')], ride: 1, comp: 1, horn: 1, kick: .45 },
   // Nyx: cool, glassy, a little lonely
   nyx: { bpm: 88, swing: .56, prog: [ch('D', 'maj7'), ch('B', 'm7'), ch('G', 'maj7'), ch('A', 'dom7'), ch('Gb', 'm7'), ch('B', 'm7'), ch('E', 'm7'), ch('A', 'dom7')], brush: 1, arp: 1, horn: 1 },
+  // Titan: a warm, grand, orange-sky swing
+  titan: { bpm: 116, swing: .64, prog: [ch('F', 'maj7'), ch('D', 'm7'), ch('G', 'm7'), ch('C', 'dom7'), ch('A', 'm7'), ch('D', 'b9'), ch('G', 'm7'), ch('C', 'dom7')], ride: 1, comp: 1, horn: 1, kick: .3 },
+  // Mister Nocturne's show: slow and theatrical (the backstage spotlights keep its time)
+  nocturne: { bpm: 84, swing: .58, prog: [ch('Bb', 'm7'), ch('Gb', 'maj7'), ch('Eb', 'm7'), ch('F', 'b9')], ride: 1, comp: 1, horn: 1, kick: .5, always: 1 },
   // The Conductor's broadcast: slow, minor, a little too grand
   finale: { bpm: 66, swing: .58, prog: [ch('C', 'm7'), ch('C', 'm7'), ch('Ab', 'maj7'), ch('Ab', 'maj7'), ch('D', 'm7b5'), ch('G', 'b9'), ch('C', 'm7'), ch('G', 'b9')], ride: 1, comp: 1, horn: 1, half: 1, always: 1 },
   // Brushes' song: which version plays depends on what the captain picked
