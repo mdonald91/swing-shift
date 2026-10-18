@@ -12,6 +12,8 @@ import { runDialogue } from './dialog.js';
 import { openBoard, openPauseMenu, openJukebox, openShop, applyDisplay } from './menus.js';
 import { tip } from './tips.js';
 import { playFinale } from './recap.js';
+import { openUpgrades, openWorkshop, openBooth } from './hihat.js';
+import { jobDialogue } from '../systems/jobs.js';
 
 export const $ = (s, root = document) => root.querySelector(s);
 export const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -37,6 +39,11 @@ export const UI = {
 
     bus.on('interact', id => {
       if (id === 'board') return openBoard();
+      if (id === 'upgrades') return openUpgrades();
+      if (id === 'workbench') return openWorkshop();
+      if (id === 'booth') return openBooth();
+      const jd = jobDialogue(id);
+      if (jd) return runDialogue(jd);
       if (id === 'jukebox') return openJukebox();
       if (id === 'supply') return openShop('supply');
       if (id === 'outfitters') return openShop('outfitters');

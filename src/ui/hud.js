@@ -1,5 +1,6 @@
 // On-screen HUD while walking around: location, objective, chits, menu, hints and touch controls.
 import { state } from '../state.js';
+import { jobObjective } from '../systems/jobs.js';
 import { Input } from '../systems/input.js';
 import { bus } from '../bus.js';
 
@@ -66,6 +67,7 @@ export const Hud = {
       <div class="hud-loc">
         <div class="hud-place"><b id="hud-name">The Hi-Hat</b><span class="jp" id="hud-jp">ハイハット号</span></div>
         <p class="hud-obj" id="hud-obj" hidden><i aria-hidden="true"></i><span></span></p>
+        <p class="hud-job" id="hud-job" hidden></p>
       </div>
       <div class="hud-right">
         <span class="chits" id="hud-chits" title="Chits"></span>
@@ -145,6 +147,8 @@ export const Hud = {
     objEl.hidden = !o;
     objEl.querySelector('span').textContent = o;
     chitsEl.textContent = '₡ ' + state.chits.toLocaleString('en-AU');
+    const jobEl = root.querySelector('#hud-job'), jt = jobObjective();
+    jobEl.hidden = !jt; jobEl.textContent = jt;
   },
   autosaved() {
     const a = root.querySelector('#hud-autosave');

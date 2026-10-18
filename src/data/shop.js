@@ -15,6 +15,9 @@ export const GEAR = [
   { id: 'tuner', n: 'Resonance tuner', who: 'brushes', atk: 4, price: 2400, d: '+4 ATK for Brushes' },
   { id: 'metronome', n: 'Pocket metronome', who: 'all', window: .05, price: 3000, d: 'A more forgiving beat window for every attack' },
   // gifts, never sold
+  { id: 'plating', n: 'Hull-scrap plating', who: 'all', def: 2, price: 0, gift: true, d: '+2 DEF for the whole crew. Crafted in Tam\'s workshop.' },
+  { id: 'sights', n: 'Hand-ground sights', who: 'rook', atk: 4, price: 0, gift: true, d: '+4 ATK for Rook. Crafted in Tam\'s workshop.' },
+  { id: 'coil', n: 'Capacitor coil', who: 'rhea', atk: 4, price: 0, gift: true, d: '+4 ATK for Rhea. Crafted in Tam\'s workshop.' },
   { id: 'ferrokit', n: "Ferro's toolkit", who: 'tam', atk: 3, def: 2, price: 0, gift: true, d: '+3 ATK and +2 DEF for Tam. Her mentor\'s own tools.' }
 ];
 
@@ -56,3 +59,23 @@ export const TIERS = [
   { min: -99, n: 'Distrusted' }, { min: 0, n: 'Unknown' }, { min: 1, n: 'Familiar' }, { min: 3, n: 'Trusted' }, { min: 5, n: 'Respected' }
 ];
 export function tier(v) { return [...TIERS].reverse().find(t => v >= t.min).n; }
+
+// Rooms and parts you can add to the Hi-Hat from the upgrades terminal.
+export const UPGRADES = [
+  { id: 'workshop', flag: 'up_workshop', n: "Tam's workshop", price: 4000,
+    d: 'A workbench in the lounge. Turn the scrap you pick up from machines into Patch Kits, Shock Charges, Groove Cells and gear.' },
+  { id: 'booth', flag: 'up_booth', n: 'Recording booth', price: 5000,
+    d: 'Brushes rehearses new arrangements. Unlocks three more Jam Session styles: Ballad, Bebop and Bossa.' },
+  { id: 'engine', flag: 'up_engine', n: 'Bigger engine', price: 6000,
+    d: 'Plot a course from wherever you landed, without walking back to the cockpit. Fuel bills on payday are halved.' }
+];
+
+// Tam's workshop: what scrap turns into.
+export const RECIPES = [
+  { id: 'patch', item: 'patch', scrap: 4 },
+  { id: 'charge', item: 'charge', scrap: 3 },
+  { id: 'cell', item: 'cell', scrap: 5 },
+  { id: 'plating', gear: 'plating', scrap: 14 },
+  { id: 'sights', gear: 'sights', scrap: 12 },
+  { id: 'coil', gear: 'coil', scrap: 12, needs: 'rhea_joined' }
+];

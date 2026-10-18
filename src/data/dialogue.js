@@ -12,15 +12,19 @@
 // Crew with a new side chat waiting (shown as a speech bubble over their head).
 export function chatAvailable(id, flags, location) {
   if (location !== 'ship' || !flags.velvet_done) return false;
+  if (id === 'rook' && flags.chat_rook && flags.act1_done && !flags.rook_s1) return true;     // Rook's old partner
   return ['rook', 'tam', 'brushes'].includes(id) && !flags['chat_' + id];
 }
 
 export function entry(id, flags, location) {
   const docks = location === 'docks';
-  if (chatAvailable(id, flags, location)) return id + '_chat';
+  if (chatAvailable(id, flags, location)) return id === 'rook' && flags.chat_rook ? 'rook_partner' : id + '_chat';
   const deep = location === 'targon_deep';
   switch (id) {
-    case 'rook': return docks ? 'rook_docks' : flags.velvet_done ? 'rook_after' : flags.met_rook ? 'rook_idle' : 'rook_first';
+    case 'rook': return docks ? 'rook_docks' : flags.rook_s1 && !flags.rook_s2 ? 'rook_waiting' : flags.rook_s2 ? 'rook_after2' : flags.velvet_done ? 'rook_after' : flags.met_rook ? 'rook_idle' : 'rook_first';
+    case 'cass': return 'cass';
+    case 'dutch': return 'dutch';
+    case 'pip': return 'pip';
     case 'tam':
       if (location === 'targon') return flags.tg_photo ? 'tam_site_after' : 'tam_site';
       if (location === 'ship' && flags.bounty_mantis && !flags.mantis_done) return 'tam_targon';
@@ -260,7 +264,101 @@ export const DIALOGUE = {
       { t: 'Nothing for now.' }
     ] }
   ],
-  mags_rumour: [{ ifNot: 'rumour1', go: 'rumour1' }, { ifNot: 'rumour2', go: 'rumour2' }, { ifNot: 'rumour3', go: 'rumour3' }, { go: 'rumour_none' }],
+  mags_rumour: [{ ifNot: 'rumour1', go: 'rumour1' }, { ifNot: 'rumour2', go: 'rumour2' }, { ifNot: 'rumour3', go: 'rumour3' }, { if: 'act1_done', go: 'mags_rumour2' }, { go: 'rumour_none' }],
+  // after Side A: rumours that know what you did
+  mags_rumour2: [{ ifNot: 'rumour4', go: 'rumour4' }, { ifNot: 'rumour5', go: 'rumour5' }, { ifNot: 'rumour6', go: 'rumour6' }, { ifNot: 'rumour7', go: 'rumour7' }, { go: 'rumour_none' }],
+  rumour4: [{ set: 'rumour4' },
+    { who: 'mags', t: "That broadcast. Every speaker on the station, playing the same four bars. Lou cried. Lou doesn't cry." },
+    { who: 'mags', if: 'juno_protected', t: "Word is the Bounty Office has a whistleblower from K-17 in a safe room somewhere. Word is you put her there. Drinks are on the house. One drink." },
+    { who: 'mags', if: 'juno_handed', t: "Word is Helix has a new signals tech locked in a lab, and you're the one who handed her over. Some of my regulars won't drink next to you. I'll let you guess which." }],
+  rumour5: [{ set: 'rumour5' }, { who: 'mags', t: "Nyx Applied Sciences lost something last week. Not a person, not a package. Something that thinks. They're very keen nobody says that out loud." }],
+  rumour6: [{ set: 'rumour6' },
+    { who: 'mags', t: "There's a collector on Titan calling himself Mister Nocturne. Buys old instruments. Pays anything. Only wants the ones that have played a certain four bars." },
+    { who: 'mags', if: 'core_kept', t: "And if I were you, I'd keep that humming thing in your cargo bay off the market. Just a feeling." }],
+  rumour7: [{ set: 'rumour7' },
+    { who: 'mags', if: 'mantis_spared', t: 'A Targon foreman came through last night, singing your praises. Said a rescue mech dug two of his crew out of a collapse. Then he complained about the invoice for an hour.' },
+    { who: 'mags', if: 'mantis_core', t: 'The Bounty Office is quietly pulling every Helix firmware update off the network. Funny how that started right after Targon.' },
+    { who: 'mags', if: 'mantis_scrapped', t: "Scrap dealers on Ganymede are selling 'genuine Iron Mantis parts'. I've counted eleven left scythes. A mantis has two." },
+    { who: 'mags', ifNot: 'mantis_done', t: "Targon's foreman is hiring. A rogue mech, they say. If you like your bounties with extra legs." }],
+
+  // ---- the Flat Ninth's regulars, who have opinions about you ----
+  dutch: [
+    { who: 'dutch', ifNot: 'met_dutch', t: "Dutch. Forty years down the belt mines. Now I sit here and judge people. It's a better pension." },
+    { set: 'met_dutch' },
+    { who: 'dutch', if: 'mantis_spared', t: "You let that old rescue mech live. Good. A machine that digs people out is worth more than its scrap. Most people are worth less than theirs." },
+    { who: 'dutch', if: 'mantis_scrapped', t: "Scrapped the Mantis, eh? Can't blame you. Can't buy you a drink either. I dug with machines like that." },
+    { who: 'dutch', if: 'mantis_core', t: "Pulled its brain and left the body for the engineer. Clever. A bit grim. Mostly clever." },
+    { who: 'dutch', ifNot: 'mantis_done', if: 'juno_protected', t: "You're the crew who stood up to Helix out at K-17. Helix bought my old mine. Fired half of us by radio. Here's to you." },
+    { who: 'dutch', ifNot: 'mantis_done', if: 'juno_handed', t: "You're Helix's favourite hunters now, I hear. Funny. They used to be mine. Then they bought the mine." },
+    { who: 'dutch', ifNot: 'ghost_done', t: "The belt mines are full of ghosts, kid. Most of them are just bad wiring. Most." }
+  ],
+  pip: [
+    { who: 'pip', ifNot: 'met_pip', t: "Pip! Courier, sixteen deliveries a day, never late, sometimes on fire. Wren Castillo's my best friend." },
+    { set: 'met_pip' },
+    { who: 'pip', if: 'courier_done', ifNot: 'pip_thanked', t: 'You found Wren on Vesta. She told me everything. Well, she told me some things. She said you were scary but nice. Mostly scary.' },
+    { set: 'pip_thanked', if: 'courier_done' },
+    { who: 'pip', if: 'core_kept', t: "Wren says that core you kept hums at night. You named it Kevin? That's the best name for a mystery device I have ever heard." },
+    { who: 'pip', if: 'core_helix', t: "Wren went quiet when I said you gave the core to Helix. She said 'they had their reasons'. She says that when people don't." },
+    { who: 'pip', if: 'core_sold', t: "Kessler's been bragging about a weird part he bought off you. He keeps it in a box with a lot of tape on it." },
+    { who: 'pip', if: 'core_office', t: "The Bounty Office has a whole room for that core now. Wren went to look. It hummed at her. She hummed back." },
+    { who: 'pip', ifNot: 'courier_done', t: "If you ever need anything carried, check the odd jobs on your bounty board. Couriers like me post there too." }
+  ],
+
+  // ---- Rook's old partner ----
+  rook_partner: [
+    { who: 'rook', t: "Cap. Remember the casino on Callisto? The night I didn't look away? I left out a bit." },
+    { who: 'rook', t: "I didn't work it alone. My partner was Cass Marlowe. Best shot I ever saw, apart from me. When I didn't look away, she did. Then she told the boss it was me who talked." },
+    { who: 'rook', t: "I got blacklisted. She got promoted. Last I heard she was running security for Helix." },
+    { who: 'rook', t: "There's a new job on the odd jobs board this morning. Five thousand chits for Cass Marlowe. Anonymous. No questions asked." },
+    { choices: [
+      { t: "What do you want to do about it?", go: 'rook_partner_ask' },
+      { t: "Let's go and hear her side first.", temp: 'Calm', go: 'rook_partner_ask' },
+      { t: "So the couch was witness protection all along.", temp: 'Sarcastic', go: 'rook_partner_joke' },
+      { t: "Then we find her before whoever posted that does.", temp: 'Idealistic', go: 'rook_partner_go' },
+      { t: "Five thousand chits. She sold you out. Easy money.", temp: 'Ruthless', go: 'rook_partner_hard' }
+    ] }
+  ],
+  rook_partner_ask: [{ who: 'rook', t: "I want to look her in the eye. After that, I don't know. That's the honest answer." }, { go: 'rook_partner_end' }],
+  rook_partner_joke: [{ who: 'rook', t: "Ha. The couch knows things, Cap. The couch knows everything." }, { go: 'rook_partner_end' }],
+  rook_partner_go: [{ who: 'rook', t: "Yeah. Somebody wants her gone quietly. I've been the quiet one long enough." }, { go: 'rook_partner_end' }],
+  rook_partner_hard: [{ who: 'rook', t: "Maybe. It's never easy money when you used to share a lunch box with it." }, { go: 'rook_partner_end' }],
+  rook_partner_end: [
+    { who: 'rook', t: "She's on Cygnus, by the railings near the docking bay. The job's on the board under odd jobs. Thanks for hearing me out, Cap." },
+    { set: 'rook_s1' }, { do: 'bond', arg: 'rook' }, { do: 'newStoryJob' }
+  ],
+  rook_waiting: [{ who: 'rook', pick: [
+    "Cass is on Cygnus, by the railings near the docking bay. Take the job from the odd jobs board when you're ready.",
+    "I keep cleaning this revolver. It is extremely clean now. I'm aware.",
+    "Whoever posted that job knows she used to work for Helix. That's what worries me."
+  ] }],
+  rook_after2: [{ who: 'rook', pick: [
+    'Thanks for Cygnus, Cap. I owe you one. I owe you several. Let us not count.',
+    "Cass sent a postcard. It's blank. That's how I know it's from her.",
+    "I slept nine hours straight. First time in six years. Don't tell Tam, she'll make me do chores."
+  ] }],
+  cass: [{ do: 'cassMeet' }],
+  cass_choice: [
+    { who: 'cass', t: "...Thanks. Your crew fights like a big band with a grudge, Captain." },
+    { who: 'cass', t: "Now you've got a five-thousand-chit bounty standing right in front of you. Your call. Or his." },
+    { choices: [
+      { t: 'Rook. Your call.', go: 'cass_free' },
+      { t: "You're coming in, Cass. Bounty Office. You can tell them about Helix.", go: 'cass_in' },
+      { t: 'Five thousand is five thousand.', temp: 'Ruthless', go: 'cass_in' }
+    ] }
+  ],
+  cass_free: [
+    { who: 'rook', t: "Go, Cass. Get off this station, get off the network, and stop looking away. From anything." },
+    { who: 'cass', t: "...You always were the better one of us. Here. Something for the road, since you're letting me take it." },
+    { who: 'cass', t: "The Conductor's been buying something from Nyx Applied Sciences. Not hardware. Something that thinks. Helix security had a whole folder on it." },
+    { set: 'cass_free' }, { do: 'cassDone' }
+  ],
+  cass_in: [
+    { who: 'rook', t: "...Yeah. She is. I should have done it on Callisto, six years ago." },
+    { who: 'cass', t: "Took you long enough, partner. Fine. I'll sing for the Bounty Office. I know a lot of songs about Helix." },
+    { set: 'cass_jailed' }, { rep: { office: 1, helix: -1 } }, { do: 'cassDone' }
+  ],
+
+
   rumour1: [{ set: 'rumour1' }, { who: 'mags', t: "Relay K-17 went quiet the same night Helix Salvage's stock jumped twelve percent. Funny, that." }],
   rumour2: [{ set: 'rumour2' }, { who: 'mags', t: "Someone's buying up old relay keycards in the lower ring. Paying in clean chits, which around here is suspicious." }],
   rumour3: [{ set: 'rumour3' }, { who: 'mags', t: 'See the woman in the corner booth? Rhea. Used to run comms for Helix, out past the belt. Doesn\'t talk much. Tips well.' }],
@@ -299,7 +397,7 @@ export const DIALOGUE = {
   vend_cygnus: [{ who: null, t: "The machine sells 'Moon Cola: Now With Less Moon'. You decide not to ask." }],
   dockgate: [
     { who: null, t: 'The Hi-Hat sits in the docking bay below, dripping rainwater. Head back aboard?' },
-    { choices: [{ t: 'Board the Hi-Hat', go: 'ship_board' }, { t: 'Stay on the station' }] }
+    { choices: [{ t: 'Board the Hi-Hat', go: 'ship_board' }, { t: 'Plot a course from here', if: 'up_engine', go: 'cockpit_nav' }, { t: 'Stay on the station' }] }
   ],
   storefront: [{ who: null, pick: ['A shop window full of second-hand cybernetics. A hand waves at you. You hope it is a display.', 'Closed. A sign says BACK IN 5 MIN. It has said that for a year.', 'A pachinko parlour. The noise alone could power the ship.'] }],
   neon: [{ who: null, pick: ['A neon sign buzzes. You catch about half the kanji. The other half is a brand of noodle.', 'The sign flickers like it is trying to tell you something. Probably just bad wiring.'] }],
@@ -314,7 +412,7 @@ export const DIALOGUE = {
   // ---- Relay K-17 ----
   airlock_k17: [
     { who: null, t: 'The Hi-Hat is clamped to the outer airlock. Head back aboard?' },
-    { choices: [{ t: 'Board the Hi-Hat', go: 'ship_board' }, { t: 'Keep exploring' }] }
+    { choices: [{ t: 'Board the Hi-Hat', go: 'ship_board' }, { t: 'Plot a course from here', if: 'up_engine', go: 'cockpit_nav' }, { t: 'Keep exploring' }] }
   ],
   rhea_relay: [
     { who: 'rhea', ifNot: 'power_on', t: "Generator first. Upper deck, far left. Nothing opens until the lights do." },
@@ -426,7 +524,7 @@ export const DIALOGUE = {
   // ---- Vesta: Track 03 ----
   lift_vesta: [
     { who: null, t: 'A cage lift rattles down to the docking bay, where the Hi-Hat is parked. Head back aboard?' },
-    { choices: [{ t: 'Ride down to the Hi-Hat', go: 'ship_board' }, { t: 'Stay in the market' }] }
+    { choices: [{ t: 'Ride down to the Hi-Hat', go: 'ship_board' }, { t: 'Plot a course from here', if: 'up_engine', go: 'cockpit_nav' }, { t: 'Stay in the market' }] }
   ],
   tam_vesta: [{ who: 'tam', pick: [
     "Vesta's got the best scrap market in the belt. If we live, I'm shopping.",
@@ -895,6 +993,7 @@ export const DIALOGUE = {
     { who: null, t: 'The Hi-Hat, parked and ticking as it cools. Head back aboard?' },
     { choices: [
       { t: 'Board the Hi-Hat', go: 'ship_board' },
+      { t: 'Plot a course from here', if: 'up_engine', go: 'cockpit_nav' },
       { t: 'Stay here' }
     ] }
   ],

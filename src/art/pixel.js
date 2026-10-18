@@ -192,7 +192,7 @@ export function droneSheet(hostile = false) {
 
 // ---- Ship tiles (16x16), in the order used by data/maps.js TILE ----
 export function tileSheet() {
-  const T = 16, cols = 8, count = 104;
+  const T = 16, cols = 8, count = 104;   // room to grow: 0-103
   const cv = document.createElement('canvas');
   cv.width = T * cols; cv.height = T * Math.ceil(count / cols);
   const ctx = cv.getContext('2d');
@@ -410,6 +410,17 @@ export function tileSheet() {
   r = at(95); r(0, 0, 16, 16, '#7a4a2e'); for (let x = 0; x < 16; x += 3) r(x, 0, 1, 16, '#5a3420'); r(0, 0, 16, 2, '#9a6a3e'); r(0, 13, 16, 3, '#3a2418'); r(4, 6, 2, 1, '#a8844a');
   // rails bridging the drop (you can't walk on these)
   r = at(96); r(0, 0, 16, 16, '#07060a'); for (let x = 1; x < 16; x += 4) r(x, 4, 2, 9, '#4a2e1e'); r(0, 5, 16, 1, '#a0a4b8'); r(0, 11, 16, 1, '#a0a4b8'); r(0, 13, 16, 1, '#151018');
+
+  // ---- Hi-Hat upgrades ----
+  // Tam's workbench: vice, tools and a scrap bin
+  r = at(97); floor(r); r(0, 3, 16, 4, '#8a6a3a'); r(0, 3, 16, 1, '#a8844a'); r(1, 7, 2, 8, '#4a321c'); r(13, 7, 2, 8, '#4a321c');
+  r(2, 0, 3, 3, '#8d90a8'); r(3, 1, 1, 2, '#5d6a80'); r(7, 1, 4, 2, P.crimson); r(12, 0, 1, 3, '#8d90a8'); r(4, 9, 8, 5, '#46516a'); r(5, 10, 2, 1, '#b3842a'); r(8, 11, 3, 1, '#8d90a8');
+  // recording booth: mic on a stand in front of foam panels
+  r = at(98); floor(r); r(1, 0, 14, 7, '#3a2440'); for (let x = 2; x < 15; x += 3) for (let y = 1; y < 7; y += 3) r(x, y, 2, 2, '#4f3458');
+  r(7, 7, 2, 7, '#5d6a80'); r(5, 14, 6, 1, '#3a4258'); r(6, 3, 4, 5, '#8d90a8'); r(6, 4, 4, 1, '#5d6a80'); r(6, 6, 4, 1, '#5d6a80'); r(11, 2, 2, 1, P.crimson);
+  // booth mixing desk with a red ON AIR light
+  r = at(99); floor(r); r(1, 0, 14, 7, '#3a2440'); for (let x = 2; x < 15; x += 3) for (let y = 1; y < 7; y += 3) r(x, y, 2, 2, '#4f3458');
+  r(0, 7, 16, 7, '#262a40'); r(0, 7, 16, 1, '#46516a'); for (let x = 2; x < 14; x += 2) r(x, 9, 1, 3, x % 4 ? P.mustard : '#7fe0c8'); r(10, 1, 4, 2, P.crimson); r(1, 14, 14, 1, '#1b1e30');
 
   r = at(31); dock(r); r(3, 3, 10, 12, '#2b8f8a'); r(3, 6, 10, 1, '#1d6663'); r(3, 11, 10, 1, '#1d6663'); r(3, 2, 10, 2, '#3fb0aa'); r(6, 2, 4, 1, '#1d6663'); r(3, 14, 10, 1, '#14403e');
   return cv;

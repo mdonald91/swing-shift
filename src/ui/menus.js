@@ -7,6 +7,8 @@ import { playerPortrait, npcPortrait } from '../art/portrait.js';
 import { state, settings, saveGame, saveSettings, setFlag, formatTime, allSlots, SLOT_COUNT } from '../state.js';
 import { MAPS } from '../data/maps.js';
 import { openRecap } from './recap.js';
+import { offers, activeJob, payFor, jobObjective, accept as acceptJob, abandon } from '../systems/jobs.js';
+import { bus } from '../bus.js';
 import { SHOPS, GEAR, FACTIONS, tier } from '../data/shop.js';
 import { ITEMS, SKILLS, TREES, TIERS, TYPES, RELEARN_COST, xpToNext, MAX_LEVEL } from '../data/battles.js';
 import { crewStats, ownsGear, BOND_HP, BOND_ATK, available, activeParty, level, pendingPicks, learn } from '../systems/party.js';
@@ -29,6 +31,7 @@ export function openBoard() {
       <button type="button" role="tab" data-tab="available">Available</button>
       <button type="button" role="tab" data-tab="active">In progress</button>
       <button type="button" role="tab" data-tab="done">Completed</button>
+      ${state.flags.velvet_done ? '<button type="button" role="tab" data-tab="jobs">Odd jobs</button>' : ''}
     </div>
     <div class="board-body"><ul class="b-list"></ul><aside class="b-detail"></aside></div>
   </div>`);
@@ -43,8 +46,44 @@ export function openBoard() {
     return tab === 'available' ? (s === 'open' || s === 'locked') : s === tab;
   };
 
+  function renderJobs() {
+    const act = activeJob();
+    const list = [...(act ? [act] : []), ...offers().filter(j => !act || j.id !== act.id)];
+    if (!list.find(j => j.id === selected)) selected = list[0]?.id || null;
+    listEl.innerHTML = list.length ? list.map(j => `<li><button type="button" class="b-row job-row ${j.id === selected ? 'sel' : ''}" data-id="${j.id}">
+        <span class="b-thumb">${npcPortrait(j.who)}</span>
+        <span class="b-main"><b>${esc(j.title)}</b><small>${act && act.id === j.id ? 'In progress · ' : ''}${esc(j.where)}</small></span>
+        <span class="b-reward">${j.pay ? money(payFor(j)) : '???'}</span>
+      </button></li>`).join('') : '<li class="b-empty">No odd jobs right now. Check back after your next bounty.</li>';
+    listEl.querySelectorAll('.b-row').forEach(r => r.addEventListener('click', () => { selected = r.dataset.id; Audio.sfx('move'); render(); }));
+    const j = list.find(x => x.id === selected);
+    if (!j) { detailEl.innerHTML = '<p class="muted">Short jobs that pay on the spot. One at a time.</p>'; return; }
+    const mine = act && act.id === j.id;
+    detailEl.innerHTML = `
+      <p class="eyebrow">Odd job${j.kind === 'story' ? ' · Rook' : j.kind === 'deliver' ? ' · Delivery' : ' · Muscle'}</p>
+      <div class="d-top"><span class="d-pt">${npcPortrait(j.who)}</span>
+        <dl>
+          <dt>Job</dt><dd>${esc(j.title)}</dd>
+          <dt>Client</dt><dd>${esc(j.client)}</dd>
+          <dt>Where</dt><dd>${esc(j.where)}</dd>
+          <dt>Pays</dt><dd class="gold">${j.pay ? money(payFor(j)) : 'Ask Rook'}${j.scrap ? ` + ${j.scrap} scrap` : ''}</dd>
+        </dl></div>
+      <p class="d-desc">${esc(j.desc)}</p>
+      ${mine ? `<p class="ok">${esc(jobObjective())}</p>${j.kind === 'story' ? '' : '<button class="btn ghost" type="button" data-drop>Drop this job</button>'}`
+        : act ? '<p class="lock">Finish or drop your current odd job first.</p>'
+        : '<button class="btn primary" type="button" data-take>Take the job</button>'}`;
+    detailEl.querySelector('[data-take]')?.addEventListener('click', () => {
+      acceptJob(j); Audio.sfx('confirm'); toast(`Odd job taken: ${j.title}`); Hud.refresh(); bus.emit('dialog-closed'); render();
+    });
+    detailEl.querySelector('[data-drop]')?.addEventListener('click', e => {
+      if (!e.currentTarget.dataset.armed) { e.currentTarget.dataset.armed = 1; e.currentTarget.textContent = 'Tap again to drop it'; return; }
+      abandon(); Audio.sfx('back'); Hud.refresh(); bus.emit('dialog-closed'); render();
+    });
+  }
+
   function render() {
     node.querySelectorAll('[data-tab]').forEach(t => t.setAttribute('aria-selected', t.dataset.tab === tab));
+    if (tab === 'jobs') return renderJobs();
     const items = BOUNTIES.filter(inTab);
     if (!items.find(b => b.id === selected)) selected = items[0]?.id || null;
     listEl.innerHTML = items.length ? items.map(b => {
@@ -292,7 +331,7 @@ function openBag() {
       <section><p class="eyebrow">Gear</p>
         ${gear.length ? `<ul class="bag-list">${gear.map(g => `<li><b>${esc(g.n)}</b><span class="muted">${esc(g.d)}</span><em>Equipped</em></li>`).join('')}</ul>` : '<p class="muted">No upgrades yet. The supply terminal in the galley sells them.</p>'}
       </section>
-      <p class="chits-line">Chits: <b class="gold">${money(state.chits)}</b></p>
+      <p class="chits-line">Chits: <b class="gold">${money(state.chits)}</b> · Scrap: <b>${state.scrap || 0}</b></p>
     </div>
   </div>`);
   const m = openModal(node);

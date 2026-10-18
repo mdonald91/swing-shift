@@ -148,7 +148,19 @@ export const ITEMS = {
   noodle: { n: 'Noodle Cup', d: 'Heals 45 HP', heal: 45, tgt: 'living', price: 60 },
   coffee: { n: 'Hot Coffee', d: 'Restores 15 SP', sp: 15, tgt: 'living', price: 90 },
   patch: { n: 'Patch Kit', d: 'Revives a downed crewmate at half HP', revive: .5, tgt: 'downed', price: 260 },
-  curry: { n: 'Neon Curry', d: 'Heals the whole crew 30 HP', heal: 30, tgt: 'party', price: 180 }
+  curry: { n: 'Neon Curry', d: 'Heals the whole crew 30 HP', heal: 30, tgt: 'party', price: 180 },
+  // crafted in Tam's workshop (enemies: hits every enemy; none: no target needed)
+  charge: { n: 'Shock Charge', d: 'Shocks every enemy, ignoring armour', dmg: 40, type: 'shock', tgt: 'enemies', price: 0 },
+  cell: { n: 'Groove Cell', d: '+50 Groove', groove: 50, tgt: 'none', price: 0 }
+};
+
+// Jam Session arrangements. Big Band is always there; the recording booth unlocks the rest.
+//   hit: share of the band's combined attack dealt to each enemy (hits: split into random hits)
+export const JAM_STYLES = {
+  bigband: { n: 'Big Band', d: 'Everyone hits every enemy hard.', hit: .7 },
+  ballad: { n: 'Ballad', d: 'A softer hit on every enemy. Heals the crew a third of their HP and revives anyone down.', hit: .4, heal: .33, revive: true, booth: true },
+  bebop: { n: 'Bebop', d: 'Eight fast hits on random enemies, then the Groove meter starts a third full again.', hit: .26, hits: 8, groove: 35, booth: true },
+  bossa: { n: 'Bossa Nova', d: 'A smooth hit on every enemy. The crew takes less damage and the enemies hit softer for 2 rounds.', hit: .5, shield: 2, weaken: 2, booth: true }
 };
 
 export const TYPES = { shot: 'Shot', blunt: 'Blunt', shock: 'Shock', stun: 'Stun' };
@@ -226,6 +238,17 @@ export const ENCOUNTERS = {
     noRun: 'The Mantis is between you and every way out.',
     enemies: [
       { id: 'mantis', name: 'Iron Mantis', hp: 1150, atk: 42, def: 10, boss: true, machine: true, ai: 'mantis', xp: 340, weakTo: ['shock'], resists: ['shot', 'blunt'] }
+    ]
+  },
+
+  // Rook's old partner: Helix contractors come to collect Cass Marlowe. Grows with the crew.
+  cass: {
+    bg: 'station', intro: "Three Helix contractors step out of the rain. 'Marlowe. And friends. Lovely. Overtime.'",
+    noRun: "Rook isn't going anywhere. Neither are you.", scale: true, after: 'cass_choice', reward: { chits: 0, items: { curry: 1 } },
+    enemies: [
+      E('gunman', { name: 'Helix contractor', hp: 105, atk: 18, def: 4 }),
+      E('hacker', { name: 'Helix tracker', hp: 90, atk: 16 }),
+      E('gunman', { name: 'Helix contractor', hp: 105, atk: 18, def: 4 })
     ]
   },
 

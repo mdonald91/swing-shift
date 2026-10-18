@@ -79,6 +79,7 @@ Saves are kept in the browser on each device (3 slots).
 - [x] **0.8 Levels and skills:** XP and levels to 30, a 5-tier skill tree per crew member, Shot/Blunt/Shock weaknesses, gunmen, hackers and heavy mechs, optional side fights on every map, Brushes' holo-rehearsal, rebalanced bosses
 - [x] **0.9 Act 1 polish:** beat calibration, Relaxed and Auto rhythm modes, bigger text, less screen shake, tutorial tips, save anywhere plus autosave, the Act 1 finale and a Story so far screen
 - [x] **0.10 Track 04, Iron Mantis:** Targon's mine and Shaft 3, power-routing puzzles, lifts and the ore-cart line, a cave-in, Tam's mentor Dagny Ferro, the stance-shifting Iron Mantis boss and what to do with it
-- [ ] **0.11 Hi-Hat upgrades and side jobs** (see the full roadmap doc)
+- [x] **0.11 Hi-Hat upgrades and side jobs:** an upgrades terminal (Tam's workshop for crafting with scrap, a recording booth with new Jam Session styles, a bigger engine), odd jobs on the bounty board, Rook's old partner, the Flat Ninth's regulars and new rumours
+- [ ] **0.12 Track 05, Runaway Prototype** (see the full roadmap doc)
 
 Built with [Phaser 3](https://phaser.io) (MIT licence), included in `vendor/`.

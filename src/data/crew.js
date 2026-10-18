@@ -39,7 +39,12 @@ export const CREW = {
   mantis: { name: 'The Iron Mantis', short: 'Mantis', color: 'var(--crimson)', blip: 90 },
   minebots: { name: 'Mine bots', short: 'Mine bot', color: 'var(--crimson)', blip: 700 },
   rockrats: { name: 'Rock rats', short: 'Rock rat', color: 'var(--crimson)', blip: 800 },
-  crawler: { name: 'Tunnel crawler', short: 'Crawler', color: 'var(--crimson)', blip: 120 }
+  crawler: { name: 'Tunnel crawler', short: 'Crawler', color: 'var(--crimson)', blip: 120 },
+  // 0.11
+  cass: { name: 'Cass Marlowe', short: 'Cass', color: 'var(--violet)', blip: 340 },
+  dutch: { name: 'Dutch', short: 'Dutch', color: 'var(--smoke)', blip: 150 },
+  pip: { name: 'Pip', short: 'Pip', color: 'var(--mustard)', blip: 600 },
+  job: { name: 'Odd job', short: 'Odd job', color: 'var(--teal)', blip: 300 }
 };
 
 // What the captain brings to a fight, based on temperament.

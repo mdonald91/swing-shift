@@ -65,7 +65,10 @@ function offClock() {
     f.song_ballad && 'Brushes wrote you a ballad. A moody one.',
     f.gerald_lamp && 'Bought Gerald a grow lamp. Tam has not stopped talking about it.',
     f.busked_ever && 'Sat in with Old Sol on the Cygnus plaza.',
-    ['rook', 'tam', 'brushes'].filter(k => f['chat_' + k]).length === 3 && 'Made time for every one of the original crew.'
+    ['rook', 'tam', 'brushes'].filter(k => f['chat_' + k]).length === 3 && 'Made time for every one of the original crew.',
+    f.rook_s2 && (f.cass_free ? 'Stood by Rook while he let his old partner Cass Marlowe walk free.' : 'Stood by Rook while he brought his old partner Cass Marlowe in.'),
+    (f.up_workshop || f.up_booth || f.up_engine) && `Fitted out the Hi-Hat: ${[f.up_workshop && "Tam's workshop", f.up_booth && 'a recording booth', f.up_engine && 'a bigger engine'].filter(Boolean).join(', ')}.`,
+    state.jobsDone >= 3 && `Took ${state.jobsDone} odd jobs between bounties.`
   ].filter(Boolean);
 }
 

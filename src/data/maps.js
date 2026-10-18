@@ -17,7 +17,9 @@ export const TILE = {
   '%': 70, '&': 71, '-': 72, ':': 73, '(': 74, ')': 75, '|': 76, '*': 77, '+': 78,
   // Targon mine
   'a': 80, 'i': 81, '[': 82, ']': 83, '/': 84, '^': 85, '<': 86, '>': 87, '?': 88, '@': 89, '0': 90,
-  ';': 91, '{': 92, '}': 93, '`': 94, '"': 95, '§': 96
+  ';': 91, '{': 92, '}': 93, '`': 94, '"': 95, '§': 96,
+  // Hi-Hat upgrades (swapped in when bought)
+  '¤': 97, '¶': 98, '©': 99
 };
 export const RUBBLE = 90;
 export const DOOR_OPEN = 60;
@@ -26,7 +28,7 @@ export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 2
   34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 46, 48, 49, 50, 51, 52, 53,
   54, 55, 58, 59, 61, 62, 63, 64, 65, 66, 67, 69,
   70, 71, 74, 75, 77, 78,
-  80, 82, 83, 87, 88, 89, 90, 91, 92, 94, 95, 96];
+  80, 82, 83, 87, 88, 89, 90, 91, 92, 94, 95, 96, 97, 98, 99];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
 export const TILE_LOOKS = {
   20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
@@ -46,7 +48,7 @@ export const MAPS = {
     rows: [
       '########################',
       '#WWOWWfgggWWOWWWWOOOOWW#',
-      '#b......,........KKKK..#',
+      '#b......,........KKKK.K#',
       '#e......,..............#',
       '#.......,...rrrrr....B.#',
       '#.cC....,...rrtrr......#',
@@ -57,6 +59,11 @@ export const MAPS = {
       '###########D############'
     ],
     spawns: { default: { x: 11, y: 8 }, cockpit: { x: 18, y: 3 }, lounge: { x: 6, y: 6 } },
+    // rooms that appear once they're bought at the upgrades terminal
+    swaps: [
+      { x: 1, y: 9, flag: 'up_workshop', to: '¤' }, { x: 2, y: 9, flag: 'up_workshop', to: '¤' },
+      { x: 21, y: 9, flag: 'up_booth', to: '¶' }, { x: 22, y: 9, flag: 'up_booth', to: '©' }
+    ],
     npcs: [
       { id: 'rook', x: 2, y: 6, face: 'down' },
       { id: 'tam', x: 8, y: 2, face: 'down' },
@@ -74,6 +81,9 @@ export const MAPS = {
       { id: 'plant', x: 19, y: 6, label: 'Look' },
       { id: 'plant', x: 1, y: 7, label: 'Look' },
       { id: 'holo', x: 14, y: 5, label: 'Holo-rehearsal' },
+      { id: 'upgrades', x: 22, y: 2, label: 'Ship upgrades' },
+      { id: 'workbench', x: 1, y: 9, w: 2, label: "Tam's workshop", if: 'up_workshop' },
+      { id: 'booth', x: 21, y: 9, w: 2, label: 'Recording booth', if: 'up_booth' },
       { id: 'hatch', x: 11, y: 10, label: 'Airlock' },
       { id: 'window', x: 3, y: 1, label: 'Look outside' },
       { id: 'window', x: 12, y: 1, label: 'Look outside' }
@@ -193,7 +203,9 @@ export const MAPS = {
     npcs: [
       { id: 'mags', x: 4, y: 2, face: 'down' },
       { id: 'lou', x: 15, y: 3, face: 'up' },
-      { id: 'rhea', x: 3, y: 6, face: 'left' }
+      { id: 'rhea', x: 3, y: 6, face: 'left', ifNot: 'rhea_joined' },
+      { id: 'dutch', x: 12, y: 4, face: 'left', if: 'velvet_done' },
+      { id: 'pip', x: 13, y: 6, face: 'up', if: 'cygnus_arrived' }
     ],
     objects: [
       { id: 'mags', x: 1, y: 3, w: 7, label: 'Talk to Mags' },

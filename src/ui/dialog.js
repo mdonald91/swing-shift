@@ -16,6 +16,7 @@ import { startBattle } from './battle.js';
 import { openShop } from './menus.js';
 import { busk } from './busk.js';
 import { openCircuit } from './circuit.js';
+import { completeJob, jobObjective } from '../systems/jobs.js';
 
 // Things a conversation can trigger. Anything that changes scene waits until the box closes.
 let after = null;
@@ -47,6 +48,28 @@ const ACTIONS = {
   departK17() { after = () => playCut('k17_depart', { restoreMood: false }).then(() => { joinRhea(); travel('relay'); }); },
   toRelay() { after = () => travel('relay'); },
   power() { Audio.sfx('save'); },
+  // ---- odd jobs ----
+  jobPickup() {
+    if (!state.job) return;
+    state.job.picked = true; Audio.sfx('confirm');
+    setTimeout(() => toast(jobObjective().replace('Odd job: ', 'Now ')), 200);
+    Hud.refresh();
+  },
+  jobDone() {
+    const line = completeJob(); Audio.sfx('save');
+    setTimeout(() => toast(line), 200); Hud.refresh();
+  },
+  newStoryJob() { setTimeout(() => toast('New odd job on your bounty board: Old partner'), 1200); },
+  cassMeet() { after = () => playCut('cass_meet', { restoreMood: false }).then(() => startBattle('cass')); },
+  cassDone() {
+    setFlag('rook_s2');
+    if (flag('cass_jailed')) state.chits += 5000;
+    state.bonds.rook = Math.min(3, (state.bonds.rook || 0) + 1);
+    completeJob();
+    Audio.sfx('save'); Hud.refresh();
+    setTimeout(() => toast(flag('cass_jailed') ? `Cass handed in: ₡ 5,000. Bond with Rook deepened.` : 'Cass is gone, with a head start. Bond with Rook deepened.'), 300);
+    after = () => bus.emit('dialog-closed');
+  },
   // ---- Targon ----
   departTargon() { after = () => playCut('targon_depart', { restoreMood: false }).then(() => travel('targon')); },
   toTargon() { after = () => travel('targon'); },

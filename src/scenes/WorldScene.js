@@ -8,6 +8,7 @@ import { Audio } from '../systems/audio.js';
 import { state, settings } from '../state.js';
 import { bus } from '../bus.js';
 import { chatAvailable } from '../data/dialogue.js';
+import { jobNpcs } from '../systems/jobs.js';
 
 const SPEED = 72;
 const T = 16;
@@ -33,6 +34,7 @@ export class WorldScene extends Phaser.Scene {
     this.layer = tm.createLayer(0, ts, 0, 0).setDepth(0);
     this.layer.setCollision(SOLID);
     this.doorTiles = (map.doors || []).map(d => ({ ...d, closed: data[d.y][d.x] }));
+    this.swapTiles = (map.swaps || []).map(d => ({ ...d, was: data[d.y][d.x] }));
     this.W = tm.widthInPixels; this.H = tm.heightInPixels;
     this.physics.world.setBounds(0, 0, this.W, this.H);
 
@@ -56,7 +58,7 @@ export class WorldScene extends Phaser.Scene {
     this.npcs = [];
     const blockers = this.physics.add.staticGroup();
     if (!this.textures.exists('bubble')) this.textures.addCanvas('bubble', bubbleCanvas());
-    for (const n of map.npcs) {
+    for (const n of [...map.npcs, ...jobNpcs(state.location)]) {
       const lookId = n.look || n.id;
       const key = 'npc-' + lookId;
       const x = n.x * T + 8, y = n.y * T + 8;
@@ -151,7 +153,7 @@ export class WorldScene extends Phaser.Scene {
     const refresh = () => {
       const f = state.flags;
       this.npcs.forEach(n => {
-        const show = !(n.def.ifNot && f[n.def.ifNot]) && !(n.def.if && !f[n.def.if]);
+        const show = !(n.def.ifNot && f[n.def.ifNot]) && !(n.def.if && !f[n.def.if]) && !(n.def.job && !jobNpcs(state.location).length);
         n.setVisible(show); n.active = show;
         if (n.zone.body) n.zone.body.enable = show;
         n.bubble.setVisible(show && chatAvailable(n.npcId, f, state.location));
@@ -159,6 +161,10 @@ export class WorldScene extends Phaser.Scene {
       let changed = false;
       for (const d of this.doorTiles) {
         const want = d.closeOn ? (f[d.closeOn] ? RUBBLE : d.closed) : f[d.flag] ? DOOR_OPEN : d.closed;
+        if (this.layer.getTileAt(d.x, d.y).index !== want) { this.layer.putTileAt(want, d.x, d.y); changed = true; }
+      }
+      for (const d of this.swapTiles) {
+        const want = f[d.flag] ? TILE[d.to] : d.was;
         if (this.layer.getTileAt(d.x, d.y).index !== want) { this.layer.putTileAt(want, d.x, d.y); changed = true; }
       }
       if (changed) { this.layer.setCollision(SOLID); bus.emit('minimap', this.minimapData()); }
@@ -311,7 +317,7 @@ export class WorldScene extends Phaser.Scene {
       if (dist < bd) { bd = dist; best = { kind: 'npc', id: n.npcId, spr: n, label: 'Talk to ' + (CREW[n.npcId]?.short || n.npcId) }; }
     }
     if (best) return best;
-    const o = this.objects.find(o => o.rect.contains(f.x, f.y));
+    const o = this.objects.find(o => o.rect.contains(f.x, f.y) && !(o.if && !state.flags[o.if]));
     if (o) return { kind: 'object', id: o.id, label: o.label };
     const tile = this.layer.getTileAtWorldXY(f.x, f.y);
     const look = tile && TILE_LOOKS[tile.index];

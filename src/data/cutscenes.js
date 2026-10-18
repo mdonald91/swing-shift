@@ -222,6 +222,18 @@ export const CUTSCENES = {
     { l: null, r: null, card: { track: 'Next session', name: 'Runaway Prototype' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
   ],
 
+  // ---- Rook's old partner ----
+  cass_meet: [
+    { bg: 'station', mood: 'tense', l: 'rook', r: 'cass', who: 'cass', line: 'Rook Calloway. Still wearing that tie.' },
+    { who: 'rook', line: 'Cass. Still telling bosses what they want to hear?' },
+    { who: 'cass', line: "Not any more. I took a job with Helix security. Ears for something they call the Listening Network." },
+    { who: 'cass', line: "Then I found out who the network listens for. I quit. Turns out you can't quit the Conductor. He posted my name on every board in the system this morning." },
+    { l: 'player', who: 'player', line: "So why should we help you?",
+      byTemp: { Calm: 'Talk fast. Why should we believe you?', Sarcastic: 'Great. A reunion. Should I leave you two alone?', Idealistic: "Nobody gets disappeared on my watch. Not even you.", Ruthless: "You're worth five thousand to me. Convince me you're worth more." } },
+    { who: 'cass', line: "Because his collectors are here. Right now. Behind you." },
+    { l: 'rook', who: 'rook', fx: 'shake', sfx: 'bang', line: "...She's not lying. She never could when it counted. Cap, let's play." }
+  ],
+
   // Act 1 finale: the Conductor takes over every speaker in the system. Plays once, on the ship, after Track 03.
   act1_finale: [
     { bg: 'lounge', mood: 'tense', l: 'brushes', r: 'tam', who: 'brushes', sfx: 'scratch', line: 'Captain. Every speaker on the ship just switched itself on. I did not do it. I would like that noted.' },

@@ -20,7 +20,7 @@ export const Title = {
         <p class="tagline">Bounties. Jazz. One more tank of fuel.</p>
         <nav class="title-menu"></nav>
       </div>
-      <p class="title-foot">Build 0.10 · Iron Mantis</p>
+      <p class="title-foot">Build 0.11 · Upgrades and odd jobs</p>
     </section>`);
     showScreen(node);
     renderMenu(node, Audio.started);

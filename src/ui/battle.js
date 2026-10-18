@@ -1,5 +1,6 @@
 // Turn-based combat with on-the-beat timing, plus the payday ledger afterwards.
-import { SKILLS, ITEMS, ENCOUNTERS, TYPES, TIERS, xpToNext } from '../data/battles.js';
+import { SKILLS, ITEMS, ENCOUNTERS, TYPES, TIERS, xpToNext, JAM_STYLES } from '../data/battles.js';
+import { completeJob } from '../systems/jobs.js';
 import { CREW } from '../data/crew.js';
 import { BOUNTIES } from '../data/bounties.js';
 import { backdrop } from '../art/backdrops.js';
@@ -57,7 +58,7 @@ export function startBattle(id, { retry = false } = {}) {
     e.baseDef = e.def - (state.flags.core_kept ? 3 : 0);
     setStance(e, 'guard');
   }
-  B = { id, enc, party, enemies, groove: Math.min(100, startingGroove()), turn: 0, overclock: 0, shield: 0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null };
+  B = { jam: JAM_STYLES[state.jamStyle] ? state.jamStyle : 'bigband', id, enc, party, enemies, groove: Math.min(100, startingGroove()), turn: 0, overclock: 0, shield: 0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null };
 
   root = el(`<div class="bt" role="dialog" aria-label="Combat">
     <div class="bt-bg">${backdrop(enc.bg)}</div>
@@ -195,7 +196,7 @@ function showMenu(a) {
     <button type="button" data-c="items" ${Object.values(state.items).some(n => n > 0) ? '' : 'disabled'}>Item</button>
     <button type="button" data-c="guard">Defend <small>+6 SP</small></button>
     <button type="button" data-c="run">Run</button>
-    ${B.groove >= 100 ? '<button type="button" class="jam" data-c="jam">Jam Session</button>' : ''}`);
+    ${B.groove >= 100 ? `<button type="button" class="jam" data-c="jam">Jam Session${B.jam !== 'bigband' ? ` <small>${esc(JAM_STYLES[B.jam].n)}</small>` : ''}</button>` : ''}`);
   $('.bt-cmd button')?.focus({ preventScroll: true });
   root.querySelectorAll('.bt-cmd [data-c]').forEach(b => b.addEventListener('click', () => { Audio.sfx('tick'); menuPick(a, b.dataset.c); }));
   if (B.groove >= 100) tip('jam', root);
@@ -223,7 +224,7 @@ function menuPick(a, c) {
   } else if (c === 'items') {
     const anyDown = B.party.some(p => p.ko);
     cmd(`<p class="bt-who">Items</p>` + Object.entries(state.items).filter(([k, n]) => n > 0 && ITEMS[k]).map(([k, n]) =>
-      `<button type="button" data-i="${k}" ${ITEMS[k].tgt === 'downed' && !anyDown ? 'disabled' : ''}>${esc(ITEMS[k].n)} ×${n} <small>${esc(ITEMS[k].d)}</small></button>`).join('') + backButton(a));
+      `<button type="button" data-i="${k}" ${(ITEMS[k].tgt === 'downed' && !anyDown) || (ITEMS[k].tgt === 'none' && B.groove >= 100) ? 'disabled' : ''}>${esc(ITEMS[k].n)} ×${n} <small>${esc(ITEMS[k].d)}</small></button>`).join('') + backButton(a));
     root.querySelectorAll('.bt-cmd [data-i]').forEach(b => b.addEventListener('click', () => {
       Audio.sfx('tick'); choose(a, { kind: 'item', key: b.dataset.i }, ITEMS[b.dataset.i].tgt);
     }));
@@ -271,6 +272,14 @@ async function run(a, act, target) {
     else if (it.heal) healAlly(target, it.heal, false, `${a.name} hands ${target.name} a ${it.n}.`);
     else if (it.revive) healAlly(target, Math.round(target.max * it.revive), true, `${a.name} patches ${target.name} up. Back in the band.`);
     else if (it.sp) { target.sp = Math.min(target.spMax, target.sp + it.sp); pop(cardOf(target), '+' + it.sp + ' SP', 'num heal'); Audio.sfx('heal'); log(`${target.name} downs a ${it.n}. Wide awake.`); update(); }
+    else if (it.dmg) {
+      const power = it.dmg + 8 * partyAverageLevel();
+      log(`${a.name} lobs a ${it.n}. Everything metal in the room lights up.`);
+      living(B.enemies).forEach((e, i) => setTimeout(() => root && hitEnemy({ name: a.name, atk: power }, e, 1, 'KZZAK!', 'zap', { type: it.type, pierce: true }), i * 180));
+    } else if (it.groove) {
+      B.groove = Math.min(100, B.groove + it.groove); Audio.sfx('heal');
+      log(`${a.name} cracks a ${it.n}. The whole band feels it.${B.groove >= 100 ? ' The Groove is full!' : ''}`); update();
+    }
     cmd(''); endAction(600); return;
   }
   cmd('<p class="bt-who">Tap on the beat</p><p class="bt-hint">Tap anywhere, or press Space, as the ring closes.</p>');
@@ -450,6 +459,7 @@ async function doJam(a) {
   const band = living(B.party);
   $('.bt-jam-panels').style.gridTemplateColumns = `repeat(${B.party.length}, 1fr)`;
   $('.bt-jam-panels').innerHTML = B.party.map((u, i) => `<div class="jp p${i + 1}">${u.ko ? '' : portraitOf(u)}</div>`).join('');
+  $('.bt-jam-title').innerHTML = B.jam && B.jam !== 'bigband' ? `${esc(JAM_STYLES[B.jam].n)}<br><small>Jam Session</small>` : 'Jam<br>Session';
   $('.bt-jam').hidden = false; Audio.sfx('cymbal');
   await sleep(1500);
   if (!root) return;
@@ -459,9 +469,31 @@ async function doJam(a) {
   if (!root) return;
   const m = RHY[q].mult; if (q === 'perfect') B.perfects++;
   B.groove = 0;
-  const power = band.reduce((s, p) => s + p.atk, 0) * .7;
-  living(B.enemies).forEach((e, i) => setTimeout(() => hitEnemy({ name: 'The band', atk: power }, e, m, pick(['BWAAP!', 'KA-POW!', 'SHA-BOOM!']), 'bang'), i * 220));
-  setTimeout(() => { if (root) { log('The whole crew lands it together. The press itself seems to applaud.'); endAction(200); } }, 900);
+  const st = JAM_STYLES[B.jam] || JAM_STYLES.bigband;
+  const total = band.reduce((s, p) => s + p.atk, 0);
+  const words = { bigband: ['BWAAP!', 'KA-POW!', 'SHA-BOOM!'], ballad: ['MMMM...', 'SIGH', 'LA-LA'], bebop: ['BE!', 'BOP!', 'SKID!', 'DOO!'], bossa: ['SWAY', 'CHA!', 'SAMBA'] }[B.jam] || ['BWAAP!'];
+  let n = 0;
+  if (st.hits) {
+    for (let i = 0; i < st.hits; i++) setTimeout(() => { const t = pick(living(B.enemies)); if (t && root) hitEnemy({ name: 'The band', atk: total * st.hit }, t, m, pick(words), 'tok'); }, i * 120);
+    n = st.hits;
+  } else {
+    living(B.enemies).forEach((e, i) => setTimeout(() => root && hitEnemy({ name: 'The band', atk: total * st.hit }, e, m, pick(words), 'bang'), i * 220));
+    n = living(B.enemies).length;
+  }
+  if (st.heal) B.party.forEach((p, i) => setTimeout(() => root && healAlly(p, Math.round(p.max * st.heal), !!st.revive), 400 + i * 120));
+  if (st.shield) B.shield = st.shield;
+  if (st.weaken) living(B.enemies).forEach(e => { e.weak = Math.max(e.weak || 0, st.weaken); });
+  const lines = {
+    bigband: 'The whole crew lands it together. The press itself seems to applaud.',
+    ballad: 'A slow, aching ballad. The enemies stagger. The crew stands up a little straighter.',
+    bebop: 'A blur of bebop, every note a punch. Somewhere, a saxophone weeps with joy.',
+    bossa: 'A lazy bossa nova. The enemies sway along without meaning to, and their guard drops.'
+  };
+  setTimeout(() => {
+    if (!root) return;
+    if (st.groove) B.groove = Math.min(100, st.groove);
+    log(lines[B.jam] || lines.bigband); update(); endAction(200);
+  }, 700 + n * 140);
 }
 
 async function enemyPhase() {
@@ -608,10 +640,15 @@ function checkEnd() {
       if (res.enc.flag) setFlag(res.enc.flag);
       if (rw.chits) state.chits += rw.chits;
       Object.entries(rw.items || {}).forEach(([k, n]) => { state.items[k] = (state.items[k] || 0) + n; });
+      // salvage from anything mechanical (bosses give more)
+      rw.scrap = res.enemies.filter(e => e.machine).reduce((s, e) => s + (e.boss ? 5 : e.max > 150 ? 2 : 1), 0);
+      state.scrap = (state.scrap || 0) + rw.scrap;
       await showResults(res, rw);
       cleanup();
       if (res.enc.bounty) return finishBounty(res);
       unblock(); backToWorld();
+      if (res.enc.after) setTimeout(() => runDialogue(res.enc.after), 600);
+      if (res.enc.job) setTimeout(() => { const line = completeJob({ paidInFight: true }); if (line) toast(line); Hud.refresh(); bus.emit('dialog-closed'); }, 500);
     }, 1200);
     return true;
   }
@@ -662,7 +699,7 @@ function showResults(res, rw) {
     if (ups.length) Audio.sfx('save');
     const o = el(`<div class="bt-results"><div class="panel bt-res-box">
       <p class="eyebrow">Victory</p>
-      <h3>+${total} XP${rw.chits ? ` · ₡ ${rw.chits.toLocaleString('en-AU')}` : ''}</h3>
+      <h3>+${total} XP${rw.chits ? ` · ₡ ${rw.chits.toLocaleString('en-AU')}` : ''}${rw.scrap ? ` · ${rw.scrap} scrap` : ''}</h3>
       ${items.length ? `<p class="res-items">Found: ${esc(items.join(', '))}</p>` : ''}
       <ul class="res-list">${rows.map(r => `<li class="${r.gained ? 'up' : ''}">
         <b>${esc(name(r.k))}</b><span class="res-lv">Lv ${r.after}</span>
@@ -778,6 +815,7 @@ function showLedger(res) {
   Audio.setMood('victory');
   const a = AFTER[res.id];
   const L = ledgerFor(res);
+  if (state.flags.up_engine) L.items = L.items.map(([t, v]) => /^Fuel/.test(t) ? [t + ' (big engine: half price)', Math.round(v / 2)] : [t, v]);
   const net = L.items.reduce((s, i) => s + i[1], 0);
   state.chits += net;
   const fmt = n => Math.abs(n).toLocaleString('en-AU');

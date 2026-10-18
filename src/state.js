@@ -31,6 +31,10 @@ function blank() {
     party: ['rook', 'tam', 'brushes'],   // who fights alongside the captain (up to 3)
     levels: {},            // crew key -> { lv, xp }
     skills: {},            // crew key -> skills picked from the tree, by tier
+    scrap: 0,              // salvage from machines, for Tam's workshop
+    job: null,             // the odd job you've taken: { id, picked }
+    jobsDone: 0,
+    jamStyle: 'bigband',
     playtime: 0,
     savedAt: 0
   };
@@ -70,6 +74,10 @@ export function loadGame(slot) {
   state.party = Array.isArray(data.party) && data.party.length ? data.party : b.party;
   state.levels = { ...(data.levels || {}) };
   state.skills = { ...(data.skills || {}) };
+  state.scrap = data.scrap || 0;
+  state.job = data.job || null;
+  state.jobsDone = data.jobsDone || 0;
+  state.jamStyle = data.jamStyle || 'bigband';
   // saves from before levels existed: start the crew at a level that fits how far they've got
   if (!data.levels) {
     const f = state.flags;
