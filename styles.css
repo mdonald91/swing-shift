@@ -319,7 +319,7 @@ body.touch-on .hud-hint { bottom: calc(118px + var(--safe-b)); }
 .b-main small { font-size: 12px; color: var(--smoke); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .b-reward { font-weight: 700; color: var(--mustard); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .risk { display: inline-grid; place-items: center; width: 22px; height: 22px; font-weight: 800; font-size: 13px; color: var(--ink); }
-.r-A { background: var(--crimson); } .r-B { background: #4f8fd6; } .r-C { background: #9a7fd0; }
+.r-S { background: #10121e; color: var(--crimson); box-shadow: inset 0 0 0 2px var(--crimson); } .r-A { background: var(--crimson); } .r-B { background: #4f8fd6; } .r-C { background: #9a7fd0; }
 .b-empty { padding: 18px; color: var(--smoke); border: 1px dashed var(--line-soft); }
 .b-detail { background: var(--ink2); border: 1px solid var(--line-soft); padding: 14px; display: flex; flex-direction: column; gap: 12px; }
 .d-top { display: flex; gap: 14px; }
@@ -797,3 +797,37 @@ body.ts-1 .liner ul li, body.ts-2 .liner ul li { font-size: calc(14px * var(--ts
   .ln-head { padding-right: 64px; }
   .ln-cols { grid-template-columns: 1fr; }
 }
+
+/* ---------------- 0.10: the junction board puzzle ---------------- */
+.circuit { max-width: 560px; }
+.cc-body { padding: 12px 18px 18px; overflow-y: auto; }
+.cc-note { margin: 0 0 12px; line-height: 1.5; font-size: 14px; }
+.cc-board { --t: max(40px, min(58px, calc((100vw - 190px) / var(--cols)), calc((100vh - 210px) / var(--rows)))); position: relative; width: calc(var(--t) * var(--cols)); margin: 36px auto 26px; padding: 0; }
+.cc-grid { display: grid; grid-template-columns: repeat(var(--cols), var(--t)); grid-auto-rows: var(--t); background: #151a28; border: 2px solid var(--line); }
+.cc-tile { padding: 0; margin: 0; border: 1px solid #22283a; background: #1b2132; cursor: pointer; touch-action: manipulation; }
+.cc-tile svg { width: 100%; height: 100%; }
+.cc-tile:hover, .cc-tile:focus-visible { background: #262c40; outline: none; box-shadow: inset 0 0 0 2px var(--mustard); }
+.cc-tile.spin svg { animation: ccSpin .15s ease-out; }
+@keyframes ccSpin { from { transform: rotate(-90deg); } }
+.cc-port { position: absolute; width: 14px; height: 14px; }
+.cc-port i { display: block; width: 100%; height: 100%; border-radius: 50%; background: #3a4258; border: 2px solid #5d6a80; }
+.cc-port.on i { background: var(--mustard); border-color: #f3c860; box-shadow: 0 0 10px rgba(233, 178, 58, .8); }
+.cc-port.src i { background: var(--teal); border-color: #7fe0c8; box-shadow: 0 0 8px rgba(127, 224, 200, .6); }
+.cc-port.side-W { left: -20px; top: calc(var(--t) * var(--at) + var(--t) / 2 - 7px); }
+.cc-port.side-E { right: -20px; top: calc(var(--t) * var(--at) + var(--t) / 2 - 7px); }
+.cc-port.side-N { top: -20px; left: calc(var(--t) * var(--at) + var(--t) / 2 - 7px); }
+.cc-port.side-S { bottom: -20px; left: calc(var(--t) * var(--at) + var(--t) / 2 - 7px); }
+.cc-port b { position: absolute; white-space: nowrap; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--smoke); }
+.cc-port.on b { color: var(--mustard); }
+.cc-port.src b { color: #7fe0c8; }
+.cc-port.side-E b { left: 20px; top: -1px; } .cc-port.side-W b { right: 20px; top: -1px; }
+.cc-port.side-N b { bottom: 18px; left: 50%; transform: translateX(-50%); } .cc-port.side-S b { top: 18px; left: 50%; transform: translateX(-50%); }
+.cc-legend { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; }
+.cc-legend li { display: flex; align-items: center; gap: 6px; }
+.cc-legend i { width: 10px; height: 10px; border-radius: 50%; background: #3a4258; border: 1px solid #5d6a80; }
+.cc-legend li.src i { background: var(--teal); }
+.cc-legend li.on i { background: var(--mustard); }
+.cc-legend em { font-style: normal; color: var(--smoke); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.cc-legend li.on em { color: var(--mustard); }
+.cc-status { margin: 10px 0 0; min-height: 1.4em; color: var(--mustard); font-weight: 600; text-align: center; }
+.circuit.solved .cc-grid { border-color: var(--mustard); box-shadow: 0 0 0 3px rgba(233, 178, 58, .25); }

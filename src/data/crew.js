@@ -32,7 +32,14 @@ export const CREW = {
   loader: { name: 'Rogue loader', short: 'Loader', color: 'var(--crimson)', blip: 120 },
   alley: { name: 'Hired guns', short: 'Hired gun', color: 'var(--smoke)', blip: 260 },
   maint: { name: 'Maintenance mech', short: 'Mech', color: 'var(--crimson)', blip: 120 },
-  jumpers: { name: 'Claim jumpers', short: 'Claim jumper', color: 'var(--smoke)', blip: 210 }
+  jumpers: { name: 'Claim jumpers', short: 'Claim jumper', color: 'var(--smoke)', blip: 210 },
+  // Targon
+  ferro: { name: 'Dagny Ferro', short: 'Ferro', color: 'var(--mustard)', blip: 190 },
+  okada: { name: 'Foreman Okada', short: 'Okada', color: 'var(--crimson)', blip: 170 },
+  mantis: { name: 'The Iron Mantis', short: 'Mantis', color: 'var(--crimson)', blip: 90 },
+  minebots: { name: 'Mine bots', short: 'Mine bot', color: 'var(--crimson)', blip: 700 },
+  rockrats: { name: 'Rock rats', short: 'Rock rat', color: 'var(--crimson)', blip: 800 },
+  crawler: { name: 'Tunnel crawler', short: 'Crawler', color: 'var(--crimson)', blip: 120 }
 };
 
 // What the captain brings to a fight, based on temperament.

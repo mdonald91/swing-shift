@@ -30,6 +30,13 @@ const portraitOf = u => u.id === 'player' ? playerPortrait(state.player) : npcPo
 
 let B = null, R = null, root = null, raf = 0;
 
+// The Iron Mantis's stances: each shifts its weak spot.
+const STANCES = {
+  guard: { label: 'Guard', weakTo: ['shock'], resists: ['shot', 'blunt'], def: 8, next: 'strike' },
+  strike: { label: 'Strike', weakTo: ['blunt'], resists: ['shock'], def: 0, next: 'drill' },
+  drill: { label: 'Drill', weakTo: ['shot'], resists: [], def: -4, next: 'guard' }
+};
+
 export function startBattle(id, { retry = false } = {}) {
   const enc = ENCOUNTERS[id];
   if (!enc) return;
@@ -46,6 +53,10 @@ export function startBattle(id, { retry = false } = {}) {
     ...e, key: 'e' + i, ko: false,
     hp: Math.round(e.hp * (1 + .2 * L)), atk: Math.round(e.atk + 1.3 * L), def: Math.round((e.def || 0) + .4 * L), xp: Math.round((e.xp || 15) * (1 + .3 * L))
   })).map(e => ({ ...e, max: e.hp }));
+  for (const e of enemies) if (e.ai === 'mantis') {
+    e.baseDef = e.def - (state.flags.core_kept ? 3 : 0);
+    setStance(e, 'guard');
+  }
   B = { id, enc, party, enemies, groove: Math.min(100, startingGroove()), turn: 0, overclock: 0, shield: 0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null };
 
   root = el(`<div class="bt" role="dialog" aria-label="Combat">
@@ -75,6 +86,7 @@ export function startBattle(id, { retry = false } = {}) {
   document.addEventListener('keydown', onKey);
   update();
   log(enc.intro || 'Here they come.');
+  if (enemies.some(e => e.ai === 'mantis') && state.flags.core_kept) setTimeout(() => root && log('In the cargo bay, Kevin the tuning core hums the four bars backwards. The Mantis flinches: its armour sits a little looser.'), 1600);
   raf = requestAnimationFrame(frame);
   setTimeout(async () => {
     if (!root) return;
@@ -105,10 +117,40 @@ function card(u, enemy) {
   return `<button class="bt-card ${enemy ? 'enemy' : 'ally'} ${u.boss ? 'boss' : ''}" data-k="${u.key}" type="button" aria-label="${esc(u.name)}">
     <span class="bt-pt">${portraitOf(u)}</span>
     <span class="bt-info"><b class="bt-nm">${esc(u.name)}${enemy ? '' : ` <small class="bt-lv">Lv ${u.lv}</small>`}</b>
-      ${enemy && (u.weakTo || u.resists) ? `<span class="bt-weak">${(u.weakTo || []).map(t => `<i class="w">${TYPES[t]}</i>`).join('')}${(u.resists || []).map(t => `<i class="r">${TYPES[t]}</i>`).join('')}</span>` : ''}
+      ${enemy && (u.weakTo || u.resists) ? `<span class="bt-weak">${weakTags(u)}</span>` : ''}
       <span class="bt-stat"><span>HP</span><i class="bar hp"><i></i></i><em class="hpn"></em></span>
       ${enemy ? '' : '<span class="bt-stat"><span>SP</span><i class="bar sp"><i></i></i><em class="spn"></em></span>'}
       <span class="bt-tags"></span></span></button>`;
+}
+
+function weakTags(u) {
+  return `${(u.weakTo || []).map(t => `<i class="w">${TYPES[t]}</i>`).join('')}${(u.resists || []).map(t => `<i class="r">${TYPES[t]}</i>`).join('')}`;
+}
+
+function setStance(e, name) {
+  const st = STANCES[name];
+  e.stance = name; e.weakTo = [...st.weakTo]; e.resists = [...st.resists];
+  e.def = Math.max(0, e.baseDef + st.def);
+  e.stanceLeft = 2; e.drillPending = false;
+}
+
+// After each of the Mantis's turns: count down, and shift stance when it's time.
+async function mantisTick(e) {
+  if (--e.stanceLeft > 0 || e.ko) return;
+  const next = STANCES[e.stance].next;
+  setStance(e, next);
+  if (e.hp < e.max * .5) e.stanceLeft = next === 'drill' ? 2 : 1;      // hurt: it shifts faster (but drilling still takes a wind-up)
+  pop(cardOf(e), STANCES[next].label.toUpperCase() + '!');
+  Audio.sfx('clank');
+  const say = {
+    guard: 'The Mantis folds its scythes over its body. GUARD STANCE.',
+    strike: 'The Mantis rises up on its back legs, scythes wide. STRIKE STANCE.',
+    drill: 'The Mantis plants its feet and its tail drill starts to turn. DRILL STANCE.'
+  }[next];
+  const chart = state.flags.tg_chart ? ` Ferro's chart: weak to ${TYPES[STANCES[next].weakTo[0]]} now.` : '';
+  log(say + chart);
+  update();
+  await sleep(1200);
 }
 
 function update() {
@@ -122,9 +164,13 @@ function update() {
     c.classList.toggle('low', !u.ko && u.hp / u.max < .3);
     const tags = [];
     if (u.guard) tags.push('Guard'); if (u.stun) tags.push('Stunned'); if (u.tuning && !u.ko) tags.push('Tuning'); if (u.jammed > 0) tags.push('Jammed'); if (u.weak > 0) tags.push('Weakened');
+    if (u.stance && !u.ko) tags.push(STANCES[u.stance].label + ' stance');
+    if (u.drillPending && !u.ko) tags.push('Spinning up');
     if (u.spMax && B.overclock > 0 && !u.ko) tags.push('Overclocked');
     if (u.spMax && B.shield > 0 && !u.ko) tags.push('Shielded');
     c.querySelector('.bt-tags').innerHTML = tags.map(t => `<em>${t}</em>`).join('');
+    const wk = c.querySelector('.bt-weak');
+    if (wk && u.stance) wk.innerHTML = weakTags(u);
   });
   $('.gbar i').style.width = B.groove + '%';
   $('.groove').classList.toggle('full', B.groove >= 100);
@@ -452,7 +498,14 @@ async function enemyPhase() {
     if (checkEnd()) return;
     await sleep(650);
     if (!root) return;
-    if (e.stun) { e.stun = false; log(`${e.name} is still seeing stars. Turn skipped.`); update(); continue; }
+    if (e.stun) {
+      e.stun = false;
+      if (e.drillPending) { e.drillPending = false; log('The drill seizes mid-spin and grinds to a stop. The Mantis staggers.'); pop(cardOf(e), 'JAMMED'); Audio.sfx('clam'); }
+      else log(`${e.name} is still seeing stars. Turn skipped.`);
+      update();
+      if (e.ai === 'mantis') await mantisTick(e);
+      continue;
+    }
     clearMarks(); cardOf(e).classList.add('acting');
     const targets = living(B.party); if (!targets.length) break;
     if (e.ai === 'duet') {
@@ -469,6 +522,34 @@ async function enemyPhase() {
         const p = pick(targets); const v = hitParty(e, p, 1.1, 'BWOOM!');
         log(`Vox swings his bass like a club at ${p.name}. ${v} damage.`);
       }
+    } else if (e.ai === 'mantis') {
+      if (e.hp < e.max * .5 && !e.hurt) {
+        e.hurt = true; e.atk += 4;
+        pop(cardOf(e), 'OVERDRIVE'); Audio.sfx('zap');
+        log("The Mantis's safety limiter snaps off with a bang. It's faster now, and it shifts stance every round.");
+        await sleep(1000); if (!root) return;
+      }
+      if (e.stance === 'guard') {
+        const p = pick(targets); const v = hitParty(e, p, .85, 'CLANG!');
+        log(`The Mantis shoves ${p.name} back with an armoured foreleg. ${v} damage.`);
+      } else if (e.stance === 'strike') {
+        const two = [...targets].sort(() => Math.random() - .5).slice(0, 2);
+        log(`The Mantis sweeps both scythes: ${two.map(p => p.name).join(' and ')}!`);
+        two.forEach((p, i) => setTimeout(() => root && hitParty(e, p, .78, 'SHING!'), i * 160));
+        await sleep(400);
+      } else if (!e.drillPending) {
+        e.drillPending = true; pop(cardOf(e), 'SPINNING UP'); Audio.sfx('zap');
+        log('The tail drill screams up to speed. Stun the Mantis before its next turn, or brace!');
+      } else {
+        e.drillPending = false;
+        log('DRILL BURST. The Mantis drives its drill into the floor and the whole cavern bucks.');
+        Audio.sfx('bang');
+        targets.forEach((p, i) => setTimeout(() => root && hitParty(e, p, .95, 'KRRRAK!'), i * 150));
+        await sleep(700);
+      }
+      update();
+      await sleep(500); if (!root) return;
+      await mantisTick(e);
     } else if (e.ai === 'warden') {
       if (e.hp < e.max * .5 && !e.overclocked) {
         e.overclocked = true; e.atk += 5;
@@ -613,7 +694,8 @@ function backToWorld() {
 const AFTER = {
   velvet: { cut: 'victory', ending: 'ending', title: 'Track 01 · Counterfeit Swing' },
   ghost: { cut: 'k17_victory', choice: 'k17_choice', ending: 'k17_ending', title: 'Track 02 · Ghost Frequency' },
-  courier: { cut: 'duet_victory', choice: 'case_choice', ending: 'courier_ending', title: 'Track 03 · The Missing Courier' }
+  courier: { cut: 'duet_victory', choice: 'case_choice', ending: 'courier_ending', title: 'Track 03 · The Missing Courier' },
+  mantis: { cut: 'mantis_victory', choice: 'mantis_choice', ending: 'mantis_ending', title: 'Track 04 · Iron Mantis' }
 };
 
 async function finishBounty(res) {
@@ -627,6 +709,23 @@ async function finishBounty(res) {
 function ledgerFor(res) {
   const b = BOUNTIES.find(x => x.id === res.id) || { name: 'Bounty', reward: 0 };
   const style = [`Style bonus: ${res.perfects} ${res.perfects === 1 ? 'hit' : 'hits'} on the beat`, res.perfects * 150];
+  if (res.id === 'mantis') {
+    const f = state.flags;
+    return {
+      outcome: f.mantis_spared ? 'Iron Mantis disabled and handed back to its builder.' : f.mantis_core ? 'Iron Mantis disabled; its control core logged as evidence.' : 'Iron Mantis disabled and scrapped.',
+      extra: 'Dagny Ferro rescued',
+      items: [
+        [`Bounty: ${b.name}, disabled`, b.reward],
+        ...(f.mantis_scrapped ? [['Your cut of the scrap, sold by the kilo', 6500]] : []),
+        ...(f.mantis_core ? [['Bounty Office: evidence of the Conductor\'s signal', 5000]] : []),
+        ...(f.mantis_spared ? [["Ferro's repair parts (you offered)", -2800]] : []),
+        style,
+        ['Fuel to Targon and back', -4400],
+        ['Lift cable you definitely did not snap', -1200],
+        ['Air filters (the dust gets everywhere)', -310]
+      ]
+    };
+  }
   if (res.id === 'courier') {
     const f = state.flags;
     const core = f.core_office ? ['Bounty Office evidence reward', 3000]
@@ -706,7 +805,7 @@ function showLedger(res) {
       unblock();
       travel('ship', 'lounge');
       const ok = saveGame();
-      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03' }[res.id] || 'Track';
+      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04' }[res.id] || 'Track';
       setTimeout(() => { toast(ok ? `${label} complete. Game saved.` : `${label} complete.`); Hud.refresh(); }, 800);
     });
   });

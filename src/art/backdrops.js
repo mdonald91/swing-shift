@@ -178,6 +178,41 @@ const BUILD = {
       <text x="800" y="230" text-anchor="middle" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="58" fill="${P.mustard}" opacity=".5">指揮者</text>
       <rect width="1600" height="900" fill="url(#bdBcScan)"/><rect width="1600" height="900" fill="url(#bdBcVig)"/></svg>`;
   },
+
+  // Targon: the Shaft 3 headframe under a rust-coloured sky
+  mine: () => {
+    let huts = '';
+    [[60, 560, 300], [420, 600, 220], [1180, 580, 260]].forEach(([x, y, w]) => {
+      huts += `<rect x="${x}" y="${y}" width="${w}" height="${800 - y}" fill="#6a3e26"/>`;
+      for (let k = 0; k < w; k += 18) huts += `<rect x="${x + k}" y="${y}" width="6" height="${800 - y}" fill="#5a3420"/>`;
+      huts += `<path d="M${x - 14} ${y} L${x + w / 2} ${y - 60} L${x + w + 14} ${y}Z" fill="#3a2418"/><rect x="${x + 30}" y="${y + 50}" width="40" height="30" fill="#f3a850" opacity=".85"/>`;
+    });
+    return `${open}<defs><linearGradient id="bdMineSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a1c18"/><stop offset=".6" stop-color="#a5472a"/><stop offset="1" stop-color="#e08a4a"/></linearGradient></defs>
+      <rect width="1600" height="900" fill="url(#bdMineSky)"/>
+      <circle cx="1240" cy="190" r="120" fill="#e9b23a" opacity=".35"/><circle cx="1240" cy="190" r="70" fill="#f3c860" opacity=".6"/>
+      <path d="M0 520 L180 430 L330 480 L520 380 L700 470 L880 400 L1060 470 L1260 390 L1440 460 L1600 420 V900 H0Z" fill="#5a2c1e"/>
+      <path d="M0 600 L240 540 L480 590 L760 520 L1040 580 L1320 530 L1600 570 V900 H0Z" fill="#3e2016"/>
+      <g stroke="#1c1210" stroke-width="16" fill="none"><path d="M820 800 L900 230 L980 800"/><path d="M845 620 H955 M862 480 H938 M878 350 H922"/><path d="M845 620 L938 480 M955 620 L862 480"/></g>
+      <circle cx="900" cy="220" r="46" fill="none" stroke="#1c1210" stroke-width="14"/><circle cx="900" cy="220" r="10" fill="#1c1210"/>
+      <path d="M900 266 V800" stroke="#8d90a8" stroke-width="3"/>
+      ${huts}
+      <path d="M0 800 H1600 V900 H0Z" fill="#2a1a12"/>
+      <g stroke="#a0a4b8" stroke-width="5"><path d="M0 838 H1600"/><path d="M0 872 H1600"/></g>
+      ${Array.from({ length: 20 }, (_, i) => `<rect x="${i * 84}" y="830" width="16" height="50" fill="#3a2418"/>`).join('')}
+      <text x="900" y="160" text-anchor="middle" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="54" fill="#f3c860" opacity=".75">第三坑</text></svg>`;
+  },
+  // Deep in Shaft 3: timbered tunnel, lamps, rails into the dark
+  mine_deep: () => `${open}<rect width="1600" height="900" fill="#120d0b"/>
+    <path d="M0 0 H1600 V900 H0Z M380 240 Q800 80 1220 240 V900 H380Z" fill="#241a16" fill-rule="evenodd"/>
+    <path d="M380 240 Q800 80 1220 240" stroke="#3a2a22" stroke-width="44" fill="none"/>
+    ${[420, 620, 980, 1180].map(x => `<rect x="${x - 18}" y="150" width="36" height="750" fill="#5a3a22"/><rect x="${x - 18}" y="150" width="8" height="750" fill="#7a5632"/>`).join('')}
+    <rect x="400" y="140" width="800" height="36" fill="#5a3a22"/><rect x="400" y="140" width="800" height="8" fill="#7a5632"/>
+    ${Array.from({ length: 7 }, (_, i) => { const y = 470 + i * 64, w = 140 + i * 70; return `<rect x="${800 - w / 2}" y="${y}" width="${w}" height="12" fill="#3a2418"/>`; }).join('')}
+    <path d="M560 900 L770 450 M1040 900 L830 450" stroke="#a0a4b8" stroke-width="10"/>
+    ${[[520, 300], [1080, 300]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="16" fill="#f3a850"/><circle cx="${x}" cy="${y}" r="110" fill="#f3a850" opacity=".08"/><path d="M${x} 176 V${y - 16}" stroke="#1c1210" stroke-width="4"/>`).join('')}
+    <circle cx="800" cy="400" r="40" fill="#d5473b" opacity=".18"/><circle cx="785" cy="398" r="5" fill="#d5473b"/><circle cx="815" cy="398" r="5" fill="#d5473b"/>
+    <path d="M120 760 L190 640 L260 700 L320 620 L360 900 H80Z M1280 900 L1320 650 L1400 700 L1460 600 L1540 900Z" fill="#3a2e28"/>
+    <rect x="1290" y="560" width="160" height="90" fill="#5a3a24" stroke="#120d0b" stroke-width="6"/><rect x="1300" y="570" width="140" height="22" fill="#7a5a5a"/></svg>`,
   black: () => ''
 };
 

@@ -162,6 +162,8 @@ export const ENEMIES = {
   heavy: { id: 'mech', name: 'Heavy mech', hp: 170, atk: 19, def: 9, xp: 45, weakTo: ['shock'], resists: ['shot'], machine: true, word: 'KRUNCH!', verb: 'slams' },
   drone: { id: 'drone', name: 'Security drone', hp: 90, atk: 17, def: 4, xp: 26, weakTo: ['shock'], machine: true, word: 'ZZT!', verb: 'fires a stun bolt at' },
   scav: { id: 'scav', name: 'Tunnel scavenger', hp: 120, atk: 21, def: 5, xp: 30, weakTo: ['shot'], word: 'THUNK!' },
+  minebot: { id: 'mech', name: 'Mine bot', hp: 220, atk: 32, def: 9, xp: 60, weakTo: ['shock'], resists: ['blunt'], machine: true, word: 'GRRZZK!', verb: 'drills into' },
+  rockrat: { id: 'drone', name: 'Rock rat', hp: 125, atk: 28, def: 5, xp: 38, weakTo: ['blunt'], machine: true, word: 'SKRITCH!', verb: 'gnaws at' },
   holo: { id: 'holo', name: 'Holo-player', hp: 75, atk: 14, def: 2, xp: 20, weakTo: ['shock'], machine: true, word: 'BLIP!' }
 };
 const E = (key, over = {}) => ({ ...ENEMIES[key], ...over });
@@ -210,6 +212,23 @@ export const ENCOUNTERS = {
     ]
   },
 
+  // ---- Track 04, Targon ----
+  minebots: {
+    bg: 'mine_deep', intro: 'Two mine bots turn from the junction box, drill bits spinning up. They have been chewing the cables.',
+    flag: 'minebots_cleared', reward: { chits: 700, items: { patch: 1 } },
+    enemies: [E('minebot'), E('rockrat', { hp: 100 }), E('minebot', { hp: 200 })]
+  },
+  // The Iron Mantis changes stance every couple of rounds (every round once it's hurt):
+  // Guard (weak to Shock), Strike (weak to Blunt, sweeps two of you), Drill (weak to Shot; spins up,
+  // then hits everyone unless you stun it first).
+  mantis: {
+    bg: 'mine_deep', bounty: 'mantis', intro: "The Iron Mantis unfolds to its full height. Its scythes scrape the ceiling. It's humming four bars.",
+    noRun: 'The Mantis is between you and every way out.',
+    enemies: [
+      { id: 'mantis', name: 'Iron Mantis', hp: 1150, atk: 42, def: 10, boss: true, machine: true, ai: 'mantis', xp: 340, weakTo: ['shock'], resists: ['shot', 'blunt'] }
+    ]
+  },
+
   // ---- optional side fights ----
   smugglers: {
     bg: 'docks', intro: 'Two smugglers draw on you before you have finished saying hello.',
@@ -235,6 +254,16 @@ export const ENCOUNTERS = {
     bg: 'tunnel', intro: "Claim jumpers. A hacker, a gunman and a mining mech, and they all think this tunnel is theirs.",
     flag: 'jumpers_cleared', reward: { chits: 800, items: { curry: 1, coffee: 1 } },
     enemies: [E('gunman', { hp: 120, atk: 25, def: 5 }), E('heavy', { hp: 280, atk: 28, def: 11 }), E('hacker', { hp: 100, atk: 21 })]
+  },
+  rockrats: {
+    bg: 'mine', intro: 'A nest of rock rats boils out of the spoil heap. They are small, fast and made of drill.',
+    flag: 'rockrats_cleared', reward: { chits: 650, items: { coffee: 1 } },
+    enemies: [E('rockrat'), E('rockrat'), E('rockrat')]
+  },
+  crawler: {
+    bg: 'mine_deep', intro: 'A tunnel crawler rears up from the old camp, a rock rat riding on its back like a bad idea.',
+    flag: 'crawler_cleared', reward: { chits: 950, items: { curry: 1 } },
+    enemies: [E('heavy', { name: 'Tunnel crawler', hp: 440, atk: 37, def: 12, xp: 95 }), E('rockrat', { atk: 30 })]
   },
   // Brushes' holo-rehearsal on the Hi-Hat: repeatable, grows with the crew, XP only.
   rehearsal: {

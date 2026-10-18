@@ -51,6 +51,7 @@ export const UI = {
       travel('vesta', 'pell');
       setTimeout(() => runDialogue('tail_fail_' + reason), 700);
     });
+    bus.on('trigger', id => runDialogue(id));
     bus.on('menu', () => { if (!modals.length && !document.querySelector('.dlg')) openPauseMenu(); });
     bus.on('hint', t => Hud.hint(t));
     bus.on('area', map => {
@@ -70,6 +71,12 @@ export const UI = {
         setTimeout(() => playCut('cygnus_arrive').then(() => { setFlag('cygnus_arrived'); Hud.refresh(); }), 400);
       }
       if (state.location === 'ship' && flag('courier_done') && !flag('act1_done')) setTimeout(playFinale, 1200);
+      if (state.location === 'targon' && !flag('targon_arrived')) {
+        setTimeout(() => playCut('targon_arrive').then(() => { setFlag('targon_arrived'); Hud.refresh(); }), 400);
+      }
+      if (state.location === 'targon_deep' && !flag('tg_deep_arrived')) {
+        setTimeout(() => { setFlag('tg_deep_arrived'); runDialogue('tg_deep_arrive'); }, 700);
+      }
       if (state.location === 'docks' && !flag('docks_arrived')) {
         setTimeout(() => playCut('arrive').then(() => { setFlag('docks_arrived'); Hud.refresh(); }), 400);
       }

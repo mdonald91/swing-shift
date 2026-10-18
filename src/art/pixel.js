@@ -192,7 +192,7 @@ export function droneSheet(hostile = false) {
 
 // ---- Ship tiles (16x16), in the order used by data/maps.js TILE ----
 export function tileSheet() {
-  const T = 16, cols = 8, count = 80;
+  const T = 16, cols = 8, count = 104;
   const cv = document.createElement('canvas');
   cv.width = T * cols; cv.height = T * Math.ceil(count / cols);
   const ctx = cv.getContext('2d');
@@ -368,7 +368,75 @@ export function tileSheet() {
   r = at(78); r(0, 0, 16, 16, '#3a2e28'); r(0, 14, 16, 2, '#1c1714'); r(2, 2, 12, 14, '#2c1e10'); r(3, 3, 10, 13, '#6b4a2a');
   for (let y = 5; y < 16; y += 3) r(3, y, 10, 1, '#4a321c'); r(10, 9, 2, 2, '#8d90a8'); r(2, 2, 12, 1, '#8a6a3a');
 
+  // ---- Targon mine ----
+  const basalt = r => { r(0, 0, 16, 16, '#221d1b'); [[2, 3], [10, 1], [6, 8], [13, 11], [3, 13], [11, 6]].forEach(([x, y]) => r(x, y, 2, 1, '#2f2723')); r(8, 12, 1, 1, '#4a2e22'); };
+  const gravel = r => {
+    r(0, 0, 16, 16, '#4e3d31'); r(0, 15, 16, 1, '#433428');
+    [[1, 2], [6, 1], [11, 3], [3, 7], [9, 6], [14, 8], [5, 11], [12, 12], [2, 14], [8, 14]].forEach(([x, y]) => r(x, y, 1, 1, '#6a5442'));
+    [[4, 4], [13, 5], [7, 10], [1, 10]].forEach(([x, y]) => r(x, y, 2, 1, '#3e3027'));
+  };
+  r = at(80); basalt(r);
+  r = at(81); gravel(r);
+  // rock face held up by timber framing
+  r = at(82); r(0, 0, 16, 16, '#3a2e28'); r(0, 0, 16, 1, '#4a3c34'); r(0, 14, 16, 2, '#1c1714');
+  r(1, 0, 3, 14, '#6b4a2a'); r(12, 0, 3, 14, '#6b4a2a'); r(1, 2, 14, 3, '#7a5632'); r(2, 2, 1, 12, '#4a321c'); r(13, 2, 1, 12, '#4a321c'); r(1, 5, 14, 1, '#4a321c');
+  r(6, 8, 2, 1, '#2e241f'); r(8, 11, 3, 1, '#2e241f');
+  // timber support post
+  r = at(83); gravel(r); r(5, 0, 6, 16, '#6b4a2a'); r(5, 0, 1, 16, '#8a6a3a'); r(10, 0, 1, 16, '#4a321c'); r(4, 2, 8, 2, '#4a321c'); r(5, 14, 6, 2, '#2c1e10');
+  // rails, across and up
+  r = at(84); gravel(r); for (let x = 1; x < 16; x += 4) r(x, 4, 2, 9, '#3a2418'); r(0, 5, 16, 1, '#a0a4b8'); r(0, 11, 16, 1, '#a0a4b8'); r(0, 6, 16, 1, '#4a4e5e'); r(0, 12, 16, 1, '#4a4e5e');
+  r = at(85); gravel(r); for (let y = 1; y < 16; y += 4) r(4, y, 9, 2, '#3a2418'); r(5, 0, 1, 16, '#a0a4b8'); r(11, 0, 1, 16, '#a0a4b8'); r(6, 0, 1, 16, '#4a4e5e'); r(12, 0, 1, 16, '#4a4e5e');
+  // lift cage platform
+  r = at(86); r(0, 0, 16, 16, '#3a4258'); r(1, 1, 14, 14, '#5d6a80'); for (let x = 2; x < 15; x += 3) r(x, 1, 1, 14, '#46516a'); r(0, 0, 16, 1, P.mustard); r(0, 15, 16, 1, P.mustard); r(0, 0, 1, 16, '#2c3346'); r(15, 0, 1, 16, '#2c3346');
+  // the drop: a dark chasm with a crumbling lip
+  r = at(87); r(0, 0, 16, 16, '#07060a'); r(0, 0, 16, 2, '#2a221e'); r(2, 2, 3, 1, '#2a221e'); r(9, 2, 4, 1, '#2a221e'); r(5, 9, 1, 1, '#151018'); r(11, 13, 1, 1, '#151018');
+  // ore cart on rails
+  r = at(88); gravel(r); r(0, 11, 16, 1, '#a0a4b8'); r(1, 3, 14, 8, '#5a3a24'); r(1, 3, 14, 1, '#8a5a34'); r(2, 4, 12, 2, '#7a5a5a'); r(3, 4, 3, 1, '#c88a3a'); r(9, 4, 2, 1, '#9fc6e0');
+  r(2, 6, 12, 1, '#3a2418'); r(3, 11, 3, 3, '#1c1714'); r(10, 11, 3, 3, '#1c1714'); r(4, 12, 1, 1, '#8d90a8'); r(11, 12, 1, 1, '#8d90a8');
+  // junction panel on the wall
+  r = at(89); r(0, 0, 16, 16, '#3a2e28'); r(0, 14, 16, 2, '#1c1714'); r(2, 1, 12, 13, '#4a5470'); r(2, 1, 12, 1, '#6a7490'); r(3, 3, 10, 6, '#151a28');
+  r(4, 4, 2, 1, P.mustard); r(7, 5, 3, 1, '#7fe0c8'); r(4, 7, 5, 1, P.crimson); r(11, 4, 1, 4, P.mustard); r(4, 10, 2, 3, '#8d90a8'); r(10, 10, 2, 3, '#8d90a8'); r(4, 10, 2, 1, P.crimson);
+  // rubble from a cave-in
+  r = at(90); gravel(r); r(1, 6, 7, 8, '#3a2e28'); r(6, 3, 8, 11, '#4a3c34'); r(2, 10, 12, 5, '#2e241f'); r(8, 4, 3, 2, '#5a4a40'); r(3, 7, 2, 2, '#5a4a40'); r(11, 9, 2, 2, '#5a4a40'); r(1, 14, 14, 1, '#1c1714');
+  // lantern on a post
+  r = at(91); gravel(r); r(7, 4, 2, 11, '#2c1e10'); r(5, 1, 6, 4, '#2c1e10'); r(6, 2, 4, 2, '#f3a850'); r(4, 0, 8, 1, '#2c1e10'); r(6, 14, 4, 2, '#1c1410');
+  // mining machinery: a winch drum and gears
+  r = at(92); gravel(r); r(1, 3, 14, 11, '#3a4258'); r(1, 3, 14, 2, '#5d6a80'); r(3, 6, 6, 6, '#b3842a'); r(4, 7, 4, 4, '#6b4a2a'); r(5, 8, 2, 2, '#2c1e10'); r(10, 6, 4, 2, P.crimson); r(10, 9, 4, 1, '#8d90a8'); r(10, 11, 4, 1, '#8d90a8'); r(1, 14, 14, 1, '#1c1714');
+  // metal grating
+  r = at(93); r(0, 0, 16, 16, '#3a4258'); for (let i = 0; i < 16; i += 4) { r(i, 0, 1, 16, '#2c3346'); r(0, i, 16, 1, '#2c3346'); } r(0, 0, 16, 1, '#5d6a80');
+  // workbench with tools
+  r = at(94); gravel(r); r(0, 5, 16, 3, '#8a6a3a'); r(0, 5, 16, 1, '#a8844a'); r(1, 8, 2, 7, '#4a321c'); r(13, 8, 2, 7, '#4a321c'); r(3, 2, 2, 3, '#8d90a8'); r(7, 3, 4, 2, P.crimson); r(12, 1, 1, 4, '#8d90a8'); r(11, 1, 3, 1, '#8d90a8');
+  // corrugated hut wall
+  r = at(95); r(0, 0, 16, 16, '#7a4a2e'); for (let x = 0; x < 16; x += 3) r(x, 0, 1, 16, '#5a3420'); r(0, 0, 16, 2, '#9a6a3e'); r(0, 13, 16, 3, '#3a2418'); r(4, 6, 2, 1, '#a8844a');
+  // rails bridging the drop (you can't walk on these)
+  r = at(96); r(0, 0, 16, 16, '#07060a'); for (let x = 1; x < 16; x += 4) r(x, 4, 2, 9, '#4a2e1e'); r(0, 5, 16, 1, '#a0a4b8'); r(0, 11, 16, 1, '#a0a4b8'); r(0, 13, 16, 1, '#151018');
+
   r = at(31); dock(r); r(3, 3, 10, 12, '#2b8f8a'); r(3, 6, 10, 1, '#1d6663'); r(3, 11, 10, 1, '#1d6663'); r(3, 2, 10, 2, '#3fb0aa'); r(6, 2, 4, 1, '#1d6663'); r(3, 14, 10, 1, '#14403e');
+  return cv;
+}
+
+// The Iron Mantis, folded up in its den (32x32): a mining mech with scythe arms and a drill tail.
+export function mantisSheet() {
+  const cv = document.createElement('canvas'); cv.width = 32; cv.height = 32;
+  const r = rectFn(cv.getContext('2d'), 0, 0);
+  r(4, 29, 24, 2, 'rgba(0,0,0,.35)');
+  // legs
+  [[5, 20], [10, 22], [20, 22], [25, 20]].forEach(([x, y]) => { r(x, y, 2, 9 - (y - 20), '#3a4258'); r(x - 1, 28, 4, 1, '#22263a'); });
+  // body and drill tail
+  r(8, 15, 16, 8, '#5d6a80'); r(8, 15, 16, 2, '#8d90a8'); r(9, 19, 14, 1, '#3a4258'); r(11, 17, 10, 1, '#b3842a');
+  r(22, 17, 5, 4, '#46516a'); r(26, 18, 3, 2, '#8d90a8'); r(29, 18, 2, 1, '#c9ccd6');
+  // neck and head
+  r(13, 10, 6, 6, '#46516a'); r(11, 5, 10, 6, '#5d6a80'); r(11, 5, 10, 1, '#8d90a8');
+  r(12, 7, 3, 2, '#d5473b'); r(17, 7, 3, 2, '#d5473b'); r(13, 7, 1, 1, '#ffd1c8'); r(18, 7, 1, 1, '#ffd1c8');
+  r(10, 3, 1, 3, '#8d90a8'); r(21, 3, 1, 3, '#8d90a8'); r(9, 2, 2, 1, '#e9b23a'); r(21, 2, 2, 1, '#e9b23a');
+  // folded scythe arms
+  r(5, 9, 3, 9, '#46516a'); r(24, 9, 3, 9, '#46516a'); r(3, 8, 3, 2, '#c9ccd6'); r(26, 8, 3, 2, '#c9ccd6'); r(2, 9, 2, 4, '#c9ccd6'); r(28, 9, 2, 4, '#c9ccd6');
+  r(6, 12, 2, 1, '#e9b23a'); r(24, 12, 2, 1, '#e9b23a');
+  // outline the silhouette
+  const ctx = cv.getContext('2d'), img = ctx.getImageData(0, 0, 32, 32), d = img.data, a = (x, y) => x >= 0 && y >= 0 && x < 32 && y < 32 && d[(y * 32 + x) * 4 + 3] > 200;
+  const edge = [];
+  for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (!a(x, y) && (a(x + 1, y) || a(x - 1, y) || a(x, y + 1) || a(x, y - 1))) edge.push([x, y]);
+  edge.forEach(([x, y]) => r(x, y, 1, 1, '#07080d'));
   return cv;
 }
 

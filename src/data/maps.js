@@ -14,20 +14,26 @@ export const TILE = {
   // Relay K-17 (1 and 2 are doors that open later)
   'q': 54, 'Z': 55, 'm': 56, 'y': 57, '1': 58, '2': 59, '3': 61, '4': 62, '5': 63, '6': 64, '7': 65, '8': 66, '9': 67, '!': 68, '$': 69,
   // Vesta
-  '%': 70, '&': 71, '-': 72, ':': 73, '(': 74, ')': 75, '|': 76, '*': 77, '+': 78
+  '%': 70, '&': 71, '-': 72, ':': 73, '(': 74, ')': 75, '|': 76, '*': 77, '+': 78,
+  // Targon mine
+  'a': 80, 'i': 81, '[': 82, ']': 83, '/': 84, '^': 85, '<': 86, '>': 87, '?': 88, '@': 89, '0': 90,
+  ';': 91, '{': 92, '}': 93, '`': 94, '"': 95, '§': 96
 };
+export const RUBBLE = 90;
 export const DOOR_OPEN = 60;
 // Tiles you can't walk through.
 export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31,
   34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 46, 48, 49, 50, 51, 52, 53,
   54, 55, 58, 59, 61, 62, 63, 64, 65, 66, 67, 69,
-  70, 71, 74, 75, 77, 78];
+  70, 71, 74, 75, 77, 78,
+  80, 82, 83, 87, 88, 89, 90, 91, 92, 94, 95, 96];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
 export const TILE_LOOKS = {
   20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
   34: 'storefront', 35: 'neon', 36: 'neon', 37: 'neon', 41: 'neonlamp', 43: 'planter', 44: 'railing',
   48: 'piano', 49: 'bottles', 50: 'bartable', 51: 'booth',
   74: 'stall', 75: 'stall', 77: 'lantern', 71: 'rockwall',
+  80: 'basalt', 82: 'mineface', 83: 'timber', 87: 'chasm', 88: 'orecart', 90: 'rubble', 91: 'minelamp', 92: 'winch', 95: 'hutwall',
   61: 'console_k17', 63: 'racks', 64: 'cryo_look', 65: 'bunk', 66: 'locker', 67: 'window_k17', 69: 'crate_k17'
 };
 
@@ -305,6 +311,110 @@ export const MAPS = {
       { id: 'chest_vesta', x: 23, y: 16, label: 'Search the crate' },
       { id: 'hideout_crates', x: 2, y: 12, w: 2, label: 'Look' },
       { id: 'door_hideout', x: 8, y: 13, label: 'Door' }
+    ]
+  },
+  targon: {
+    name: 'Targon Mine',
+    jp: 'ターゴン鉱山',
+    where: 'Shaft 3 head, Targon',
+    music: 'targon',
+    rows: [
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      'a[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[a',
+      'a""""""""iiiiiiiiii""""""""ii{{a',
+      'a"`i{ii`"iiiiiiiiii"@ii{{i"ii<<a',
+      'a"iiiiii"iiiiiiiiii"iiiiii"ii<<a',
+      'a"iiiiii"iiiiiiiiii"iiiiii"iiiia',
+      'a"""i""""iiiiiiiiii"""i""""iiiia',
+      'aiiiiiiiiiiiiiiiiiiiiiiiiiiiiiia',
+      'aiiiiiiii;iiiiiiiii;iiiiiiiiiiia',
+      'ai/////////////////////?iiiiiiia',
+      'aiiiiiiiiiiiiiiiiiiiiiiiiiiiiiia',
+      'aiiiiiiiiiiiiiiii]iiiiiiiiiaaaaa',
+      'aiiiPPPPPiiiiiiiiiiiiiiiiia000aa',
+      'aiiiPPPPPiiiiiiiiiiiiiiiiiiiiiia',
+      'aiiiPPPPPiiiiiiiiiiiiiiiiiiiiiia',
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    ],
+    spawns: { default: { x: 10, y: 13, face: 'right' }, lift: { x: 28, y: 4, face: 'left' } },
+    ship: { x: 6, y: 13 },
+    npcs: [
+      { id: 'okada', x: 14, y: 4, face: 'down' },
+      { id: 'tam', x: 5, y: 4, face: 'up', ifNot: 'mantis_done' },
+      { id: 'rhea', x: 12, y: 7, face: 'down', if: 'rhea_joined', ifNot: 'mantis_done' },
+      { id: 'rockrats', x: 28, y: 13, look: 'drone', ifNot: 'rockrats_cleared' }
+    ],
+    walkers: [
+      { look: 'm1', y: 10, x1: 3, x2: 22, speed: 18 },
+      { look: 'm2', y: 7, x1: 26, x2: 10, speed: 15 }
+    ],
+    objects: [
+      { id: 'ship', x: 4, y: 12, w: 5, h: 3, label: 'Board the Hi-Hat' },
+      { id: 'tg_tools', x: 2, y: 3, label: 'Look' },
+      { id: 'tg_drafting', x: 4, y: 3, label: "Ferro's drafting table" },
+      { id: 'tg_photo', x: 7, y: 3, label: 'A photo above the bench' },
+      { id: 'junction_top', x: 20, y: 3, label: 'Junction board' },
+      { id: 'tg_pumps', x: 23, y: 3, w: 2, label: 'Look' },
+      { id: 'lift_top', x: 29, y: 3, w: 2, h: 2, label: 'Main lift' },
+      { id: 'tg_headframe', x: 29, y: 2, w: 2, label: 'Look' },
+      { id: 'tg_ore', x: 23, y: 9, label: 'Look' },
+      { id: 'tg_spoil', x: 27, y: 12, w: 3, label: 'Look' }
+    ]
+  },
+
+  targon_deep: {
+    name: 'Shaft 3, Level 4',
+    jp: '第三坑・四層',
+    where: 'Deep under Targon',
+    music: 'tense',
+    dark: 'tg_lights',
+    minimap: true,
+    rows: [
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      'a[[[[[[[[[[[[[a>>>>>a[[[[[[[[[[[[a',
+      'a<<iiiiiiiii]ia>>>>>aiiiiiiiiiiixa',
+      'a<<iiiiiiiiiiia>>>>>aiii;iiii]iiia',
+      'aiiiiiii;iiiiia>>>>>aiiiiiiiiiiiia',
+      'aaaaaaiiaaaaaaa>>>>>aaaaaaaaaaiiia',
+      'a[[[[[ii[[[[[[a>>>>>a[[[[[[[[[iiia',
+      'aiiiiiiiiiiiii?§§§§§?iiiiiiiiiiiia',
+      'aiiiiiiiiiiiiia>>>>>aiiiiiiiiaiiia',
+      'ai{@iiiiiiiiiia>>>>>aiiiiiiiiaiiia',
+      'aaaaaaaaaaaaaaa>>>>>aaaaaaaaaaiiia',
+      'a[[[[[[[[[[[[[[[[[[[[[[[[[[[[[iiia',
+      'aiiiiiiiiii]iiiiiiiiiiiiiiiiiiiiia',
+      'aiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiia',
+      'ai;iiiiiiiiiiii{iiiiiiiiiiii;iiiia',
+      'aiiiiiiiiiiiiiiiiiiiiiiiiiiii<<iia',
+      'aiiiiiiiiiiiiiiiiiiiiiiiiiiii<<iia',
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    ],
+    // the tunnel caves in behind you on the way down (closeOn: the tile becomes rubble once the flag is set)
+    doors: [{ x: 30, y: 8, closeOn: 'tg_cavein' }, { x: 31, y: 8, closeOn: 'tg_cavein' }, { x: 32, y: 8, closeOn: 'tg_cavein' }],
+    // stepping on these runs a conversation once
+    triggers: [{ x: 30, y: 10, w: 3, h: 1, flag: 'tg_cavein', run: 'tg_cavein' }],
+    spawns: {
+      default: { x: 3, y: 3, face: 'right' },
+      cart_near: { x: 13, y: 7, face: 'left' },
+      cart_far: { x: 21, y: 7, face: 'right' },
+      service: { x: 28, y: 15, face: 'left' }
+    },
+    npcs: [
+      { id: 'brushes', x: 10, y: 3 },
+      { id: 'minebots', x: 8, y: 8, look: 'drone', ifNot: 'minebots_cleared' },
+      { id: 'crawler', x: 25, y: 3, face: 'down', look: 'mech', ifNot: 'crawler_cleared' },
+      { id: 'ferro', x: 24, y: 13, face: 'left', ifNot: 'mantis_done' },
+      { id: 'mantis', x: 5, y: 13, look: 'mantis', ifNot: 'mantis_done' }
+    ],
+    objects: [
+      { id: 'lift_bottom', x: 1, y: 2, w: 2, h: 2, label: 'Main lift' },
+      { id: 'junction_deep', x: 3, y: 9, label: 'Junction box' },
+      { id: 'tg_winch', x: 2, y: 9, label: 'Look' },
+      { id: 'tg_cart', x: 14, y: 7, label: 'Ore cart' },
+      { id: 'tg_cart_back', x: 20, y: 7, label: 'Ore cart' },
+      { id: 'tg_cache', x: 32, y: 2, label: 'Search the crate' },
+      { id: 'tg_drill', x: 15, y: 14, label: 'Look' },
+      { id: 'lift_service', x: 29, y: 15, w: 2, h: 2, label: 'Service lift' }
     ]
   }
 };

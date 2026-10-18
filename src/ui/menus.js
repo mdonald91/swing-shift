@@ -79,7 +79,7 @@ export function openBoard() {
           <dt>Client</dt><dd>${esc(b.client)}</dd>
           <dt>Wanted</dt><dd>${esc(b.wanted)}</dd>
           <dt>Reward</dt><dd class="gold">${money(b.reward)}</dd>
-          <dt>Risk</dt><dd><span class="risk r-${b.risk}">${b.risk}</span> ${{ A: 'High', B: 'Moderate', C: 'Low' }[b.risk]}</dd>
+          <dt>Risk</dt><dd><span class="risk r-${b.risk}">${b.risk}</span> ${{ S: 'Extreme', A: 'High', B: 'Moderate', C: 'Low' }[b.risk]}</dd>
         </dl></div>
       <p class="d-desc">${esc(b.desc)}</p>
       ${action}`;

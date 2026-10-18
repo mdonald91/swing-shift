@@ -167,6 +167,61 @@ export const CUTSCENES = {
       byTemp: { Calm: 'Then we prepare. Rest up, everyone.', Sarcastic: 'Great. Fan mail.', Idealistic: "Then we'll be ready when they come.", Ruthless: 'Good. Let them come.' } }
   ],
 
+  // ---- Track 04: Iron Mantis ----
+  targon_depart: [
+    { bg: 'lounge', mood: 'ship', l: 'player', r: 'tam', who: 'tam', line: "Captain. Before we go. The Iron Mantis? I know that mech. I helped build it." },
+    { who: 'tam', line: "Dagny Ferro made it. She took me on as an apprentice when I was fifteen. Taught me everything I know about engines, and about being stubborn." },
+    { r: 'rhea', if: 'rhea_joined', who: 'rhea', line: "The contract says 'disabled'. Not 'destroyed'. There's room in that word." },
+    { r: 'rook', who: 'rook', line: "I'll mind the ship. Somebody has to. And bring Tam's mentor back. I want to meet the person who made Tam like this." },
+    { r: 'tam', who: 'tam', line: 'Like what?' },
+    { r: 'rook', who: 'rook', line: 'Like that.' },
+    { r: 'brushes', who: 'brushes', sfx: 'countin', line: 'Targon, locked in. Side B, first track. One... two... one, two, three, four!' },
+    { l: null, r: null, card: { track: 'Track 04', name: 'Iron Mantis' }, mood: 'title', sfx: 'cymbal', fx: 'flash' },
+    { bg: 'mine', mood: 'targon', caption: 'Targon. A mining moon of rust and dust, and three hundred kilometres of tunnels.' }
+  ],
+  targon_arrive: [
+    { bg: 'mine', mood: 'targon', l: 'tam', r: 'brushes', who: 'tam', line: "Ferro's workshop is still here. Top left, the hut with the bad door. Some things never change." },
+    { who: 'brushes', line: 'A man in an orange hat is waving at us. Angrily. Is that a mining thing?' },
+    { r: 'okada', who: 'okada', line: "That's a foreman thing. Over here, hunters!" }
+  ],
+  ferro_found: [
+    { bg: 'mine_deep', mood: 'tense', l: 'player', r: 'ferro', who: 'ferro', line: "Stop right there. One more step and I throw this wrench, and I don't miss." },
+    { who: 'ferro', line: "...Hold on. That's a Hi-Hat crew patch. That's Tam's ship." },
+    { l: 'tam', who: 'tam', sfx: 'clank', line: "I took the service lift down after the cave-in. Don't tell me off. I know it's not rated for people." },
+    { who: 'ferro', line: "You always did ride things that weren't rated for people." },
+    { who: 'tam', line: '...Hi, Ferro.' },
+    { who: 'ferro', line: 'Hi, kid. My leg is under a rock. Be a dear.' },
+    { l: 'player', who: 'ferro', line: "Six days ago a firmware push came down the Helix relay network. The Mantis took it like any update. Then it started humming." },
+    { who: 'ferro', line: 'Four bars, over and over. And it stopped listening to me.' },
+    { l: 'rhea', if: 'rhea_joined', who: 'rhea', line: "The Conductor. It's the same signal as K-17. He's not just broadcasting any more. He's rewriting things." },
+    { l: 'player', who: 'player', line: "What's it doing down here?",
+      byTemp: { Calm: "What is it trying to do?", Sarcastic: 'So your robot joined a band. Kids today.', Idealistic: "Then it isn't evil. It's being used.", Ruthless: 'Does it matter? Point me at it.' } },
+    { who: 'ferro', line: "It thinks the whole mine is one big cave-in and everyone in it needs digging out. Including you. Especially you." }
+  ],
+  mantis_confront: [
+    { bg: 'mine_deep', mood: 'tense', l: 'player', r: 'mantis', who: 'mantis', fx: 'shake', sfx: 'clank', line: '...FOUR... BARS... DIG... DIG...' },
+    { l: 'ferro', who: 'ferro', line: 'Watch its stance! Guard, Strike, Drill. Hit it where the plates are open.' },
+    { l: 'tam', who: 'tam', line: "Sorry, big guy. I'll put you back together after. Promise." },
+    { l: 'player', who: 'player', line: "Let's play.",
+      byTemp: { Calm: 'Easy now. We end this gently, if we can.', Sarcastic: 'Three tons of bug with a drill for a tail. Love my job.', Idealistic: "You were built to save people. Let's remind you.", Ruthless: 'Thirty-two thousand chits, coming right up.' } }
+  ],
+  mantis_victory: [
+    { bg: 'mine_deep', mood: 'ship', l: 'ferro', r: 'mantis', who: 'mantis', line: '...four... ......' },
+    { who: 'ferro', line: "There. The hum's stopped. Whoever was conducting it just let go." },
+    { l: 'brushes', who: 'brushes', line: 'Captain, I recorded the signal as it cut out. It had a sign-off. Three notes, like a bow.' },
+    { l: 'rhea', if: 'rhea_joined', who: 'rhea', line: "He's testing what he can reach. A relay. A courier. A mining mech. He's tuning up the whole system, one instrument at a time." }
+  ],
+  mantis_ending: [
+    { bg: 'lounge', mood: 'ship', l: 'tam', r: 'brushes', if: 'mantis_spared', who: 'tam', line: 'Ferro sent a message. The Mantis dug two miners out of a real cave-in this morning. She said thank you. Twice. For Ferro, that is a speech.' },
+    { if: 'mantis_core', l: 'brushes', r: 'rook', who: 'brushes', line: "The Bounty Office opened the Mantis's core. Same signature as K-17. The Conductor's update went out through every Helix relay in the belt." },
+    { if: 'mantis_scrapped', l: 'tam', r: 'brushes', who: 'tam', line: "Okada sold the Mantis by the kilo. Ferro kept one scythe. She's hung it over the workbench." },
+    { if: 'mantis_spared', l: 'tam', who: 'tam', line: "And she gave me her toolkit. Her actual toolkit, Cap. I'm going to cry on it a little. Then I'm going to fix the shower." },
+    { l: 'rook', r: 'tam', who: 'rook', line: 'I minded the ship. It is fine. Mostly. Do not open the fridge.' },
+    { l: 'player', who: 'player', line: 'One instrument down.',
+      byTemp: { Calm: "One instrument down. Let's find out how many more there are.", Sarcastic: "One instrument down. How big is this orchestra?", Idealistic: "We'll take back every instrument he's stolen.", Ruthless: "One down. I'm starting to like this concert." } },
+    { l: null, r: null, card: { track: 'Next session', name: 'Runaway Prototype' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+
   // Act 1 finale: the Conductor takes over every speaker in the system. Plays once, on the ship, after Track 03.
   act1_finale: [
     { bg: 'lounge', mood: 'tense', l: 'brushes', r: 'tam', who: 'brushes', sfx: 'scratch', line: 'Captain. Every speaker on the ship just switched itself on. I did not do it. I would like that noted.' },

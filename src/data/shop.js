@@ -13,7 +13,9 @@ export const GEAR = [
   { id: 'scope', n: 'Ricochet scope', who: 'rook', atk: 4, price: 2800, d: '+4 ATK for Rook' },
   { id: 'servo', n: 'Servo wrench', who: 'tam', atk: 4, price: 2600, d: '+4 ATK for Tam' },
   { id: 'tuner', n: 'Resonance tuner', who: 'brushes', atk: 4, price: 2400, d: '+4 ATK for Brushes' },
-  { id: 'metronome', n: 'Pocket metronome', who: 'all', window: .05, price: 3000, d: 'A more forgiving beat window for every attack' }
+  { id: 'metronome', n: 'Pocket metronome', who: 'all', window: .05, price: 3000, d: 'A more forgiving beat window for every attack' },
+  // gifts, never sold
+  { id: 'ferrokit', n: "Ferro's toolkit", who: 'tam', atk: 3, def: 2, price: 0, gift: true, d: '+3 ATK and +2 DEF for Tam. Her mentor\'s own tools.' }
 ];
 
 export const SHOPS = {

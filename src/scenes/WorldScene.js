@@ -1,11 +1,11 @@
 // The walkable world: tile map, the captain, crew and things to interact with.
-import { MAPS, TILE, SOLID, TILE_LOOKS, DOOR_OPEN } from '../data/maps.js';
+import { MAPS, TILE, SOLID, TILE_LOOKS, DOOR_OPEN, RUBBLE } from '../data/maps.js';
 import { CREW } from '../data/crew.js';
-import { characterSheet, droneSheet, tileSheet, starTile, shipSprite, darknessCanvas, addSheet, DIRS } from '../art/pixel.js';
+import { characterSheet, droneSheet, mantisSheet, tileSheet, starTile, shipSprite, darknessCanvas, addSheet, DIRS } from '../art/pixel.js';
 import { resolveLook, NPC_LOOKS } from '../data/appearance.js';
 import { Input } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
-import { state } from '../state.js';
+import { state, settings } from '../state.js';
 import { bus } from '../bus.js';
 import { chatAvailable } from '../data/dialogue.js';
 
@@ -61,7 +61,11 @@ export class WorldScene extends Phaser.Scene {
       const key = 'npc-' + lookId;
       const x = n.x * T + 8, y = n.y * T + 8;
       let spr;
-      if (n.id === 'brushes' || lookId === 'drone') {
+      if (lookId === 'mantis') {
+        if (!this.textures.exists(key)) this.textures.addCanvas(key, mantisSheet());
+        spr = this.add.sprite(x, y + 2, key).setOrigin(0.5, 0.9);
+        this.tweens.add({ targets: spr, scaleY: 1.03, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+      } else if (n.id === 'brushes' || lookId === 'drone') {
         if (!this.textures.exists(key)) addSheet(this, key, droneSheet(lookId === 'drone'), 16, 16);
         spr = this.add.sprite(x, y - 4, key, 0).setOrigin(0.5, 0.8);
         this.tweens.add({ targets: spr, y: y - 8, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
@@ -73,7 +77,7 @@ export class WorldScene extends Phaser.Scene {
       spr.npcId = n.id; spr.homeFace = n.face || 'down'; spr.footY = y + 4;
       spr.bubble = this.add.image(x, y - (n.id === 'brushes' ? 22 : 24), 'bubble').setDepth(5000).setVisible(false);
       this.tweens.add({ targets: spr.bubble, y: spr.bubble.y - 2, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-      const z = this.add.zone(x, y + 3, 12, 8);
+      const z = lookId === 'mantis' ? this.add.zone(x, y, 28, 14) : this.add.zone(x, y + 3, 12, 8);
       blockers.add(z);
       spr.zone = z; spr.def = n;
       this.npcs.push(spr);
@@ -154,7 +158,7 @@ export class WorldScene extends Phaser.Scene {
       });
       let changed = false;
       for (const d of this.doorTiles) {
-        const want = f[d.flag] ? DOOR_OPEN : d.closed;
+        const want = d.closeOn ? (f[d.closeOn] ? RUBBLE : d.closed) : f[d.flag] ? DOOR_OPEN : d.closed;
         if (this.layer.getTileAt(d.x, d.y).index !== want) { this.layer.putTileAt(want, d.x, d.y); changed = true; }
       }
       if (changed) { this.layer.setCollision(SOLID); bus.emit('minimap', this.minimapData()); }
@@ -168,6 +172,8 @@ export class WorldScene extends Phaser.Scene {
 
     // tailing a suspect (see the map's "tail" route)
     this.tail = null;
+    const offShake = bus.on('shake', () => this.cameras.main.shake(settings.reduceShake ? 250 : 500, settings.reduceShake ? .002 : .012));
+    this.events.once('shutdown', offShake);
     const offTail = bus.on('tail-start', () => this.startTail());
     this.events.once('shutdown', () => { offTail(); if (this.tail) bus.emit('tail-status', null); });
     Audio.setMood(map.music);
@@ -300,7 +306,8 @@ export class WorldScene extends Phaser.Scene {
     let best = null, bd = 15;
     for (const n of this.npcs) {
       if (!n.active) continue;
-      const dist = Phaser.Math.Distance.Between(f.x, f.y, n.x, n.footY - 4);
+      const big = n.def.look === 'mantis';
+      const dist = Phaser.Math.Distance.Between(f.x, f.y, n.x, n.footY - 4) - (big ? 12 : 0);
       if (dist < bd) { bd = dist; best = { kind: 'npc', id: n.npcId, spr: n, label: 'Talk to ' + (CREW[n.npcId]?.short || n.npcId) }; }
     }
     if (best) return best;
@@ -361,6 +368,17 @@ export class WorldScene extends Phaser.Scene {
     if (this.tail) { this.updateTail(dt); if (!this.scene.isActive()) return; }
     if (this.mapDef.minimap && (!this._mm || time - this._mm > 150)) { this._mm = time; bus.emit('minimap-pos', p.x / T, p.y / T); }
 
+    // tiles that start a conversation the first time you step on them
+    for (const tr of this.mapDef.triggers || []) {
+      const tx = Math.floor(p.x / T), ty = Math.floor((p.y - 2) / T);
+      if (!state.flags[tr.flag] && !this._trig && tx >= tr.x && tx < tr.x + (tr.w || 1) && ty >= tr.y && ty < tr.y + (tr.h || 1)) {
+        this._trig = true; p.setVelocity(0, 0);
+        bus.emit('trigger', tr.run);
+        this.time.delayedCall(600, () => { this._trig = false; });
+        return;
+      }
+    }
+
     const target = this.findTarget();
     const label = target ? target.label : null;
     if (label !== this.hintText) { this.hintText = label; bus.emit('hint', label); }
@@ -374,7 +392,7 @@ export class WorldScene extends Phaser.Scene {
     const pressed = Input.action || J(k.act) || J(k.e) || J(k.enter);
     Input.action = false;
     if (pressed && target) {
-      if (target.kind === 'npc' && target.spr.npcId !== 'brushes' && target.spr.npcId !== 'drone') {
+      if (target.kind === 'npc' && target.spr.npcId !== 'brushes' && !['drone', 'mantis'].includes(target.spr.def.look || target.spr.npcId)) {
         const dx = p.x - target.spr.x, dy = p.y - target.spr.y;
         const face = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
         target.spr.setFrame(DIRS.indexOf(face) * 3);

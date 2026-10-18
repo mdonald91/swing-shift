@@ -18,10 +18,14 @@ export function chatAvailable(id, flags, location) {
 export function entry(id, flags, location) {
   const docks = location === 'docks';
   if (chatAvailable(id, flags, location)) return id + '_chat';
+  const deep = location === 'targon_deep';
   switch (id) {
     case 'rook': return docks ? 'rook_docks' : flags.velvet_done ? 'rook_after' : flags.met_rook ? 'rook_idle' : 'rook_first';
-    case 'tam': return location === 'vesta' ? 'tam_vesta' : docks ? 'tam_docks' : flags.velvet_done ? 'tam_after' : flags.met_tam ? 'tam_idle' : 'tam_first';
-    case 'brushes': return location === 'relay' ? 'brushes_relay' : flags.velvet_done ? 'brushes_after' : flags.met_brushes ? 'brushes_idle' : 'brushes_first';
+    case 'tam':
+      if (location === 'targon') return flags.tg_photo ? 'tam_site_after' : 'tam_site';
+      if (location === 'ship' && flags.bounty_mantis && !flags.mantis_done) return 'tam_targon';
+      return location === 'vesta' ? 'tam_vesta' : docks ? 'tam_docks' : flags.velvet_done ? 'tam_after' : flags.met_tam ? 'tam_idle' : 'tam_first';
+    case 'brushes': return deep ? 'brushes_deep' : location === 'relay' ? 'brushes_relay' : flags.velvet_done ? 'brushes_after' : flags.met_brushes ? 'brushes_idle' : 'brushes_first';
     case 'ozzie': return flags.met_ozzie ? 'ozzie_idle' : 'ozzie_first';
     case 'cockpit':
       if (flags.velvet_done) return 'cockpit_nav';
@@ -31,6 +35,7 @@ export function entry(id, flags, location) {
     case 'rhea':
       if (location === 'relay') return 'rhea_relay';
       if (location === 'vesta') return 'rhea_vesta';
+      if (location === 'targon') return 'rhea_targon';
       if (location === 'ship') return 'rhea_ship';
       return flags.rhea_met ? 'rhea_idle' : 'rhea_first';
     case 'drone': return 'drones';
@@ -46,6 +51,16 @@ export function entry(id, flags, location) {
     case 'cryo': return flags.cryo_found ? 'cryo_done' : 'cryo';
     case 'helix': return flags.ghost_offered ? 'helix_again' : 'helix';
     case 'door': return flags.velvet_done ? 'door_done' : flags.door_open ? 'door_open' : 'door_locked';
+    // ---- Targon ----
+    case 'okada': return flags.mantis_done ? 'okada_done' : flags.met_okada ? 'okada_idle' : 'okada';
+    case 'tg_photo': return flags.tg_photo ? 'tg_photo_again' : 'tg_photo';
+    case 'junction_top': return flags.tg_power1 ? 'junction_done' : 'junction_top';
+    case 'lift_top': return flags.tg_power1 ? 'lift_top' : 'lift_dead';
+    case 'junction_deep': return flags.tg_lights ? 'junction_done' : flags.minebots_cleared ? 'junction_deep' : 'junction_deep_blocked';
+    case 'tg_cart': return flags.tg_lights ? 'tg_cart' : 'tg_cart_dead';
+    case 'tg_cache': return flags.tg_cache ? 'tg_cache_done' : 'tg_cache';
+    case 'ferro': return flags.ferro_found ? 'ferro_idle' : 'ferro_first';
+    case 'mantis': return flags.ferro_found ? 'mantis' : 'mantis_wait';
     default: return id;
   }
 }
@@ -193,6 +208,7 @@ export const DIALOGUE = {
       { t: 'Dock 9, Ganymede', go: 'cockpit_back' },
       { t: 'Relay K-17', if: 'bounty_ghost', go: 'nav_k17' },
       { t: 'Vesta', if: 'bounty_courier', go: 'nav_vesta' },
+      { t: 'Targon', if: 'bounty_mantis', go: 'nav_targon' },
       { t: 'Stay put' }
     ] }
   ],
@@ -200,6 +216,10 @@ export const DIALOGUE = {
   nav_vesta: [
     { if: 'vesta_arrived', do: 'toVesta' },
     { ifNot: 'vesta_arrived', do: 'departVesta' }
+  ],
+  nav_targon: [
+    { if: 'targon_arrived', do: 'toTargon' },
+    { ifNot: 'targon_arrived', do: 'departTargon' }
   ],
   nav_k17: [
     { if: 'ghost_done', who: null, t: 'Relay K-17 is sealed by the Bounty Office now. Nothing left out there but static.' },
@@ -670,11 +690,212 @@ export const DIALOGUE = {
   container: [{ who: null, pick: ['A shipping container. Empty, except for echoes and a strong smell of fish.', 'A container stencilled IO NOODLE CO. Tam would want you to check. It is empty. Tam would be devastated.', 'Locked container. Someone has scratched a tiny saxophone into the paint.'] }],
   lamp: [{ who: null, t: 'A sodium lamp buzzing in B-flat. Brushes would approve.' }],
   warehouse: [{ who: null, t: 'Corrugated warehouse wall. Cold enough to stick your tongue to. Do not.' }],
+  // ---- Targon: Track 04 ----
+  tam_targon: [
+    { who: 'tam', t: "Targon. I did my apprenticeship there, Cap. Three years in a workshop that smelled like hot grease and burnt toast." },
+    { who: 'tam', t: "The Iron Mantis... I know that mech. I helped bolt its legs on. Let's just go." }
+  ],
+  tam_site: [
+    { who: 'tam', t: "This was Ferro's workshop. Dagny Ferro. I swept this floor every morning for three years." },
+    { who: 'tam', t: "There's a photo above the bench. You can look. I'm going to stand here and pretend I'm not watching you look." }
+  ],
+  tam_site_after: [{ who: 'tam', pick: [
+    "Main lift's on the right, past the pump house. If the power's routed, it'll take us down.",
+    "Ferro would hate that I'm standing in her workshop without touching anything. She'd say it was rude to the tools.",
+    "If anyone can talk that Mantis down, it's Ferro. If anyone can hit it with a wrench, it's me."
+  ] }],
+  rhea_targon: [
+    { who: 'rhea', ifNot: 'ferro_found', t: "The bounty says 'disabled'. Not destroyed. There's room in that word, Captain." },
+    { who: 'rhea', if: 'ferro_found', t: "A firmware push through the Helix relays. The Conductor isn't just broadcasting. He's reprogramming things." }
+  ],
+  okada: [
+    { set: 'met_okada' },
+    { who: 'okada', t: "Foreman Okada, Targon Mining. You're the hunters? Good. I've got a three-ton problem down Shaft 3." },
+    { who: 'okada', t: "The Mantis was built to dig miners out of cave-ins. Six days ago it walked down the main shaft and started digging in instead." },
+    { who: 'okada', t: "Dagny Ferro, the engineer who built it, went down after it two days back. We haven't heard a peep." },
+    { who: 'okada', t: "And it ripped the junction cables on its way down, so the main lift's dead. Board's in the pump house, east side. Get power to the lift and you can follow." },
+    { choices: [
+      { t: "We'll bring Ferro back up, too.", go: 'okada_ferro' },
+      { t: 'A giant robot bug. Is there danger pay?', temp: 'Sarcastic', go: 'okada_pay' },
+      { t: 'It was built to save people. Maybe it still can.', temp: 'Idealistic', go: 'okada_save' },
+      { t: 'Disabled, scrapped, whatever. As long as it pays.', temp: 'Ruthless', go: 'okada_scrap' },
+      { t: 'Got it. Pump house first.' }
+    ] }
+  ],
+  okada_ferro: [{ who: 'okada', t: "I'd appreciate it. She's a pain in my neck, but she's our pain in my neck." }],
+  okada_pay: [{ who: 'okada', t: "The danger pay is the pay. Thirty-two thousand. For thirty-two thousand I'd fight it myself, if I had any knees left." }],
+  okada_save: [{ who: 'okada', t: "Contract says disabled. Me, I'd prefer scrap. Scrap I can sell. Saviour robots I cannot." }],
+  okada_scrap: [{ who: 'okada', t: "Finally, someone who speaks foreman. Scrap's worth good money by the kilo. Bring me a quiet Mantis." }],
+  okada_idle: [{ who: 'okada', pick: [
+    "Pump house is the hut on the east side. The board's a mess. Don't touch the red cable. Actually, touch whatever you like, it's all broken.",
+    "Shaft 3 goes down four levels. The Mantis is somewhere on the bottom one, being expensive.",
+    "Rock rats have been nesting in the spoil heap since the Mantis stopped clearing them. Little drill-faced menaces."
+  ] }],
+  okada_done: [{ who: 'okada', t: "Shaft 3 is quiet again. Quiet's good. Quiet's profitable. Thanks, hunter." }],
+  tg_photo: [
+    { who: null, t: "A photo pinned above the bench, curled at the corners. A teenage girl in goggles three sizes too big, and a grey-braided woman with a welding torch, both covered in grease." },
+    { who: null, t: 'Behind them, half-built, a mech with scythe arms. Someone has written on the bottom in marker: MANTIS v1 + TAM, DAY 1.' },
+    { who: 'tam', t: "That's me. Fifteen. Ferro took me in when nobody else would. Taught me everything: engines, welding, how to swear in four languages." },
+    { who: 'tam', t: "Then I left to fly with you lot, and she said ships were just engines with egos. We haven't spoken in four years." },
+    { choices: [
+      { t: "She'll want to see you.", go: 'tg_photo_kind' },
+      { t: "Engines with egos. So she's met Rook.", temp: 'Sarcastic', go: 'tg_photo_joke' },
+      { t: "Then we go down there and bring her back. Together.", temp: 'Idealistic', go: 'tg_photo_kind' },
+      { t: 'Keep your head clear down there. Sentiment gets people hurt.', temp: 'Ruthless', go: 'tg_photo_hard' },
+      { t: 'Take your time. We can talk later.', temp: 'Calm', go: 'tg_photo_kind' }
+    ] }
+  ],
+  tg_photo_kind: [{ who: 'tam', t: "...Yeah. Yeah, she will. She'll pretend she doesn't, and then she'll make me fix something." }, { go: 'tg_photo_end' }],
+  tg_photo_joke: [{ who: 'tam', t: "Ha! She'd love Rook. She'd hate Rook. Both. At the same time." }, { go: 'tg_photo_end' }],
+  tg_photo_hard: [{ who: 'tam', t: "I know, Cap. My head's clear. It's my hands that are shaking." }, { go: 'tg_photo_end' }],
+  tg_photo_end: [{ set: 'tg_photo' }, { do: 'bond', arg: 'tam' }],
+  tg_photo_again: [{ who: null, t: 'MANTIS v1 + TAM, DAY 1. The grin on the girl in the goggles is enormous.' }],
+  tg_drafting: [
+    { set: 'tg_blueprint' },
+    { who: null, t: 'Blueprints for the MANTIS-7 RESCUE FRAME. Three stance cores, each with its own armour plating:' },
+    { who: null, t: 'GUARD, for shoring up a collapse. STRIKE, for cutting through debris. DRILL, for digging people out.' },
+    { who: null, t: "A note in the margin, underlined twice: 'Never let it hold DRILL for long. It forgets to stop.'" }
+  ],
+  tg_tools: [{ who: null, t: 'Tools hung in perfect order, each one outlined in marker. One outline is empty. Underneath it: TAM. GIVE IT BACK.' }],
+  junction_top: [
+    { who: null, t: 'The junction board is a nest of torn cables. The generator hums, but nothing downstream is getting a single volt.' },
+    { do: 'circuit', arg: 'surface' }
+  ],
+  junction_done: [{ who: null, t: 'Every line on the board glows a steady amber. Power is flowing where it should.' }],
+  lift_dead: [{ who: null, t: 'The main lift cage. The control panel is dark. No power from the junction board.' }],
+  lift_top: [
+    { who: null, t: 'The main lift cage creaks as you step in. The panel offers two stops.' },
+    { choices: [
+      { t: 'Down to Level 4', do: 'toDeep' },
+      { t: 'Service shaft, to the lower gallery', if: 'tg_cavein', do: 'toGallery' },
+      { t: 'Stay up here' }
+    ] }
+  ],
+  tg_pumps: [{ who: null, t: 'Water pumps, thumping along. Without them, the bottom of Shaft 3 would be a very cold swimming pool.' }],
+  tg_headframe: [{ who: null, t: 'The headframe winch. Its cable runs down into the dark, further than you can see.' }],
+  tg_ore: [{ who: null, t: 'An ore cart full of rust-red rock, waiting for a train that left six days ago.' }],
+  tg_spoil: [{ who: null, t: 'The spoil heap. Something in there is chittering.' }],
+  rockrats: [
+    { who: null, t: 'Rock rats: little mining drones gone feral, all teeth and drill bits. They have built a nest out of the spoil heap.' },
+    { choices: [{ t: 'Clear them out', do: 'fight', arg: 'rockrats' }, { t: 'Leave them to it' }] }
+  ],
+  basalt: [{ who: null, t: 'Black rock streaked with rust. Targon is mostly this, and holes in this.' }],
+  mineface: [{ who: null, t: 'A rock face shored up with old timber. Someone has carved initials into a beam: D.F. and T.O.' }],
+  timber: [{ who: null, t: 'A pit prop. It is holding up a very large amount of moon. Do not lean on it.' }],
+  chasm: [{ who: null, t: 'The drop. A dropped pebble takes a long, long time to stop clattering.' }],
+  orecart: [{ who: null, t: 'An ore cart, sitting on the rails.' }],
+  rubble: [{ who: null, t: 'Fallen rock. There is no getting through this without a drill. A big drill. Like the one on the Mantis.' }],
+  minelamp: [{ who: null, t: 'A miner\'s lamp on a pole, burning orange.' }],
+  winch: [{ who: null, t: 'A cable winch, gears thick with grease. Ferro has labelled it: STOP TOUCHING MY WINCH.' }],
+  hutwall: [{ who: null, t: 'Corrugated iron, rattling in the dust wind.' }],
+
+  // ---- Shaft 3, Level 4 ----
+  tg_deep_arrive: [
+    { who: 'brushes', t: "Captain, it is dark down here. Very dark. I have turned my eye up to maximum. This is maximum." },
+    { who: 'brushes', t: 'The junction box for this level is south of the lift. I can hear something chewing the cables. Something with a drill for a mouth.' }
+  ],
+  brushes_deep: [
+    { who: 'brushes', ifNot: 'minebots_cleared', t: 'The chewing is coming from the junction box, through the gap to the south. I would not put my hand in there. I do not have hands, but still.' },
+    { who: 'brushes', if: 'minebots_cleared', ifNot: 'tg_lights', t: 'The junction box is clear. If we get power to the lights and the cart line, we can cross the drop.' },
+    { who: 'brushes', if: 'tg_lights', ifNot: 'ferro_found', t: 'The ore cart can take us across the drop. The tunnel beyond goes down. I am picking up humming down there. Four bars of it.' },
+    { who: 'brushes', if: 'ferro_found', t: 'I will mind the lift. If anyone comes down it, I will say hello very aggressively.' }
+  ],
+  minebots: [
+    { who: null, t: 'Mine bots. They are chewing through the junction box cables, one tasty wire at a time.' },
+    { choices: [{ t: 'Get them off the box', do: 'fight', arg: 'minebots' }, { t: 'Back off for now' }] }
+  ],
+  junction_deep_blocked: [{ who: null, t: "The junction box, but you can't get to it with mine bots chewing on it." }],
+  junction_deep: [
+    { who: null, t: 'The Level 4 junction box. Two outputs are dead: the tunnel lights and the ore cart line.' },
+    { do: 'circuit', arg: 'deep' }
+  ],
+  tg_cart_dead: [{ who: null, t: 'An ore cart on the rail line across the drop. The motor is dead. No power to the cart line.' }],
+  tg_cart: [
+    { who: null, t: 'The ore cart hums, rails glowing faintly. On the far side of the drop, a tunnel heads down.' },
+    { choices: [{ t: 'Ride it across', do: 'cartFar' }, { t: 'Not yet' }] }
+  ],
+  tg_cart_back: [
+    { who: null, t: 'A second cart, waiting to take you back over the drop.' },
+    { choices: [{ t: 'Ride back across', do: 'cartNear' }, { t: 'Stay on this side' }] }
+  ],
+  tg_cache: [
+    { set: 'tg_cache' }, { do: 'cache' },
+    { who: null, t: "Ferro's emergency crate. 600 chits, two Patch Kits and a note: IF YOU'RE READING THIS, I'M ALREADY FURTHER DOWN. BRING TEA." }
+  ],
+  tg_cache_done: [{ who: null, t: "Ferro's crate is empty except for the note about tea." }],
+  crawler: [
+    { who: null, t: "A tunnel crawler has made Ferro's old camp its nest. A rock rat is riding it, like a very small, very bad jockey." },
+    { choices: [{ t: 'Fight', do: 'fight', arg: 'crawler' }, { t: 'Leave it' }] }
+  ],
+  tg_winch: [{ who: null, t: 'A cable winch, gears thick with grease. Ferro has labelled it: STOP TOUCHING MY WINCH.' }],
+  tg_drill: [{ who: null, t: "A broken drill head, taller than you. Something scratched four lines of music into the metal, over and over." }],
+  tg_cavein: [
+    { set: 'tg_cavein' },
+    { do: 'cavein' },
+    { who: null, t: 'The tunnel groans. Dust sifts down, then rock, then a lot more rock.' },
+    { who: null, t: 'When it settles, the way back is sealed with rubble. Ahead, lantern light, and the clank of an old service lift.' },
+    { who: 'brushes', t: "Captain? Captain! I heard that from the lift. You're alive? Good. The service lift by you goes straight up to the surface." }
+  ],
+  lift_service: [
+    { who: null, t: 'An old service lift, rated for one mechanic and a toolbox. It goes straight up to the surface.' },
+    { choices: [{ t: 'Ride up to the surface', do: 'toSurfaceLift' }, { t: 'Stay down here' }] }
+  ],
+  lift_bottom: [
+    { who: null, t: 'The main lift cage, back up to the surface.' },
+    { choices: [{ t: 'Ride up', do: 'toSurfaceLift' }, { t: 'Stay down here' }] }
+  ],
+  ferro_first: [{ do: 'ferroFound' }],
+  ferro_talk: [
+    { set: 'ferro_found' },
+    { who: 'ferro', t: "The Mantis is in the dark end of the gallery, west of here. It's holding still. It does that before it digs." },
+    { who: 'ferro', t: "It changes stance as it fights. Guard: the plates close up, so only Shock gets through. Strike: the scythes come out, and a good Blunt hit staggers it. Drill: the plates open, and Shot goes straight in." },
+    { who: 'ferro', t: 'And if it starts spinning that drill, stun it before it finishes, or everyone gets a faceful of moon.' },
+    { who: 'ferro', t: "Here. My stance chart. It'll tell you which plates are open." },
+    { set: 'tg_chart' },
+    { who: 'tam', t: "Ferro... don't hate me if we break it." },
+    { who: 'ferro', t: "Break it a little. Not a lot. I'll fix a little." }
+  ],
+  ferro_idle: [{ who: 'ferro', pick: [
+    'Guard, hit it with Shock. Strike, Blunt. Drill, Shot. And stun the drill before it bites.',
+    "Don't look at me like that. I've had a leg trapped under a mech before. Twice. Same mech.",
+    "Tam fixed my splint. Better than I'd have done it. Don't tell her I said that."
+  ] }],
+  mantis_wait: [{ who: null, t: 'Something huge is folded up in the dark, perfectly still. You can hear it humming. Someone groans further east. Better find them first.' }],
+  mantis: [{ do: 'mantisFight' }],
+  mantis_choice: [
+    { who: null, t: "The Mantis sinks to its knees. Its eyes flicker from red to a tired amber, and the humming stops." },
+    { who: 'ferro', t: "Foreman wants it scrapped. Contract says disabled. Your call, Captain. It's your bounty." },
+    { who: 'tam', t: 'Cap...' },
+    { choices: [
+      { t: 'Disabled is disabled. Ferro keeps it, and fixes it.', go: 'mantis_spare' },
+      { t: 'It was built to save people. Let it get back to work.', temp: 'Idealistic', go: 'mantis_spare' },
+      { t: 'Pull its control core for the Bounty Office. They need proof of that signal.', go: 'mantis_core' },
+      { t: "Scrap it. That's what the man is paying for.", go: 'mantis_scrap' },
+      { t: 'Scrap it. Quickly, before it remembers how to stand.', temp: 'Ruthless', go: 'mantis_scrap' }
+    ] }
+  ],
+  mantis_spare: [
+    { set: 'mantis_spared' }, { do: 'mantisSpare' },
+    { who: 'ferro', t: '...Thank you, Captain. I mean it. Tam, get over here. Take these.' },
+    { who: 'tam', t: "Ferro, that's your toolkit. Your actual toolkit." },
+    { who: 'ferro', t: "I'm getting old, kid. And you never did give that spanner back." }
+  ],
+  mantis_core: [
+    { set: 'mantis_core' }, { rep: { office: 2, helix: -1 } },
+    { who: 'ferro', t: "Take the core. Whatever was whispering to it, I want it gone. I'll build it a new brain. A nicer one." },
+    { who: 'tam', t: "And a firewall. A big one. I'll help." }
+  ],
+  mantis_scrap: [
+    { set: 'mantis_scrapped' },
+    { who: 'tam', t: '...Right. Sure, Cap.' },
+    { who: 'ferro', t: "Then I'll take it apart myself. Nobody else touches it. Go on, get your money." }
+  ],
+
   ship: [
     { who: null, t: 'The Hi-Hat, parked and ticking as it cools. Head back aboard?' },
     { choices: [
       { t: 'Board the Hi-Hat', go: 'ship_board' },
-      { t: 'Stay on the dock' }
+      { t: 'Stay here' }
     ] }
   ],
   ship_board: [{ do: 'toShip' }]

@@ -15,6 +15,7 @@ import { playCut } from './cutscene.js';
 import { startBattle } from './battle.js';
 import { openShop } from './menus.js';
 import { busk } from './busk.js';
+import { openCircuit } from './circuit.js';
 
 // Things a conversation can trigger. Anything that changes scene waits until the box closes.
 let after = null;
@@ -46,6 +47,31 @@ const ACTIONS = {
   departK17() { after = () => playCut('k17_depart', { restoreMood: false }).then(() => { joinRhea(); travel('relay'); }); },
   toRelay() { after = () => travel('relay'); },
   power() { Audio.sfx('save'); },
+  // ---- Targon ----
+  departTargon() { after = () => playCut('targon_depart', { restoreMood: false }).then(() => travel('targon')); },
+  toTargon() { after = () => travel('targon'); },
+  circuit(id) {
+    after = () => openCircuit(id).then(ok => {
+      if (!ok) return;
+      toast(id === 'surface' ? 'The main lift has power' : 'Lights and the cart line are live');
+      Hud.refresh();
+    });
+  },
+  toDeep() { after = () => { Audio.sfx('clank'); travel('targon_deep'); }; },
+  toGallery() { after = () => { Audio.sfx('clank'); travel('targon_deep', 'service'); }; },
+  toSurfaceLift() { after = () => { Audio.sfx('clank'); travel('targon', 'lift'); }; },
+  cartFar() { after = () => { Audio.sfx('scratch'); travel('targon_deep', 'cart_far'); }; },
+  cartNear() { after = () => { Audio.sfx('scratch'); travel('targon_deep', 'cart_near'); }; },
+  cache() { state.chits += 600; state.items.patch = (state.items.patch || 0) + 2; Audio.sfx('save'); Hud.refresh(); },
+  cavein() { Audio.sfx('bang'); bus.emit('shake'); },
+  ferroFound() { after = () => playCut('ferro_found').then(() => runDialogue('ferro_talk')); },
+  mantisFight() { after = () => playCut('mantis_confront', { restoreMood: false }).then(() => startBattle('mantis')); },
+  mantisSpare() {
+    if (!(state.gear || []).includes('ferrokit')) state.gear = [...(state.gear || []), 'ferrokit'];
+    state.bonds.tam = Math.min(3, (state.bonds.tam || 0) + 1);
+    Audio.sfx('save');
+    setTimeout(() => toast("Tam got Ferro's toolkit (+3 ATK, +2 DEF), and your bond deepened"), 300);
+  },
   keycard() { Audio.sfx('confirm'); toast('Got the comms hub keycard'); },
   cryo() { Audio.sfx('heal'); toast('Found the missing crew, alive (bonus)'); },
   fightDrones() { after = () => startBattle('drones'); },

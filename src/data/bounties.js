@@ -25,10 +25,10 @@ export const BOUNTIES = [
     desc: 'Hijacked every speaker in the system to introduce himself. Linked to the counterfeit chits, Relay K-17 and the Helix tuning core. Nobody has seen his face.'
   },
   {
-    id: 'mantis', name: 'Iron Mantis', sub: 'Security mech · Targon',
-    reward: 32000, risk: 'A', portrait: 'unknown', track: 'Track 04',
-    client: 'Targon Mining Co.', wanted: 'Disabled', unlock: 'Track 04 arrives in a later build',
-    desc: 'A mining security mech has gone rogue and claimed a whole shaft as its own.'
+    id: 'mantis', name: 'Iron Mantis', sub: 'Rogue rescue mech · Targon',
+    reward: 32000, risk: 'A', portrait: 'mantis', track: 'Track 04',
+    client: 'Targon Mining Co.', wanted: 'Disabled', requires: 'act1_done', unlock: 'Finish Side A first',
+    desc: 'A mining rescue mech has gone rogue and claimed Shaft 3 as its own. The engineer who built it went down after it two days ago.'
   },
   {
     id: 'proto', name: 'Runaway Prototype', sub: 'Experimental AI · Nyx',

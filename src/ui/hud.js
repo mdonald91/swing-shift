@@ -10,12 +10,27 @@ export function objective() {
   const f = state.flags;
   if (!f.intro_done) return '';
   const met = ['met_rook', 'met_tam', 'met_brushes'].filter(k => f[k]).length;
+  if (f.act1_done) {
+    if (f.mantis_done) return 'Track 04 complete. Track 05, Runaway Prototype, arrives in a later build.';
+    if (!f.bounty_mantis) return 'Accept Iron Mantis on the bounty board';
+    if (state.location === 'targon') {
+      if (!f.tg_power1) return f.met_okada ? 'Route power to the main lift: junction board in the pump house' : 'Talk to the foreman';
+      return 'Take the main lift down to Level 4';
+    }
+    if (state.location === 'targon_deep') {
+      if (!f.minebots_cleared) return 'Clear the mine bots off the junction box';
+      if (!f.tg_lights) return 'Route power to the lights and the cart line';
+      if (!f.tg_cavein) return 'Ride the ore cart across the drop, then head down';
+      if (!f.ferro_found) return 'Find Dagny Ferro';
+      return 'Face the Iron Mantis in the west of the gallery';
+    }
+    return f.targon_arrived ? 'Fly back to Targon from the cockpit' : 'Fly to Targon from the cockpit';
+  }
   if (f.velvet_done) {
     const chats = ['rook', 'tam', 'brushes'].filter(k => f['chat_' + k]).length;
     if (!f.cygnus_arrived) return chats < 3 ? `Catch up with your crew (${chats}/3), then fly to Cygnus Station` : 'Fly to Cygnus Station from the cockpit';
     if (!f.ghost_offered) return 'Visit Helix Salvage on the Cygnus plaza';
     if (!f.bounty_ghost) return 'Accept Ghost Frequency on the bounty board';
-    if (f.act1_done) return 'Side A complete. Side B, starting with Iron Mantis, arrives in a later build.';
     if (f.courier_done) return 'Head back to the Hi-Hat';
     if (f.ghost_done) {
       if (!f.bounty_courier) return 'Accept The Missing Courier on the bounty board';

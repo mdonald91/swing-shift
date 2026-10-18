@@ -215,6 +215,16 @@ export function npcPortrait(id) {
       <path d="M162 240 L168 172 C168 162 178 158 182 166 L184 176" fill="${P.cream}" stroke="${INK}" stroke-width="2"/>
       <path d="M170 168 L128 34" stroke="${P.cream}" stroke-width="3.5" stroke-linecap="round"/>
       <circle cx="128" cy="34" r="3" fill="#fff"/>`);
+    case 'mantis': return svg(`
+      <path d="M40 240 L60 190 L140 190 L160 240Z" fill="#3a4258"/>
+      <path d="M70 196 H130 V240 H70Z" fill="#5d6a80"/><path d="M78 206 H122" stroke="${P.mustard}" stroke-width="4"/>
+      <rect x="88" y="150" width="24" height="46" fill="#46516a"/>
+      <path d="M58 92 L100 70 L142 92 L136 150 L100 166 L64 150Z" fill="#5d6a80"/><path d="M58 92 L100 70 L142 92 L100 104Z" fill="#8d90a8"/>
+      <path d="M64 50 L76 88 M136 50 L124 88" stroke="#8d90a8" stroke-width="5" stroke-linecap="round"/><circle cx="64" cy="48" r="5" fill="${P.mustard}"/><circle cx="136" cy="48" r="5" fill="${P.mustard}"/>
+      <g class="eyes"><path d="M72 112 L94 106 L94 122 L74 124Z" fill="${P.crimson}"/><path d="M128 112 L106 106 L106 122 L126 124Z" fill="${P.crimson}"/>
+        <rect x="80" y="111" width="6" height="3" fill="#ffd1c8"/><rect x="114" y="111" width="6" height="3" fill="#ffd1c8"/></g>
+      <path class="mouth" d="M84 140 H116" stroke="#22263a" stroke-width="5"/><path d="M88 148 H112" stroke="#22263a" stroke-width="3"/>
+      <path d="M30 236 L22 150 L46 92 L36 150 L52 210Z" fill="#c9ccd6" stroke="${INK}" stroke-width="2"/><path d="M170 236 L178 150 L154 92 L164 150 L148 210Z" fill="#c9ccd6" stroke="${INK}" stroke-width="2"/>`);
     case 'ozzie': return svg(`
       <path d="${SHOULDERS}" fill="#d39a2a"/>
       <path d="M40 200 L160 200 M30 222 L170 222" stroke="${P.cream}" stroke-width="7"/>

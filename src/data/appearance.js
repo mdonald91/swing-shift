@@ -124,6 +124,13 @@ export const NPC_LOOKS = {
     outfit: { main: '#5d6a80', shade: '#3a4258', acc: '#e9b23a', style: 'flight' } },
   holo: { face: 0, skin: '#7fe0c8', hair: '#2b8f8a', style: 'swept', acc: 'Shades',
     outfit: { main: '#2b8f8a', shade: '#1d6663', acc: '#7fe0c8', style: 'suit' } },
+  // Targon
+  ferro: { face: 0, skin: '#c99272', hair: '#c9ccd6', style: 'long', acc: 'Goggles', pants: '#4a321c',
+    outfit: { main: '#6b4a2a', shade: '#4a321c', acc: '#e9b23a', style: 'flight' } },
+  okada: { face: 3, skin: '#e3b38f', hair: '#1d2230', style: 'buzz', acc: 'Headband', pants: '#2f3346',
+    outfit: { main: '#e07a2a', shade: '#a5541a', acc: '#f1e8d4', style: 'hoodie' } },
+  m1: { face: 1, skin: '#82502f', hair: '#1d2230', style: 'buzz', acc: 'Headband', outfit: { main: '#e07a2a', shade: '#a5541a', acc: '#f1e8d4', style: 'flight' } },
+  m2: { face: 2, skin: '#f2cdb4', hair: '#8a3a22', style: 'topknot', acc: 'Goggles', outfit: { main: '#5a647e', shade: '#3a4258', acc: '#e07a2a', style: 'hoodie' } },
   // passers-by on the station plaza
   w1: { face: 1, skin: '#f2cdb4', hair: '#c23a30', style: 'long', acc: 'None', outfit: { main: '#5b3f74', shade: '#3f2b52', acc: '#f1e8d4', style: 'coat' } },
   w2: { face: 3, skin: '#82502f', hair: '#1d2230', style: 'buzz', acc: 'Shades', outfit: { main: '#2b8f8a', shade: '#1d6663', acc: '#e9b23a', style: 'hoodie' } },

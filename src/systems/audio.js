@@ -31,6 +31,8 @@ const MOODS = {
   station: { bpm: 112, swing: .56, prog: [ch('A', 'm7'), ch('D', 'dom7'), ch('G', 'maj7'), ch('C', 'maj7'), ch('Gb', 'm7b5'), ch('B', 'b9'), ch('E', 'm7'), ch('E', 'm7')], brush: 1, comp: 1, horn: 1, kick: .2 },
   // Vesta: a dusty, minor-key mining-town groove
   vesta: { bpm: 96, swing: .6, prog: [ch('D', 'm7'), ch('G', 'dom7'), ch('D', 'm7'), ch('G', 'dom7'), ch('C', 'm7'), ch('F', 'dom7'), ch('Bb', 'maj7'), ch('A', 'b9')], ride: 1, comp: 1, horn: 1, kick: .3 },
+  // Targon: a heavy, swaggering mining-town blues
+  targon: { bpm: 104, swing: .64, prog: [ch('E', 'dom7'), ch('E', 'dom7'), ch('A', 'dom7'), ch('E', 'dom7'), ch('B', 'b9'), ch('A', 'dom7'), ch('E', 'dom7'), ch('B', 'b9')], ride: 1, comp: 1, horn: 1, kick: .45 },
   // The Conductor's broadcast: slow, minor, a little too grand
   finale: { bpm: 66, swing: .58, prog: [ch('C', 'm7'), ch('C', 'm7'), ch('Ab', 'maj7'), ch('Ab', 'maj7'), ch('D', 'm7b5'), ch('G', 'b9'), ch('C', 'm7'), ch('G', 'b9')], ride: 1, comp: 1, horn: 1, half: 1, always: 1 },
   // Brushes' song: which version plays depends on what the captain picked

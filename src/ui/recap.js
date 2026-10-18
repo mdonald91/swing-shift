@@ -1,4 +1,4 @@
-// "Story so far": liner notes for Side A, built from the choices on this save.
+// "Story so far": liner notes for the current side of the record, built from the choices on this save.
 // Opens from the menu any time, and plays as the closing screen of the Act 1 finale.
 import { state, flag, setFlag, saveGame, formatTime } from '../state.js';
 import { CREW, CAPTAIN_ROLES } from '../data/crew.js';
@@ -44,6 +44,16 @@ function tracks() {
         f.core_helix && 'Gave the tuning core to Mr Quill for Helix.',
         f.core_sold && 'Sold the tuning core to Kessler.'
       ]
+    },
+    {
+      n: '04', side: 'B', name: 'Iron Mantis', where: 'Targon, Shaft 3', done: done('mantis'), started: f.bounty_mantis,
+      notes: [
+        'Rescued Dagny Ferro, the engineer who built the Mantis.',
+        f.tg_photo && 'Tam showed you the photo from her first day in Ferro\'s workshop.',
+        f.mantis_spared && 'Let Ferro keep and repair the Mantis. Tam got her mentor\'s toolkit.',
+        f.mantis_core && 'Sent the Mantis\'s control core to the Bounty Office as evidence.',
+        f.mantis_scrapped && 'Had the Mantis scrapped for Targon Mining.'
+      ]
     }
   ].map(t => ({ ...t, notes: t.notes.filter(Boolean) }));
 }
@@ -62,11 +72,13 @@ function offClock() {
 function html({ finale }) {
   const p = state.player, temp = temperament(p);
   const crew = ['rook', 'tam', 'brushes', 'rhea'].filter(available);
-  const ts = tracks();
+  const all = tracks(), sideB = flag('act1_done') && !finale;
+  const ts = all.filter(t => (t.side === 'B') === sideB);
   const off = offClock();
+  const sideA = all.filter(t => !t.side);
   return `<div class="liner">
     <header class="ln-head">
-      <p class="ln-side">Side A</p>
+      <p class="ln-side">${sideB ? 'Side B' : 'Side A'}</p>
       <h2>The story so far</h2>
       <p class="ln-cap"><b>${esc(p.name)}</b> · ${esc(temp)} ${esc(CAPTAIN_ROLES[temp].role)} · Lv ${level('captain')} · ${formatTime(state.playtime)} played</p>
     </header>
@@ -88,7 +100,10 @@ function html({ finale }) {
         <li><b>${esc(fa.n)}</b> <span>${esc(tier(state.rep[k] || 0))}</span></li>`).join('')}
       </ul></section>
     </div>
-    ${flag('act1_done') || finale ? `<section class="ln-sec ln-next"><h3>Coming up on Side B</h3>
+    ${sideB ? `<section class="ln-sec ln-next"><h3>Side A, in short</h3>
+      <p>${sideA.map(t => `${t.n} · ${esc(t.name)}`).join(' &nbsp; ')}: ${esc(sideA.flatMap(t => t.notes).filter(n => /Juno|core|Rhea/.test(n)).join(' '))}</p></section>
+      <section class="ln-sec ln-next"><h3>Still to come on Side B</h3><p>05 · Runaway Prototype &nbsp; 06 · Mister Nocturne &nbsp; and the Conductor, still listening.</p></section>`
+      : finale ? `<section class="ln-sec ln-next"><h3>Coming up on Side B</h3>
       <p>04 · Iron Mantis &nbsp; 05 · Runaway Prototype &nbsp; and a quarter of a million chits on the Conductor.</p></section>` : ''}
   </div>`;
 }
