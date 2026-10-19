@@ -304,9 +304,12 @@ function showChoices(box, opts) {
     list.innerHTML = opts.map((c, i) => `
       <li><button type="button" data-i="${i}"><span class="num">${i + 1}.</span><span class="txt">${esc(fill(c.t))}</span>${c.temp ? `<em class="tag">${esc(c.temp)}</em>` : ''}</button></li>`).join('');
     wrap.hidden = false;
+    // a fade at the bottom while there are more choices further down the list
+    const more = () => list.classList.toggle('more', list.scrollTop + list.clientHeight < list.scrollHeight - 4);
+    list.scrollTop = 0; list.onscroll = more; requestAnimationFrame(more);
     let sel = 0;
     const btns = [...list.querySelectorAll('button')];
-    const focus = i => { sel = (i + btns.length) % btns.length; btns.forEach((b, j) => b.classList.toggle('sel', j === sel)); btns[sel].focus({ preventScroll: true }); };
+    const focus = (i, scroll) => { sel = (i + btns.length) % btns.length; btns.forEach((b, j) => b.classList.toggle('sel', j === sel)); btns[sel].focus({ preventScroll: true }); if (scroll) btns[sel].scrollIntoView({ block: 'nearest' }); };
     const choose = i => { cleanup(); Audio.sfx('confirm'); resolve(opts[i]); };
     btns.forEach((b, i) => {
       b.addEventListener('click', () => choose(i));
@@ -315,8 +318,8 @@ function showChoices(box, opts) {
     const onKey = e => {
       const n = parseInt(e.key, 10);
       if (n >= 1 && n <= btns.length) { e.preventDefault(); choose(n - 1); }
-      else if (e.key === 'ArrowDown' || e.key === 's') { e.preventDefault(); focus(sel + 1); Audio.sfx('move'); }
-      else if (e.key === 'ArrowUp' || e.key === 'w') { e.preventDefault(); focus(sel - 1); Audio.sfx('move'); }
+      else if (e.key === 'ArrowDown' || e.key === 's') { e.preventDefault(); focus(sel + 1, true); Audio.sfx('move'); }
+      else if (e.key === 'ArrowUp' || e.key === 'w') { e.preventDefault(); focus(sel - 1, true); Audio.sfx('move'); }
       else if (e.key === ' ' || e.key === 'Enter' || e.key === 'e') { e.preventDefault(); choose(sel); }
     };
     function cleanup() { document.removeEventListener('keydown', onKey); wrap.hidden = true; }

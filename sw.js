@@ -1,5 +1,5 @@
 // Offline support. Bump VERSION whenever you publish an update so phones pick it up.
-const VERSION = 'swing-shift-v0.14.0';
+const VERSION = 'swing-shift-v0.14.1';
 const SHELL = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'vendor/phaser.min.js',

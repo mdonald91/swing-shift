@@ -257,7 +257,8 @@ body.touch-on .hud-hint { bottom: calc(118px + var(--safe-b)); }
 /* ---------------- dialogue ---------------- */
 .dlg {
   position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: stretch; gap: 10px;
-  padding: 0 max(12px, var(--safe-r)) calc(12px + var(--safe-b)) max(12px, var(--safe-l));
+  padding: calc(10px + var(--safe-t)) max(12px, var(--safe-r)) calc(12px + var(--safe-b)) max(12px, var(--safe-l));
+  max-height: 100%; box-sizing: border-box; justify-content: flex-end;
 }
 .dlg-box {
   position: relative; display: flex; align-items: stretch; gap: 0; width: min(100%, 860px); margin: 0 auto; min-height: 128px;
@@ -274,11 +275,21 @@ body.touch-on .hud-hint { bottom: calc(118px + var(--safe-b)); }
 .dlg-next { position: absolute; right: 14px; bottom: 10px; width: 0; height: 0; border: 6px solid transparent; border-top: 8px solid var(--mustard); opacity: 0; }
 .dlg-box.ready .dlg-next { opacity: 1; animation: nudge .7s ease-in-out infinite alternate; }
 @keyframes nudge { to { transform: translateY(3px); } }
-.dlg-choices { width: min(100%, 860px); margin: 0 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.dlg-box { flex: none; }
+/* long choice lists (the cockpit's destinations) scroll instead of running off the top of a phone screen */
+.dlg-choices { width: min(100%, 860px); margin: 0 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-height: 0; flex: 0 1 auto; }
+.dlg-you { flex: none; }
 .dlg-you { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--mustard); }
 .dlg-you-pt { width: 34px; height: 34px; overflow: hidden; border-radius: 50%; background: var(--ink3); border: 1px solid var(--line); }
 .dlg-you-pt svg { width: 150%; margin: -6px 0 0 -25%; }
-.dlg-choices ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; width: min(100%, 470px); }
+.dlg-choices ol { list-style: none; margin: 0; padding: 0 2px 0 0; display: flex; flex-direction: column; gap: 6px; width: min(100%, 470px);
+  min-height: 0; overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.dlg-choices li { flex: none; }
+.dlg-choices ol.more { -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 34px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 34px), transparent); }
+@media (max-height: 460px) {
+  .dlg-you { display: none; }
+  .dlg-choices button { padding: 7px 12px; }
+}
 .dlg-choices button {
   width: 100%; display: flex; align-items: baseline; gap: 10px; text-align: left; padding: 9px 14px; cursor: pointer;
   background: var(--panel); border: 1px solid var(--line-soft); font-size: 15px;
