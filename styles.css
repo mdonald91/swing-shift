@@ -637,6 +637,8 @@ body.touch-on .hud-hint { bottom: calc(118px + var(--safe-b)); }
 .minimap { position: absolute; top: calc(54px + var(--safe-t)); right: max(12px, var(--safe-r)); image-rendering: pixelated; background: rgba(7, 8, 15, .78); border: 1px solid var(--line); padding: 4px; width: auto; height: auto; max-width: 34vw; pointer-events: none; }
 .cc-party { align-self: flex-start; margin: 4px 0 2px; font: 700 11px var(--f-ui); letter-spacing: .12em; text-transform: uppercase; padding: 4px 9px; background: transparent; color: var(--smoke); border: 1px solid var(--line-soft); cursor: pointer; }
 .cc-party.on { background: var(--c); color: var(--ink); border-color: var(--c); }
+.cc-party.pick { background: var(--mustard); color: var(--ink); border-color: var(--mustard); animation: nudge .6s ease-in-out infinite alternate; }
+.cc-party.out { background: transparent; color: var(--mustard); border-color: var(--mustard); }
 .cc-party.lead { cursor: default; color: var(--mustard); border-color: transparent; padding-left: 0; }
 .crew-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
 

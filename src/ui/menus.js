@@ -230,7 +230,8 @@ function confirmTitle(btn) {
 }
 
 /* ---------------- Crew ---------------- */
-function openCrew(quiet) {
+// swapIn: a benched crew member picked to come in, waiting for you to choose who sits out
+function openCrew(quiet, swapIn = null, scroll = 0) {
   if (!quiet) Audio.sfx('confirm');
   const party = activeParty();
   const p = state.player, temp = temperament(p), cap = CAPTAIN_ROLES[temp];
@@ -247,30 +248,38 @@ function openCrew(quiet) {
           <b>${esc(c.name)}</b><small>${esc(c.role)}</small>
           <div class="cc-lv"><span>Lv ${c.st.lv}</span><i class="bar xp"><i style="width:${xpPct(c.key)}%"></i></i><em>${xpText(c.key)}</em></div>
           <p class="cc-stats"><span>HP <b>${c.st.hp}</b></span><span>SP <b>${c.st.sp}</b></span><span>ATK <b>${c.st.atk}</b></span><span>DEF <b>${c.st.def}</b></span></p>
-          ${c.key === 'captain' ? '<p class="cc-party lead">Leads every fight</p>' : `<button class="cc-party ${party.includes(c.key) ? 'on' : ''}" type="button" data-p="${c.key}">${party.includes(c.key) ? 'In the party' : 'On the bench'}</button>`}
+          ${c.key === 'captain' ? '<p class="cc-party lead">Leads every fight</p>' : `<button class="cc-party ${party.includes(c.key) ? (swapIn ? 'on out' : 'on') : swapIn === c.key ? 'pick' : ''}" type="button" data-p="${c.key}">${party.includes(c.key) ? (swapIn ? 'Swap out' : 'In the party') : swapIn === c.key ? 'Swapping in…' : 'On the bench'}</button>`}
           ${c.key === 'captain' ? '' : `<p class="bond" title="Bond">${[0, 1, 2].map(i => `<i class="${i < c.st.bond ? 'on' : ''}"></i>`).join('')}<span>Bond ${c.st.bond}</span></p>`}
           <p class="skills">${c.st.skills.map(k => `<span>${esc(SKILLS[k]?.n || k)}</span>`).join('')}</p>
           <button class="cc-tree ${pendingPicks(c.key) ? 'new' : ''}" type="button" data-tree="${c.key}">${pendingPicks(c.key) ? `Learn a new skill (${pendingPicks(c.key)})` : 'Skill tree'}</button>
           <p class="bio">${esc(c.bio)}</p>
         </div>
       </article>`).join('')}</div>
-    <p class="muted small panel-foot">Three crew fight beside you: tap a card's button to swap. Bond grows when you make time for your crew between jobs; each level adds ${BOND_HP} HP and ${BOND_ATK} ATK.</p>
+    <p class="muted small panel-foot">${swapIn ? `Now tap <b>Swap out</b> on whoever sits out for ${esc(CREW[swapIn].short)}, or tap ${esc(CREW[swapIn].short)} again to cancel.` : 'Three crew fight beside you: tap someone on the bench, then choose who they replace.'} Bond grows when you make time for your crew between jobs; each level adds ${BOND_HP} HP and ${BOND_ATK} ATK.</p>
   </div>`);
   const m = openModal(node);
   wireClose(node, m);
+  const grid = node.querySelector('.crew-grid');
+  if (scroll) requestAnimationFrame(() => { grid.scrollTop = scroll; });
   node.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => {
     const k = b.dataset.p;
-    let p = activeParty();
+    const p = activeParty();
+    let next = null;
     if (p.includes(k)) {
-      if (p.length <= 1) return;
-      p = p.filter(x => x !== k);
-    } else {
-      if (p.length >= 3) { toast('The party is full. Bench someone first.'); Audio.sfx('back'); return; }
+      if (!swapIn) { toast('Tap someone on the bench first, then choose who they replace.'); Audio.sfx('back'); return; }
+      p[p.indexOf(k)] = swapIn;       // the benched crew member takes this seat
+      toast(`${CREW[swapIn].short} is in. ${CREW[k].short} sits this one out.`);
+    } else if (swapIn === k) {
+      // tapped again: cancel
+    } else if (p.length < 3) {
       p.push(k);
+    } else {
+      next = k;                       // pick who they replace next
     }
     state.party = p;
     Audio.sfx('tick');
-    m.close(true); openCrew(true);
+    const sc = grid.scrollTop;
+    m.close(true); openCrew(true, next, sc);
   }));
   node.querySelectorAll('[data-tree]').forEach(b => b.addEventListener('click', () => { m.close(true); openTree(b.dataset.tree); }));
 }
