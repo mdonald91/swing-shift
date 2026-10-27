@@ -12,7 +12,11 @@ export function objective() {
   if (!f.intro_done) return '';
   const met = ['met_rook', 'met_tam', 'met_brushes'].filter(k => f[k]).length;
   if (f.act1_done) {
-    if (f.bluenote_done) return 'Track 08 complete. Track 09, Last Set, arrives in a later build.';
+    if (f.game_done) return "The record's over. Thanks for listening";
+    if (f.bluenote_done) {
+      if (state.location === 'lyceum_hall') return 'Say hello to the audience, then talk to Ambrose on stage';
+      return f.lastset_arrived ? 'Fly back to the Lyceum on Titan from the cockpit' : 'Fly to Titan for the last set, from the cockpit';
+    }
     if (f.metronome_done) {
       const loc = state.location, sq = state.squads?.split ? state.squads.active : null;
       if (loc === 'bn_ring' || loc === 'bn_spine') {

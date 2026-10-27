@@ -18,6 +18,7 @@ export function chatAvailable(id, flags, location) {
 }
 
 export function entry(id, flags, location) {
+  if (location === 'lyceum_hall' && DIALOGUE['fin_' + id]) return 'fin_' + id;     // the last night: everyone has something to say
   const docks = location === 'docks';
   if (chatAvailable(id, flags, location)) return id === 'rook' && flags.chat_rook ? 'rook_partner' : id === 'brushes' && flags.chat_brushes ? 'brushes_origin' : id + '_chat';
   const deep = location === 'targon_deep';
@@ -233,6 +234,7 @@ export const DIALOGUE = {
       { t: 'Nyx', if: 'bounty_proto', go: 'nav_nyx' },
       { t: 'Titan', if: 'bounty_nocturne', go: 'nav_titan' },
       { t: 'Blue Note station', if: 'blue_note_codes', ifNot: 'bluenote_done', go: 'nav_bluenote' },
+      { t: 'Titan: the last set', if: 'bluenote_done', ifNot: 'lastset_done', go: 'nav_lastset' },
       { t: 'Stay put' }
     ] }
   ],
@@ -1171,6 +1173,47 @@ export const DIALOGUE = {
     { set: 'brushes_s2' }, { do: 'bond', arg: 'brushes' }
   ],
 
+  // ---- Track 09: Last Set ----
+  nav_lastset: [
+    { if: 'lastset_arrived', do: 'toLastSet' },
+    { ifNot: 'lastset_arrived', do: 'departLastSet' }
+  ],
+  hall_exit: [{ who: null, t: 'The grand doors. The Hi-Hat is docked outside.' }, { choices: [{ t: 'Back to the ship', do: 'hallToShip' }, { t: 'Stay for the show' }] }],
+  halcyon_look: [{ who: null, t: 'The Halcyon. A white grand with gold under the lid. It has been played by the best and the worst people in the system.' }],
+  seats: [{ who: null, pick: ['Red velvet seats. Every one of them is taken.', 'Somebody has left a programme on the seat. It says: LAST SET. ONE NIGHT ONLY.', 'The seats are full of people you know. It is a strange feeling.'] }],
+  fin_ambrose: [
+    { who: 'ambrose', ifNot: 'fin_met_ambrose', t: "Captain. Front row seats for the whole crew, and a full house. I did say I'd build a very good stage." },
+    { who: 'ambrose', ifNot: 'fin_met_ambrose', t: "Every speaker in the system is listening tonight. When the song ends, it ends everywhere. Shall we?" },
+    { set: 'fin_met_ambrose' },
+    { choices: [{ t: "Let's finish this.", do: 'finale' }, { t: 'Not yet. Let me talk to the audience first.' }] }
+  ],
+  fin_sax: [{ who: 'sax', if: 'piano_sold', t: "He's playing the Halcyon up there. The piano you sold him. ...Go on, hunter. Make it worth it." },
+    { who: 'sax', ifNot: 'piano_sold', if: 'fifth_bar', t: "He's never heard the fifth bar. Mae made sure of that. You have. Don't waste it." },
+    { who: 'sax', ifNot: 'fifth_bar', t: "Mae taught him in this hall, you know. Front row, third seat. I sat next to him. He never once looked at the keys." }],
+  fin_fitz: [{ who: 'fitz', t: "I've rigged a sandbag over his head. Just one. Say the word. ...Fine. But it's there if you need it." }],
+  fin_mags: [{ who: 'mags', t: "I closed the Flat Ninth for this. First time in thirty years. Don't make me regret it, hunter." }],
+  fin_ozzie: [{ who: 'ozzie', pick: ["The whole dock chipped in for my ticket. They said, go and watch the Hi-Hat lot do something stupid. So. No pressure.", "Hey, it's the hunters! Dock 9 represent!"] }],
+  fin_juno: [{ who: 'juno', t: "I'm patched into his broadcast. When you're ready, I'll make sure the whole system hears your side of the song too." }],
+  fin_ferro: [{ who: 'ferro', t: "The Mantis is waiting outside. It wanted to come in. They said no. It's sulking. Tam, sit up straight." }],
+  fin_cass: [{ who: 'cass', t: "Rook. You look awake. Properly awake. ...It suits you. Now go and end this." }],
+  fin_sato: [{ who: 'sato', t: "Lyra asked me to come. She's listening from Nyx. She says: keep time. Whatever he does, keep time." }],
+  fin_hale: [{ who: 'hale', t: "He used to bring me here when I was small. He'd play the four bars and then just... stop. Every time. I thought that was how the song went." }],
+  fin_marshal: [{ who: 'marshal', t: "Every marshal on Titan is outside. When this is over, whatever happens, he leaves in my custody. That's the deal." }],
+  fin_benny: [{ who: 'benny', t: "I unionised the Lyceum's ushers on the way in. Took four minutes. They were very keen." }],
+  fin_wren: [{ who: 'wren', t: "Pip's outside with the courier bikes. If you need anything delivered fast, like a getaway, just shout." }],
+  fin_rhea: [{ who: 'rhea', t: "I came back for this. I'm not crew. I just wanted to hear it end. ...Don't make it weird." }],
+  fin_chef: [{ who: 'chef', t: "I brought noodles. For after. Everyone deserves noodles after." }],
+  fin_pip: [{ who: 'pip', t: "This is the best night of my life and nothing has even happened yet." }],
+  fin_kessler: [{ who: 'kessler', t: "I'm selling Hi-Hat jackets in the foyer. Unlicensed. Don't tell your lawyer. Do you have a lawyer?" }],
+  // after the last movement
+  final_choice: [
+    { who: 'ambrose', t: "...Finish it, then. Fifty years I have waited to hear how it ends. If you know, play it. If you don't, take me in." },
+    { choices: [
+      { t: 'Play him the fifth bar. All of us, together.', if: 'fifth_bar', set: 'final_fifth' },
+      { t: "Imogen. He's your father. You talk to him.", if: 'hale_ally', set: 'final_hale' },
+      { t: "Ambrose Hale, you're coming with us.", set: 'final_bring' }
+    ] }
+  ],
   // ---- Track 08: Blue Note ----
   nav_bluenote: [
     { if: 'bn_arrived', do: 'toBlueNote' },

@@ -98,6 +98,9 @@ export const UI = {
       if (state.location === 'bn_ring' && !flag('bn_arrived')) {
         setTimeout(() => playCut('bn_arrive').then(() => { setFlag('bn_arrived'); Hud.refresh(); }), 400);
       }
+      if (state.location === 'lyceum_hall' && !flag('lastset_arrived')) {
+        setTimeout(() => playCut('lastset_arrive').then(() => { setFlag('lastset_arrived'); Hud.refresh(); }), 400);
+      }
       if (state.location === 'bn_spine' && !flag('bn_spine_arrived')) {
         setTimeout(async () => { setFlag('bn_spine_arrived'); await tip('squads'); runDialogue('bn_spine_arrive'); Hud.refresh(); }, 700);
       }
@@ -188,6 +191,9 @@ export function updateStanding() {
   set('std_helix', (r.helix || 0) >= 2);
   set('std_helix_bad', (r.helix || 0) <= -2);
   for (const k of ['rook', 'tam', 'brushes', 'rhea', 'lyra']) set('bonded_' + k, (b[k] || 0) >= 2 && available(k));
+  // the last night at the Lyceum: who's in the audience
+  set('fin_juno', f.juno_protected || f.bnm_juno);
+  set('fin_rhea', !f.rhea_joined && f.bnm_rhea);
 }
 
 // ---- Blue Note: the crew splits into two teams, and you swap between them ----

@@ -52,6 +52,7 @@ Put MP3s in the `music/` folder with these names:
 | `lockdown.mp3` | Cygnus Station under lockdown (Act 3) | 100 bpm |
 | `helix.mp3` | Helix Salvage, the top floor | 92 bpm |
 | `bluenote.mp3` | Blue Note station, the listening array | 96 bpm |
+| `lastset.mp3` | The final battle at the Lyceum (the Finale movement) | 132 bpm |
 | `finale.mp3` | The Conductor's broadcasts (Act 1 and Act 2 finales) | 66 bpm |
 
 Any file that's missing is covered by the built-in generated jazz combo. If a track's tempo is different, change its `bpm` in `src/data/music.js` so the combat beat timing lines up with the song. You can switch your tracks off under **Settings → Use my Suno tracks**, and audition every slot on the ship's jukebox.
@@ -90,6 +91,6 @@ Saves are kept in the browser on each device (3 slots).
 - [x] **0.13 Track 06, Mister Nocturne:** Titan's Lyceum Square, a backstage heist timed to the show's beat, Old Sol's teacher and the fifth bar, the Mister Nocturne boss, the Halcyon choice, and the end of Act 2
 - [x] **0.14 Track 07, The Conductor:** Act 3 opens with a bounty on the crew, Cygnus Station under lockdown with collectors on patrol, shortcuts opened by your standing and old friends, the Metronome boss, who stands with you in the fight, and the Conductor's name
 - [x] **0.15 Track 08, Blue Note:** the listening array past Saturn, a two-team heist where each squad opens the way for the other, a moment for every crew member (and the ones who left), and the Warden network fought by both teams at once
-- [ ] **0.16 Track 09, Last Set** (see the full roadmap doc)
+- [x] **0.16 Track 09, Last Set:** the finale at the Lyceum with everyone you met in the audience, a four-movement battle against Ambrose Hale, five endings set by your choices, bonds and standing, and credits with a where-are-they-now for everyone
 
 Built with [Phaser 3](https://phaser.io) (MIT licence), included in `vendor/`.

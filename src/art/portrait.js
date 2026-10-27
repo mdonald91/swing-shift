@@ -216,6 +216,25 @@ export function npcPortrait(id) {
       <path d="M162 240 L168 172 C168 162 178 158 182 166 L184 176" fill="${P.cream}" stroke="${INK}" stroke-width="2"/>
       <path d="M170 168 L128 34" stroke="${P.cream}" stroke-width="3.5" stroke-linecap="round"/>
       <circle cx="128" cy="34" r="3" fill="#fff"/>`);
+    case 'ambrose': return svg(`
+      <defs><radialGradient id="ptAmbSpot" cx="50%" cy="30%" r="62%"><stop offset="0" stop-color="#f1e8d4" stop-opacity=".28"/><stop offset="1" stop-color="#f1e8d4" stop-opacity="0"/></radialGradient></defs>
+      <rect width="200" height="240" fill="url(#ptAmbSpot)"/>
+      <path d="M8 240 C18 184 60 164 100 164 C140 164 182 184 192 240Z" fill="#10121e"/>
+      <path d="M60 176 L100 240 L84 240 L46 190Z M140 176 L100 240 L116 240 L154 190Z" fill="#1b1e30"/>
+      <path d="M84 168 L100 222 L116 168 Q100 176 84 168Z" fill="${P.cream}"/>
+      <path d="M86 176 L100 184 L86 192Z M114 176 L100 184 L114 192Z" fill="#10121e"/>
+      <path d="M140 196 l12 -8 l6 10 l-12 6Z" fill="${P.crimson}"/>
+      <rect x="89" y="134" width="22" height="34" fill="#d4a88a"/>
+      <ellipse cx="100" cy="102" rx="33" ry="44" fill="#e3b38f"/>
+      <path d="M66 92 C60 50 140 46 136 92 C132 70 118 60 100 60 C84 60 70 70 66 92Z" fill="${P.cream}"/>
+      <path d="M66 90 C58 104 60 120 64 128 M134 90 C142 104 140 120 136 128" stroke="${P.cream}" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M78 92 l16 4 M122 92 l-16 4" stroke="#8d90a8" stroke-width="3" stroke-linecap="round"/>
+      <g class="eyes"><ellipse cx="86" cy="102" rx="5" ry="3" fill="${INK}"/><ellipse cx="114" cy="102" rx="5" ry="3" fill="${INK}"/></g>
+      <path d="M80 118 q6 6 0 12 M120 118 q-6 6 0 12" stroke="#c49272" stroke-width="2" fill="none"/>
+      <path class="mouth" d="M88 132 q12 -4 24 0" stroke="#8a4a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M66 104 q-10 20 -4 50" stroke="#5fb8ff" stroke-width="2" fill="none" opacity=".7"/><circle cx="66" cy="104" r="4" fill="#5fb8ff"/>
+      <path d="M162 240 L168 172 C168 162 178 158 182 166 L184 176" fill="${P.cream}" stroke="${INK}" stroke-width="2"/>
+      <path d="M170 168 L120 30" stroke="${P.cream}" stroke-width="3.5" stroke-linecap="round"/><circle cx="120" cy="30" r="3" fill="#fff"/>`);
     case 'crane': return svg(`
       <defs><radialGradient id="ptCraneBg" cx="50%" cy="35%" r="60%"><stop offset="0" stop-color="#d5473b" stop-opacity=".22"/><stop offset="1" stop-color="#d5473b" stop-opacity="0"/></radialGradient></defs>
       <rect width="200" height="240" fill="url(#ptCraneBg)"/>

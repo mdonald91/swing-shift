@@ -99,6 +99,11 @@ const ACTIONS = {
     });
   },
   bnBoss() { after = () => playCut('bn_core', { restoreMood: false }).then(() => startBattle('warden_net')); },
+  // ---- Track 09: Last Set ----
+  departLastSet() { after = () => playCut('lastset_depart', { restoreMood: false }).then(() => travel('lyceum_hall')); },
+  toLastSet() { after = () => travel('lyceum_hall'); },
+  hallToShip() { after = () => travel('ship', 'cockpit'); },
+  finale() { after = () => playCut('lastset_confront', { restoreMood: false }).then(() => startBattle('lastset')); },
   // ---- Act 3: Cygnus under lockdown ----
   gateOpen() { Audio.sfx('confirm'); setTimeout(() => toast('The checkpoint gate is open'), 300); },
   hatchOpen() { Audio.sfx('clank'); setTimeout(() => toast('The maintenance hatches are open'), 300); },

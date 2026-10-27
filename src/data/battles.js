@@ -212,6 +212,14 @@ export const ENEMIES = {
 };
 const E = (key, over = {}) => ({ ...ENEMIES[key], ...over });
 
+// The last set: one fight in four movements. Each has its own music and its own trick.
+export const MOVEMENTS = [
+  { n: 'I · Overture', mood: 'battle', hp: 560, d: 'He conducts what is left of the Warden network.' },
+  { n: 'II · Adagio', mood: 'finale', hp: 480, d: 'He slows the whole hall down. Every beat is harder to land.' },
+  { n: 'III · Scherzo', mood: 'brushes_bop', hp: 480, d: 'Fast and furious: he plays twice every round.' },
+  { n: 'IV · Finale', mood: 'lastset', hp: 640, d: 'Four bars of question. Then he plays an ending, unless someone answers first.' }
+];
+
 // Encounter fields: bg backdrop; noRun text if you can't flee; bounty id for story fights
 // (cutscene + ledger after); otherwise flag + reward for a skirmish; scale: enemies grow with the party.
 // Enemy ai: velvet | warden | duet | hacker | grunt (default).
@@ -407,6 +415,18 @@ export const ENCOUNTERS = {
     noRun: "There's nowhere to run. Both teams are in, and the doors have locked behind you.",
     enemiesA: [{ id: 'warden', name: 'Warden Prime', hp: 1350, atk: 41, def: 12, boss: true, machine: true, ai: 'prime', xp: 520, weakTo: ['shock'] }],
     enemiesB: [E('node', { name: 'Relay node A' }), E('node', { name: 'Relay node B', role: 'jammer' }), E('node', { name: 'Relay node C' })]
+  },
+  // ---- Track 09: Last Set ----
+  // Ambrose Hale, the Conductor, in four movements (see MOVEMENTS). Knocking him down ends a movement, not the fight.
+  lastset: {
+    bg: 'lyceum_hall', bounty: 'lastset', assists: true,
+    intro: 'Ambrose Hale lifts his baton. Two thousand people hold their breath. "From the top."',
+    noRun: 'Two thousand people are watching, and every door in the Lyceum is locked. This is the last set.',
+    enemies: [
+      E('node', { name: 'Warden echo', hp: 180, atk: 34 }),
+      { id: 'ambrose', name: 'Ambrose Hale', hp: 560, atk: 44, def: 12, boss: true, ai: 'ambrose', xp: 1000, weakTo: [], resists: [] },
+      E('node', { name: 'Warden echo', hp: 180, atk: 34 })
+    ]
   },
   // Brushes' holo-rehearsal on the Hi-Hat: repeatable, grows with the crew, XP only.
   rehearsal: {

@@ -64,6 +64,8 @@ export const CREW = {
   benny: { name: 'Benny Banda', short: 'Benny', color: 'var(--mustard)', blip: 320 },
   helixsec: { name: 'Helix security', short: 'Helix guard', color: 'var(--smoke)', blip: 180 },
   collector: { name: 'Collector', short: 'Collector', color: 'var(--crimson)', blip: 210 },
+  // 0.16: Last Set
+  ambrose: { name: 'Ambrose Hale', short: 'Ambrose', color: 'var(--crimson)', blip: 110 },
   // 0.15: Blue Note
   listener: { name: 'Listener drone', short: 'Listener', color: '#5fb8ff', blip: 880 },
   receptionist: { name: 'Receptionist', short: 'Receptionist', color: 'var(--cream)', blip: 600 },

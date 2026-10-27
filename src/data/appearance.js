@@ -168,6 +168,8 @@ export const NPC_LOOKS = {
     outfit: { main: '#2c3b5a', shade: '#1e2940', acc: '#e9b23a', style: 'coat' } },
   benny: { face: 1, skin: '#a8714f', hair: '#e9b23a', style: 'curls', acc: 'Headband', pants: '#3a4258',
     outfit: { main: '#d39a2a', shade: '#a5741a', acc: '#f1e8d4', style: 'flight' } },
+  ambrose: { face: 0, skin: '#e3b38f', hair: '#f1e8d4', style: 'swept', acc: 'None', pants: '#07080d',
+    outfit: { main: '#10121e', shade: '#07080d', acc: '#d5473b', style: 'suit' } },
   listener: { face: 3, skin: '#5d6a80', hair: '#3a7bff', style: 'buzz', acc: 'Goggles', pants: '#1b1e30',
     outfit: { main: '#1e2a50', shade: '#141c36', acc: '#5fb8ff', style: 'flight' } },
   receptionist: { face: 2, skin: '#f2cdb4', hair: '#d9b25a', style: 'long', acc: 'Earring',

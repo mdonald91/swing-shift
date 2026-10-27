@@ -873,3 +873,23 @@ body.ts-1 .liner ul li, body.ts-2 .liner ul li { font-size: calc(14px * var(--ts
 .echo-status { text-align: center; margin: 4px 0 10px; min-height: 1.4em; font-weight: 600; color: var(--mustard); }
 .echo-btns { display: flex; justify-content: center; }
 .echo.solved .echo-pad { background: #7fe0c8; color: var(--ink); }
+
+/* ---------------- end credits (Track 09) ---------------- */
+.credits { position: absolute; inset: 0; z-index: 5; overflow-y: auto; touch-action: pan-y; background: radial-gradient(ellipse at 50% 0, #2a1420 0, var(--void) 70%); animation: fade .6s ease-out; }
+.credits.out { opacity: 0; transition: opacity .3s; }
+.cr-roll { max-width: 640px; margin: 0 auto; padding: 45vh 24px 30vh; text-align: center; }
+.cr-eyebrow { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: .4em; text-transform: uppercase; color: var(--mustard); }
+.credits h1 { margin: 8px 0 6px; font-size: clamp(44px, 9vw, 86px); line-height: 1; letter-spacing: -.01em; color: var(--cream); }
+.cr-sub { margin: 0 0 40px; color: var(--smoke); font-style: italic; }
+.credits section { margin: 0 0 52px; }
+.credits h2 { margin: 0 0 16px; font-size: 13px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--mustard); }
+.credits section p { line-height: 1.6; color: var(--cream); }
+.credits dl { margin: 0; }
+.credits dt { margin-top: 18px; font-weight: 700; color: var(--cream); letter-spacing: .06em; }
+.credits dd { margin: 4px 0 0; color: #c9c0aa; line-height: 1.5; }
+.cr-note { font-size: 14px; color: var(--smoke) !important; }
+.cr-songs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cr-songs b { color: var(--cream); font-weight: 600; } .cr-songs small { color: var(--smoke); margin-left: 6px; }
+.cr-end { padding-top: 10px; }
+.cr-skip { position: fixed; right: max(16px, var(--safe-r)); bottom: calc(16px + var(--safe-b)); z-index: 6; background: transparent; border: 1px solid var(--line); color: var(--smoke); padding: 6px 12px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+.bt-cmd .answer { background: var(--crimson); color: var(--cream); }

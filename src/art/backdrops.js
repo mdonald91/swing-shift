@@ -337,6 +337,26 @@ const BUILD = {
       <g transform="translate(800 700)"><path d="M-90 120 L-60 -70 H60 L90 120Z" fill="#141c36"/><circle cy="-100" r="60" fill="#0a1124" stroke="#5fb8ff" stroke-width="6"/><circle cy="-100" r="22" fill="#d5473b"/><circle cy="-100" r="8" fill="#ffd1c8"/></g>
       <text x="1540" y="870" text-anchor="end" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="44" fill="#5fb8ff" opacity=".6">ブルーノート</text></svg>`;
   },
+  // the Lyceum's auditorium, seen from the stage: two thousand people, one spotlight, one piano
+  lyceum_hall: () => {
+    let crowd = '';
+    for (let r = 0; r < 6; r++) for (let i = 0; i < 26; i++) {
+      const x = -20 + i * 66 + (r % 2) * 33, y = 560 + r * 56, s = 1 + r * .12;
+      crowd += `<circle cx="${x}" cy="${y}" r="${14 * s}" fill="#1a0e14"/><path d="M${x - 22 * s} ${y + 50 * s} q${22 * s} -44 ${44 * s} 0Z" fill="#1a0e14"/>`;
+    }
+    return `${open}<defs><linearGradient id="bdHallCone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4d0" stop-opacity=".6"/><stop offset="1" stop-color="#fff4d0" stop-opacity="0"/></linearGradient>
+        <radialGradient id="bdHallGlow" cx="50%" cy="20%" r="60%"><stop offset="0" stop-color="#d9a94a" stop-opacity=".35"/><stop offset="1" stop-color="#d9a94a" stop-opacity="0"/></radialGradient></defs>
+      <rect width="1600" height="900" fill="#12070c"/><rect width="1600" height="900" fill="url(#bdHallGlow)"/>
+      ${[260, 560, 1040, 1340].map(x => `<path d="M${x} 0 V120" stroke="#5a4630" stroke-width="3"/><circle cx="${x}" cy="140" r="34" fill="#f3c860" opacity=".25"/><path d="M${x - 40} 130 q40 40 80 0" fill="none" stroke="#f3c860" stroke-width="5" opacity=".6"/>`).join('')}
+      <path d="M0 0 H300 Q240 300 280 560 H0Z M1600 0 H1300 Q1360 300 1320 560 H1600Z" fill="#6a1616"/>
+      ${[[120, 300], [180, 360], [1420, 300], [1480, 360]].map(([x, y]) => `<rect x="${x - 70}" y="${y}" width="140" height="40" fill="#3a1a14" stroke="#d9a94a" stroke-width="3"/>`).join('')}
+      <path d="M720 0 L600 520 H1000 L880 0Z" fill="url(#bdHallCone)"/>
+      <path d="M690 500 Q690 420 800 420 H930 Q960 420 960 460 V500Z" fill="#0a0608"/><path d="M700 500 V560 M940 500 V560" stroke="#0a0608" stroke-width="10"/>
+      <circle cx="780" cy="370" r="22" fill="#f1e8d4"/><path d="M770 390 L752 460 H812 Z" fill="#0a0608"/><path d="M790 405 L870 360" stroke="#0a0608" stroke-width="10"/><path d="M870 360 L940 300" stroke="#f1e8d4" stroke-width="3"/>
+      <path d="M0 520 H1600 V560 H0Z" fill="#2a1408"/>${Array.from({ length: 12 }, (_, i) => `<ellipse cx="${80 + i * 132}" cy="516" rx="24" ry="7" fill="#f3c860" opacity=".8"/>`).join('')}
+      ${crowd}
+      <text x="1540" y="880" text-anchor="end" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="44" fill="#f3c860" opacity=".55">最終ステージ</text></svg>`;
+  },
   black: () => ''
 };
 

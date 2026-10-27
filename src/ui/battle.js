@@ -1,5 +1,5 @@
 // Turn-based combat with on-the-beat timing, plus the payday ledger afterwards.
-import { SKILLS, ITEMS, ENCOUNTERS, ENEMIES, TYPES, TIERS, xpToNext, JAM_STYLES } from '../data/battles.js';
+import { SKILLS, ITEMS, ENCOUNTERS, ENEMIES, TYPES, TIERS, xpToNext, JAM_STYLES, MOVEMENTS } from '../data/battles.js';
 import { completeJob } from '../systems/jobs.js';
 import { CREW } from '../data/crew.js';
 import { BOUNTIES } from '../data/bounties.js';
@@ -16,6 +16,8 @@ import { playCut } from './cutscene.js';
 import { runDialogue } from './dialog.js';
 import { Hud } from './hud.js';
 import { tip } from './tips.js';
+import { rollCredits } from './credits.js';
+import { pickEnding } from '../data/endings.js';
 
 const RHY = {
   perfect: { mult: 1.5, g: 24, label: 'On the beat!' },
@@ -67,6 +69,7 @@ export function startBattle(id, { retry = false, flag = null, retreatTo = null }
     hp: Math.round(e.hp * (1 + .2 * L)), atk: Math.round(e.atk + 1.3 * L), def: Math.round((e.def || 0) + .4 * L), xp: Math.round((e.xp || 15) * (1 + .3 * L))
   })).map(e => ({ ...e, max: e.hp }));
   for (const e of enemies) if (e.ai === 'sentinel') { e.shielded = true; e.summons = 0; }
+  for (const e of enemies) if (e.ai === 'ambrose') { e.mv = 0; e.bar = 0; }
   for (const e of enemies) if (e.ai === 'mantis') {
     e.baseDef = e.def - (state.flags.core_kept ? 3 : 0);
     setStance(e, 'guard');
@@ -75,16 +78,16 @@ export function startBattle(id, { retry = false, flag = null, retreatTo = null }
   const assists = [];
   let groove0 = startingGroove(), shield0 = 0;
   if (enc.assists) {
-    const f = state.flags;
+    const f = state.flags, fin = enc.bounty === 'lastset';
     if (f.cass_free) {
       const i = enemies.findIndex(e => !e.boss);
-      if (i >= 0) { enemies.splice(i, 1); assists.push('Cass Marlowe steps out of the lift and lays the nearest collector out cold. "Hi, Rook. Miss me?"'); }
+      if (i >= 0) { enemies.splice(i, 1); assists.push(fin ? 'Cass Marlowe vaults out of row eight and puts a Warden echo through the orchestra pit. "For Rook."' : 'Cass Marlowe steps out of the lift and lays the nearest collector out cold. "Hi, Rook. Miss me?"'); }
     }
     if (f.std_helix_bad) {
       enemies.push({ ...ENEMIES.helixguard, key: 'e' + enemies.length, ko: false, max: ENEMIES.helixguard.hp });
-      assists.push("Hale's own guard steps in beside Crane. Helix remembers who crossed it.");
+      assists.push(fin ? "A Helix guard climbs onto the stage beside Ambrose. Helix remembers who crossed it." : "Hale's own guard steps in beside Crane. Helix remembers who crossed it.");
     }
-    if (f.juno_protected) { enemies.forEach(e => { if (!e.boss) e.weak = 3; }); assists.push("Juno is in the tower's systems. The hunters' visors fizz: they hit softer for a while."); }
+    if (f.juno_protected) { enemies.forEach(e => { if (!e.boss) e.weak = 3; }); assists.push(fin ? "Juno is in the broadcast. The Warden echoes stutter: they hit softer for a while." : "Juno is in the tower's systems. The hunters' visors fizz: they hit softer for a while."); }
     const crane = enemies.find(e => e.ai === 'metronome');
     if (crane) {
       crane.count = crane.countMax = (f.proto_free || f.lyra_joined) ? 6 : 4;
@@ -253,6 +256,7 @@ function update() {
     if (u.ai === 'nocturne' && !u.ko && B.enemies.some(x => x.accomp && !x.ko)) tags.push('Accompanied');
     if (u.ai === 'metronome' && !u.ko) tags.push(u.count <= 1 ? 'Downbeat next!' : `Count-in ${u.count}`);
     if (u.inspired && !u.ko) tags.push('Inspired');
+    if (u.ai === 'ambrose' && !u.ko) { tags.push(MOVEMENTS[u.mv].n); if (u.mv === 3) tags.push(u.bar >= 4 ? 'Ending next!' : `Bar ${u.bar + 1} of 5`); }
     if (u.ai === 'prime' && !u.ko) { const up = 3 - nodesDown(); tags.push(up ? `Network shield ${up}/3` : 'Shield down'); }
     if (u.spMax && B.overclock > 0 && !u.ko) tags.push('Overclocked');
     if (u.spMax && B.shield > 0 && !u.ko) tags.push('Shielded');
@@ -301,7 +305,8 @@ function showMenu(a) {
     <button type="button" data-c="items" ${Object.values(state.items).some(n => n > 0) ? '' : 'disabled'}>Item</button>
     <button type="button" data-c="guard">Defend <small>+6 SP</small></button>
     <button type="button" data-c="run">Run</button>
-    ${B.groove >= 100 ? `<button type="button" class="jam" data-c="jam">Jam Session${B.jam !== 'bigband' ? ` <small>${esc(JAM_STYLES[B.jam].n)}</small>` : ''}</button>` : ''}`);
+    ${B.groove >= 100 ? `<button type="button" class="jam" data-c="jam">Jam Session${B.jam !== 'bigband' ? ` <small>${esc(JAM_STYLES[B.jam].n)}</small>` : ''}</button>` : ''}
+    ${canAnswer() ? '<button type="button" class="jam answer" data-c="answer">Play the fifth bar <small>Answer him</small></button>' : ''}`);
   $('.bt-cmd button')?.focus({ preventScroll: true });
   root.querySelectorAll('.bt-cmd [data-c]').forEach(b => b.addEventListener('click', () => { Audio.sfx('tick'); menuPick(a, b.dataset.c); }));
   if (B.groove >= 100) tip('jam', root);
@@ -343,6 +348,26 @@ function menuPick(a, c) {
     if (B.retreatTo) { travel(state.location, B.retreatTo); toast('You fall back the way you came. They are still out there.'); return; }
     backToWorld(); toast(B.enc.scale ? 'Rehearsal over. Brushes looks disappointed.' : 'You slip away. They will still be there.');
   } else if (c === 'jam') doJam(a);
+  else if (c === 'answer') doAnswer(a);
+}
+
+// Movement IV: after four bars of question, whoever knows the fifth bar can answer before his ending lands.
+const ambroseOf = () => B.enemies.find(e => e.ai === 'ambrose' && !e.ko);
+function canAnswer() { const e = ambroseOf(); return !!(e && e.mv === 3 && e.bar >= 4 && !e.answered && state.flags.fifth_bar); }
+async function doAnswer(a) {
+  const e = ambroseOf(); if (!e) return;
+  B.mode = 'busy'; cmd('<p class="bt-who">The fifth bar</p><p class="bt-hint">Tap on the beat.</p>');
+  log(`${a.name} plays the fifth bar. Four bars of question, and now, at last, an answer.`);
+  const q = await rhythm(true);
+  if (!root) return;
+  if (q === 'miss') { log('The note cracks. Ambrose smiles. "Close."'); Audio.sfx('clam'); endAction(700); return; }
+  e.answered = true;
+  const v = Math.round(e.max * (q === 'perfect' ? .5 : .4));
+  e.hp = Math.max(1, e.hp - v);
+  const c = cardOf(e); pop(c, 'RESOLVED', 'weak'); pop(c, '-' + v, 'num'); shake(c);
+  Audio.sfx('cymbal'); B.groove = Math.min(100, B.groove + 30);
+  log('For one bar, the whole hall is in tune. Ambrose stops conducting. He is listening.');
+  update(); endAction(1400);
 }
 
 function choose(a, act, tgt) {
@@ -547,9 +572,22 @@ function hitEnemy(a, e, mult, word, snd, { type, pierce } = {}) {
     e.shielded = false; e.shieldT = 3;
     setTimeout(() => { if (!root) return; pop(c, 'SHIELD DOWN', 'weak'); Audio.sfx('clam'); log(`The shock shorts out ${e.name}'s shield! Hit it with everything.`); update(); }, 250);
   }
-  if (e.hp === 0) { e.ko = true; e.stun = false; e.jammed = 0; log(e.ai === 'velvet' ? 'Velvet hits the deck. Her hat lands a beat later.' : `${e.name} is down for the count.`); }
+  if (e.hp === 0 && e.ai === 'ambrose' && e.mv < MOVEMENTS.length - 1) { nextMovement(e); update(); return; }
+  if (e.hp === 0) { e.ko = true; e.stun = false; e.jammed = 0; log(e.ai === 'velvet' ? 'Velvet hits the deck. Her hat lands a beat later.' : e.ai === 'ambrose' ? 'Ambrose Hale lowers his baton. The hall is silent.' : `${e.name} is down for the count.`); }
   else log(`${a.name} hits ${e.name} for ${v}.`);
   update();
+}
+// The last set: the next movement begins. Ambrose stands back up with a new trick and the band changes key.
+function nextMovement(e) {
+  e.mv++; const mv = MOVEMENTS[e.mv];
+  e.hp = e.max = mv.hp; e.ko = false; e.bar = 0; e.answered = false; e.skipOnce = e.mv === 1 && state.flags.hale_ally;
+  B.enemies.forEach(x => { if (x !== e && !x.ko) { x.ko = true; x.hp = 0; } });     // the echoes fade between movements
+  B.movement = e.mv;
+  const c = cardOf(e); pop(c, mv.n.toUpperCase(), 'weak');
+  Audio.setMood(mv.mood, true); Audio.sfx('cymbal');
+  // between movements the band catches its breath: everyone standing gets a fifth of their HP back
+  allParty().forEach(p => { if (!p.ko) p.hp = Math.min(p.max, p.hp + Math.round(p.max * .2)); });
+  setTimeout(() => { if (root) { log(`Movement ${mv.n}. ${mv.d} The band catches its breath.`); update(); } }, 600);
 }
 function healAlly(p, amt, revive, msg) {
   if (p.ko && !revive) return;
@@ -673,6 +711,43 @@ async function enemyPhase() {
       } else {
         const p = pick(targets); const v = hitParty(e, p, 1.1, 'BWOOM!');
         log(`Vox swings his bass like a club at ${p.name}. ${v} damage.`);
+      }
+    } else if (e.ai === 'ambrose') {
+      if (e.skipOnce) {
+        e.skipOnce = false; pop(cardOf(e), '...'); log('"Father." Imogen Hale stands up in the third row. Ambrose loses his place for a whole bar.');
+        await sleep(1100);
+      } else if (e.mv === 0) {
+        if (Math.random() < .35) {
+          log('Ambrose sweeps his baton, and every speaker in the Lyceum plays the four bars at once.');
+          targets.forEach((p, i) => setTimeout(() => root && hitParty(e, p, .6, 'FORTE!'), i * 150)); await sleep(500);
+        } else { const p = pick(targets); const v = hitParty(e, p, 1.1, 'SFZ!'); log(`Ambrose points the baton at ${p.name}. The air itself hits them. ${v} damage.`); }
+      } else if (e.mv === 1) {
+        if (!(state.flags.lyra_joined || state.flags.proto_free)) { B.rubato = 1; pop(cardOf(e), 'ADAGIO'); }
+        else if (!e.toldSteady) { e.toldSteady = true; log('Lyra keeps time for the band. His slow tempo can\'t pull you off the beat.'); await sleep(1000); if (!root) return; }
+        if (Math.random() < .3) {
+          log('A slow, crushing lament. The whole hall sinks into it.');
+          targets.forEach((p, i) => setTimeout(() => root && hitParty(e, p, .7, 'LENTO'), i * 150)); await sleep(500);
+        } else { const p = pick(targets); const v = hitParty(e, p, 1.25, 'GRAVE'); log(`One long, heavy chord lands on ${p.name}. ${v} damage.${B.rubato ? ' Your next beats will be harder to land.' : ''}`); }
+      } else if (e.mv === 2) {
+        for (let k = 0; k < 2; k++) {
+          const t = living(B.party); if (!t.length) break;
+          const p = pick(t); const v = hitParty(e, p, .75, k ? 'PRESTO!' : 'VIVACE!');
+          log(`Scherzo: Ambrose plays faster than anyone can follow. ${p.name} takes ${v}.`); await sleep(450); if (!root) return;
+        }
+      } else {
+        e.bar++;
+        if (e.bar >= 5) {
+          e.bar = 0;
+          if (e.answered) { e.answered = false; setFlag('final_answered'); pop(cardOf(e), 'LISTENING'); log('Ambrose plays nothing at all. For the first time in fifty years, he has heard the end of the song.'); await sleep(1300); }
+          else {
+            pop(cardOf(e), 'HIS ENDING'); Audio.sfx('cymbal');
+            log('Ambrose plays his own fifth bar. It is wrong. It is very, very loud.');
+            targets.forEach((p, i) => setTimeout(() => root && hitParty(e, p, 1.2, 'FINE!'), i * 150)); await sleep(700);
+          }
+        } else {
+          const p = pick(targets); const v = hitParty(e, p, .9, 'BAR ' + e.bar);
+          log(`Bar ${e.bar} of the question. ${p.name} takes ${v}.${e.bar === 4 ? (state.flags.fifth_bar ? ' Now. Answer him: play the fifth bar.' : ' Brace: his ending is next.') : ''}`);
+        }
       }
     } else if (e.ai === 'prime') {
       B.primeRound = (B.primeRound || 0) + 1;
@@ -969,7 +1044,8 @@ const AFTER = {
   proto: { cut: 'sentinel_victory', choice: 'proto_choice', ending: 'proto_ending', title: 'Track 05 · Runaway Prototype' },
   mantis: { cut: 'mantis_victory', choice: 'mantis_choice', ending: 'mantis_ending', title: 'Track 04 · Iron Mantis' },
   metronome: { cut: 'metronome_victory', choice: 'hale_choice', ending: 'conductor_ending', title: 'Track 07 · The Conductor' },
-  bluenote: { cut: 'bluenote_victory', choice: 'array_choice', ending: 'bluenote_ending', title: 'Track 08 · Blue Note' }
+  bluenote: { cut: 'bluenote_victory', choice: 'array_choice', ending: 'bluenote_ending', title: 'Track 08 · Blue Note' },
+  lastset: { cut: 'lastset_victory', choice: 'final_choice', ending: () => 'ending_' + pickEnding(state, available), title: 'Track 09 · Last Set' }
 };
 
 async function finishBounty(res) {
@@ -983,6 +1059,22 @@ async function finishBounty(res) {
 function ledgerFor(res) {
   const b = BOUNTIES.find(x => x.id === res.id) || { name: 'Bounty', reward: 0 };
   const style = [`Style bonus: ${res.perfects} ${res.perfects === 1 ? 'hit' : 'hits'} on the beat`, res.perfects * 150];
+  if (res.id === 'lastset') {
+    const f = state.flags, end = pickEnding(state, available);
+    return {
+      outcome: 'Ambrose Hale, the Conductor, delivered alive. The song is over.',
+      extra: { encore: 'Ending: Encore', halftime: 'Ending: Half Time', duet: 'Ending: Duet', lastcall: 'Ending: Last Call', solo: 'Ending: Solo' }[end],
+      items: [
+        [f.final_hale ? 'Bounty: The Conductor, alive (his daughter walked him in)' : 'Bounty: The Conductor, alive', 250000],
+        ...(end === 'encore' ? [['Ticket sales: two thousand people heard the fifth bar', 18000]] : []),
+        ...(end === 'solo' ? [["Helix's sealed accounts, quietly emptied", 60000]] : []),
+        style,
+        ['Fuel to Titan, one last time', -4800],
+        ["The Lyceum's chandelier (again)", -7200],
+        ["A new pot for Gerald. He's earned it", -60]
+      ]
+    };
+  }
   if (res.id === 'bluenote') {
     const f = state.flags;
     return {
@@ -1139,15 +1231,22 @@ function showLedger(res) {
   screen.querySelector('[data-home]').addEventListener('click', () => {
     Audio.sfx('confirm');
     screen.remove();
-    playCut(a.ending, { restoreMood: false }).then(() => {
+    const endCut = typeof a.ending === 'function' ? a.ending() : a.ending;
+    playCut(endCut, { restoreMood: false }).then(async () => {
       if (res.id === 'bluenote') state.squads = null;     // the two teams are back together
+      if (res.id === 'lastset') {                          // the end of the record: credits, then home
+        const end = pickEnding(state, available);
+        setFlag('ending_' + end); setFlag('game_done');
+        state.bounties.conductor = 'done'; setFlag('conductor_done');
+        await rollCredits(end);
+      }
       state.bounties[res.id] = 'done';
       setFlag(res.id + '_done');
       if (res.id === 'velvet' && !state.flags.rep_init) { addRep({ office: 2 }); setFlag('rep_init'); }
       unblock();
       travel('ship', 'lounge');
       const ok = saveGame();
-      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04', proto: 'Track 05', nocturne: 'Track 06', metronome: 'Track 07', bluenote: 'Track 08' }[res.id] || 'Track';
+      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04', proto: 'Track 05', nocturne: 'Track 06', metronome: 'Track 07', bluenote: 'Track 08', lastset: 'Track 09' }[res.id] || 'Track';
       setTimeout(() => { toast(ok ? `${label} complete. Game saved.` : `${label} complete.`); Hud.refresh(); }, 800);
     });
   });

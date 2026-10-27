@@ -106,6 +106,19 @@ function tracks() {
         f.array_ours && 'Kept the array running, listening for him for once.',
         f.array_fifth && 'Played the fifth bar through every speaker in the system.'
       ]
+    },
+    {
+      n: '09', side: 'C', name: 'Last Set', where: 'The Lyceum, Titan', done: flag('lastset_done'), started: f.lastset_arrived,
+      notes: [
+        'Played to a full house: everyone you met along the way, in the Lyceum seats.',
+        flag('lastset_done') && 'Beat Ambrose Hale across four movements: Overture, Adagio, Scherzo and Finale.',
+        f.final_answered && 'Played the fifth bar into the last movement, and he stopped to listen.',
+        f.ending_encore && 'Ending: Encore. The whole band played the fifth bar.',
+        f.ending_halftime && 'Ending: Half Time. Brushes played the fifth bar alone.',
+        f.ending_duet && 'Ending: Duet. Imogen talked her father down.',
+        f.ending_lastcall && 'Ending: Last Call. You brought him in.',
+        f.ending_solo && 'Ending: Solo. You brought him in and got paid.'
+      ]
     }
   ].map(t => ({ ...t, notes: t.notes.filter(Boolean) }));
 }
@@ -158,7 +171,7 @@ function html({ finale, side }) {
     </div>
     ${sideC ? `<section class="ln-sec ln-next"><h3>Sides A and B, in short</h3>
       <p>${esc(all.filter(t => t.side !== 'C' && t.done).map(t => `${t.n} ${t.name}`).join(' · '))}. ${flag('fifth_bar') ? 'You know the fifth bar.' : 'You never heard the fifth bar.'}</p></section>
-      <section class="ln-sec ln-next"><h3>Still to come in the Encore</h3><p>${flag('metronome_done') ? '' : '07 · The Conductor &nbsp; '}${flag('bluenote_done') ? '' : '08 · Blue Note &nbsp; '}09 · Last Set</p></section>`
+      <section class="ln-sec ln-next"><h3>${flag('game_done') ? 'The record' : 'Still to come in the Encore'}</h3><p>${flag('game_done') ? 'All nine tracks played. Thanks for listening.' : `${flag('metronome_done') ? '' : '07 · The Conductor &nbsp; '}${flag('bluenote_done') ? '' : '08 · Blue Note &nbsp; '}09 · Last Set`}</p></section>`
       : sideB && finale ? `<section class="ln-sec ln-next"><h3>Coming up: the Encore</h3>
       <p>07 · The Conductor &nbsp; 08 · Blue Note &nbsp; 09 · Last Set. ${flag('fifth_bar') ? 'And you know something he does not: the fifth bar.' : 'And he knows exactly where you are.'}</p></section>`
       : sideB ? `<section class="ln-sec ln-next"><h3>Side A, in short</h3>

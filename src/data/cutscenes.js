@@ -445,6 +445,90 @@ export const CUTSCENES = {
       byTemp: { Calm: 'Rest up, everyone. Then we set a course for Saturn.', Sarcastic: 'A secret station full of speakers. What could go wrong?', Idealistic: "He wants one song. We're going to give him a band.", Ruthless: 'Set a course for Saturn. I want my quarter of a million.' } },
     { l: null, r: null, card: { track: 'Next session', name: 'Blue Note' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
   ],
+  // ---- Track 09: Last Set ----
+  lastset_depart: [
+    { bg: 'lounge', mood: 'ship', l: 'player', r: 'brushes', who: 'brushes', line: 'Course laid in for Titan, Captain. The Lyceum. He has sold every seat, and given them all away.' },
+    { r: 'rook', who: 'rook', line: "I got a ticket in the post. Front row. Addressed to 'the man who keeps falling asleep'. Rude. Accurate." },
+    { r: 'tam', who: 'tam', line: "Everyone we've ever met got one. Ozzie. Mags. The noodle guy. He's filling the hall with our whole record." },
+    { if: 'hale_ally', r: 'hale', who: 'hale', line: "He wants witnesses. He always did. Whatever happens on that stage tonight, he wants everyone to hear it." },
+    { if: 'lyra_joined', r: 'lyra', who: 'lyra', line: "Every speaker in the system will carry the broadcast, Captain. Including the jukebox. I will turn it up." },
+    { if: 'rhea_joined', r: 'rhea', who: 'rhea', line: "If he finishes his song, the core plays it everywhere at once. Nobody hears anything else, ever. So. No pressure." },
+    { l: 'player', r: 'brushes', who: 'player', line: 'Then we play the last set.',
+      byTemp: { Calm: "One last set. Then we sleep for a week.", Sarcastic: 'A full house and no rehearsal. Classic us.', Idealistic: "He's never heard a band play together. Tonight he does.", Ruthless: "Two hundred and fifty thousand chits. Let's collect." } },
+    { r: 'brushes', who: 'brushes', sfx: 'countin', line: 'Last set, Captain. For real this time. One... two... one, two, three, four.' },
+    { l: null, r: null, card: { track: 'Track 09', name: 'Last Set' }, mood: 'title', sfx: 'cymbal', fx: 'flash' },
+    { bg: 'lyceum_hall', mood: 'nocturne', caption: 'The Lyceum, Titan. Every seat is full. Every face in it is one you know.' }
+  ],
+  lastset_arrive: [
+    { bg: 'lyceum_hall', mood: 'nocturne', l: 'player', r: 'brushes', who: 'brushes', line: 'Captain. Look at them all. It is everyone. It is our whole record, sitting in rows.' },
+    { r: 'ambrose', who: 'ambrose', fx: 'flash', line: 'Welcome, Captain. Do find your seat. Say hello to your friends. The show starts when you come up on stage.' },
+    { r: 'tam', who: 'tam', line: "He's not even hiding. He's just... sitting at the piano. Waiting." }
+  ],
+  lastset_confront: [
+    { bg: 'lyceum_hall', mood: 'tense', l: 'player', r: 'ambrose', who: 'ambrose', line: "Mae Halloway sat me in the front row of this hall and taught me four bars. Then she sent me away before the fifth." },
+    { who: 'ambrose', line: 'Fifty years. Every speaker, every Warden, every song I bought and silenced. All to hear how it ends.' },
+    { if: 'fifth_bar', who: 'ambrose', line: 'And you know it, Captain. I can see it on you. Play it for me. Or I will take it out of you, one movement at a time.' },
+    { ifNot: 'fifth_bar', who: 'ambrose', line: "Nobody knows it. So I will write my own. Four movements, and then silence, everywhere, for ever." },
+    { l: 'rook', who: 'rook', line: "I'm awake. For once, I'm completely awake." },
+    { l: 'tam', who: 'tam', line: "Wrench is ready. Wrench was born ready." },
+    { if: 'rhea_joined', l: 'rhea', who: 'rhea', line: "I've got eyes on the core. Keep him busy." },
+    { if: 'lyra_joined', l: 'lyra', who: 'lyra', line: "Captain, I will keep time. Whatever he does to the tempo, follow me." },
+    { if: 'fin_juno', l: 'juno', who: 'juno', line: "Broadcast's patched. The whole system's listening to us now, not him." },
+    { if: 'hale_ally', l: 'hale', who: 'hale', line: "Father. Get up from the piano. Please." },
+    { if: 'mantis_spared', l: 'ferro', who: 'ferro', line: 'The Mantis is under the stage. It will hold whatever he drops on you. Probably.' },
+    { l: 'brushes', who: 'brushes', line: 'Captain. Everyone is here. Everyone is with you. Count us in.' },
+    { l: 'player', who: 'player', line: 'One, two...',
+      byTemp: { Calm: 'One, two. One, two, three, four.', Sarcastic: "One, two... you know the rest. Hit it.", Idealistic: "All of us. One, two, three, four!", Ruthless: 'One. Two. End him.' } },
+    { l: null, r: null, card: { track: 'Movement I', name: 'Overture' }, mood: 'battle', sfx: 'cymbal', fx: 'flash' }
+  ],
+  lastset_victory: [
+    { bg: 'lyceum_hall', mood: 'finale', l: 'player', r: 'ambrose', who: 'ambrose', fx: 'flash', sfx: 'scratch', line: '...Four movements. And you are still standing. All of you.' },
+    { who: 'ambrose', line: 'I wrote the ending a thousand times. In every one, the band falls apart before the last bar. Mine did.' },
+    { l: 'brushes', who: 'brushes', line: 'Ours did not, sir. We are a bit dented. Rook is asleep, a little. But we are all here.' },
+    { if: 'final_answered', who: 'ambrose', line: 'And that phrase you played. Before my ending. It was not mine. ...Where did you learn it?' }
+  ],
+  // ---- the endings ----
+  ending_encore: [
+    { bg: 'lyceum_hall', mood: 'finale', l: 'player', r: 'ambrose', who: null, caption: 'The whole crew steps up to the Halcyon. Brushes counts in. Every hand on the keys.' },
+    { who: null, sfx: 'cymbal', fx: 'flash', caption: 'The fifth bar. It is short. It resolves. It sounds like coming home.' },
+    { who: 'ambrose', line: '...Oh. Oh, Mae. It was never meant to be played alone.' },
+    { who: 'ambrose', line: 'It needs a band. That is why she sent me away. I never had one.' },
+    { l: 'rook', r: 'tam', who: 'tam', line: "Every speaker in the system just played it. Mags says the Flat Ninth is crying. All of it. The whole bar." },
+    { l: 'player', r: 'ambrose', who: 'ambrose', line: "Take me in, Captain. I'm finished. The song is finished." },
+    { l: null, r: null, card: { track: 'The End', name: 'Encore' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+  ending_halftime: [
+    { bg: 'lyceum_hall', mood: 'finale', l: 'player', r: 'brushes', who: 'brushes', line: 'Captain. Nobody else is coming up. ...That is all right. I know it. I will play it.' },
+    { who: null, caption: 'Brushes plays the fifth bar alone, on a snare, very quietly. It is enough.' },
+    { r: 'ambrose', who: 'ambrose', line: "...That's it. That's the end. It's so small." },
+    { who: 'ambrose', line: "I'd have thought a band would play it. Where is yours, Captain?" },
+    { l: 'player', r: 'brushes', who: 'brushes', line: 'They are here, sir. Mostly. Some of them are just very tired.' },
+    { l: null, r: null, card: { track: 'The End', name: 'Half Time' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+  ending_duet: [
+    { bg: 'lyceum_hall', mood: 'nocturne', l: 'hale', r: 'ambrose', who: 'hale', line: "Dad. You brought me here every week. Four bars, and then you'd stop. I thought that was how the song went." },
+    { who: 'hale', line: "It was fine. Four bars was fine. I was sitting right next to you. You never looked." },
+    { who: 'ambrose', line: '...Imogen.' },
+    { who: null, caption: 'She sits down beside him at the Halcyon. They play the four bars together. Then they stop. Neither of them minds.' },
+    { l: 'player', r: 'hale', who: 'hale', line: "He'll come quietly. We both will, as far as the Office. Thank you, Captain. For bringing me." },
+    { l: null, r: null, card: { track: 'The End', name: 'Duet' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+  ending_lastcall: [
+    { bg: 'lyceum_hall', mood: 'tense', l: 'player', r: 'ambrose', who: 'player', line: "Ambrose Hale. You're under arrest.",
+      byTemp: { Calm: "Ambrose Hale. It's over. You're coming with us.", Sarcastic: 'Show is over. Please collect your belongings and your arrest.', Idealistic: "It's over. Nobody else has to be silenced.", Ruthless: 'Hands where I can see them. You are worth a lot of money.' } },
+    { who: 'ambrose', line: "And the song stays unfinished. How very ordinary. ...Lead on, Captain." },
+    { l: 'rook', r: 'tam', who: 'rook', line: "Marshal Okoro's at the door. The audience is clapping. I don't think they knew it was real." },
+    { who: 'tam', line: "Let 'em clap. We earned it." },
+    { l: null, r: null, card: { track: 'The End', name: 'Last Call' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+  ending_solo: [
+    { bg: 'lyceum_hall', mood: 'tense', l: 'player', r: 'ambrose', who: 'ambrose', line: "A quarter of a million chits. I wonder what you'll spend it on, Captain. I spent mine on silence." },
+    { who: 'player', line: 'Get moving.',
+      byTemp: { Calm: 'Get moving.', Sarcastic: "Save it for the parole board.", Idealistic: 'Get moving.', Ruthless: 'Get moving. You are worth more alive.' } },
+    { l: 'brushes', r: 'tam', who: 'tam', line: "...Cap. We need to talk. After. All of us." },
+    { who: 'brushes', line: 'I will count us in for one more song, Captain. If you want one.' },
+    { l: null, r: null, card: { track: 'The End', name: 'Solo' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
   // ---- Track 08: Blue Note ----
   bluenote_depart: [
     { bg: 'lounge', mood: 'ship', l: 'player', r: 'brushes', who: 'brushes', line: "Course laid in for Saturn, Captain. Blue Note station. Hale's codes say it has no crew. Only ears." },

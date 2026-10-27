@@ -30,7 +30,9 @@ export const TILE = {
   'Б': 134, 'Ж': 135, 'Д': 136, 'И': 137, 'Л': 138, 'Ц': 139, 'Ш': 140,
   'П': 141, 'Ф': 142, 'Ч': 143, 'Щ': 144, 'Ы': 145, 'Э': 146, 'Ю': 147, 'Я': 148, 'З': 149,
   // Blue Note
-  'а': 150, 'б': 151, 'в': 152, 'г': 153, 'д': 154, 'е': 155, 'ж': 156, 'з': 157, 'и': 158, 'й': 159, 'к': 160, 'л': 161
+  'а': 150, 'б': 151, 'в': 152, 'г': 153, 'д': 154, 'е': 155, 'ж': 156, 'з': 157, 'и': 158, 'й': 159, 'к': 160, 'л': 161,
+  // the Lyceum's auditorium
+  'м': 162, 'н': 163
 };
 export const RUBBLE = 90;
 export const DOOR_OPEN = 60;
@@ -43,7 +45,7 @@ export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 2
   101, 102, 103, 104, 105, 106, 108, 109, 110, 111, 112, 113,
   116, 117, 118, 119, 120, 121, 122, 123, 125, 126, 127, 129, 130, 131, 132,
   134, 135, 136, 138, 139, 142, 143, 144, 145, 146, 147, 148,
-  151, 152, 154, 155, 156, 157, 158, 159, 160];
+  151, 152, 154, 155, 156, 157, 158, 159, 160, 162];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
 export const TILE_LOOKS = {
   20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
@@ -52,7 +54,7 @@ export const TILE_LOOKS = {
   74: 'stall', 75: 'stall', 77: 'lantern', 71: 'rockwall',
   116: 'titanwall', 117: 'column', 119: 'poster', 120: 'cafe', 121: 'titanlamp', 122: 'hedge', 123: 'titanfountain',
   125: 'curtain', 126: 'flats', 127: 'roadcase', 129: 'footlights', 132: 'mirror',
-  151: 'bnwall', 152: 'bndish', 154: 'bnterminal', 156: 'bnwindow', 158: 'bnservers', 159: 'bnspeakers',
+  162: 'seats', 130: 'halcyon_look', 151: 'bnwall', 152: 'bndish', 154: 'bnterminal', 156: 'bnwindow', 158: 'bnservers', 159: 'bnspeakers',
   134: 'barricade', 140: 'torn_shutter', 142: 'helixwall', 143: 'helixwindow', 144: 'reception', 145: 'haledesk', 146: 'helixplant', 148: 'helixlogo',
   102: 'labglass', 103: 'labbench', 104: 'servers', 105: 'specimen', 108: 'icepond', 109: 'frozentree', 110: 'crystals', 111: 'domeglass',
   80: 'basalt', 82: 'mineface', 83: 'timber', 87: 'chasm', 88: 'orecart', 90: 'rubble', 91: 'minelamp', 92: 'winch', 95: 'hutwall',
@@ -767,6 +769,57 @@ export const MAPS = {
       { id: 'moment_rhea', x: 12, y: 12, label: 'Comms desk' },
       { id: 'moment_juno', x: 22, y: 12, label: 'Holding cell' },
       { id: 'bn_t3', x: 26, y: 7, label: 'Core controls' }
+    ]
+  },
+
+  // ---- Track 09: Last Set. The Lyceum's auditorium; everyone you met has come to hear it end. ----
+  lyceum_hall: {
+    name: 'The Lyceum',
+    jp: 'リュケイオン劇場',
+    where: 'Titan, the last night',
+    music: 'nocturne',
+    rows: [
+      'ΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘ',
+      'ΘΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΘ',
+      'ΘΓΛΓΓΓΓΓΓΓΓΓΓΣΣΓΓΓΓΓΓΓΓΓΓΛΓΘ',
+      'ΘΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΘ',
+      'ΘΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΓΘ',
+      'ΘΠΠΠΠΠΠΠΠΠΠΠΠннΠΠΠΠΠΠΠΠΠΠΠΠΘ',
+      'ΘннммммммммммннммммммммммннΘ',
+      'ΘннммммммммммннммммммммммннΘ',
+      'ΘннммммммммммннммммммммммннΘ',
+      'ΘннммммммммммннммммммммммннΘ',
+      'ΘннннннннннннннннннннннннннΘ',
+      'ΘннммммммммммннммммммммммннΘ',
+      'ΘннммммммммммннммммммммммннΘ',
+      'ΘннммммммммммннммммммммммннΘ',
+      'ΘннммммммммммннммммммммммннΘ',
+      'ΘннннннннннннннннннннннннннΘ',
+      'ΘΘΘΘΘΘΘΘΘΘΘΘΘττΘΘΘΘΘΘΘΘΘΘΘΘΘ',
+      'ΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘΘ'
+    ],
+    spawns: { default: { x: 13, y: 15, face: 'up' } },
+    npcs: [
+      { id: 'ambrose', x: 13, y: 3, face: 'down', ifNot: 'lastset_done' },
+      { id: 'sax', x: 12, y: 7, face: 'right' },
+      { id: 'fitz', x: 15, y: 7, face: 'left' },
+      { id: 'mags', x: 3, y: 7, face: 'left' },
+      { id: 'ozzie', x: 24, y: 7, face: 'right' },
+      { id: 'juno', x: 12, y: 8, face: 'right', if: 'fin_juno' },
+      { id: 'ferro', x: 15, y: 8, face: 'left', if: 'mantis_spared' },
+      { id: 'cass', x: 3, y: 8, face: 'left', if: 'cass_free' },
+      { id: 'sato', x: 24, y: 8, face: 'right', if: 'proto_returned' },
+      { id: 'hale', x: 12, y: 12, face: 'right', if: 'hale_ally' },
+      { id: 'marshal', x: 15, y: 12, face: 'left' },
+      { id: 'benny', x: 3, y: 12, face: 'left', if: 'hatch_open' },
+      { id: 'wren', x: 24, y: 12, face: 'right' },
+      { id: 'rhea', x: 12, y: 13, face: 'right', if: 'fin_rhea' },
+      { id: 'chef', x: 15, y: 13, face: 'left' },
+      { id: 'pip', x: 3, y: 13, face: 'left', if: 'met_pip' },
+      { id: 'kessler', x: 24, y: 13, face: 'right' }
+    ],
+    objects: [
+      { id: 'hall_exit', x: 13, y: 16, w: 2, label: 'The grand doors' }
     ]
   },
 
