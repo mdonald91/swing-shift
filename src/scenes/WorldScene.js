@@ -22,7 +22,9 @@ export class WorldScene extends Phaser.Scene {
 
     if (!this.textures.exists('tiles')) this.textures.addCanvas('tiles', tileSheet());
     if (!this.textures.exists('stars')) this.textures.addCanvas('stars', starTile());
-    addSheet(this, 'player', characterSheet(resolveLook(state.player)), 16, 24);
+    // on Blue Note, when you're playing Team B, you walk as its leader
+    const sq = state.squads?.split && state.squads.active === 'b' ? state.squads.b : null;
+    addSheet(this, 'player', characterSheet(sq && NPC_LOOKS[sq.leader] ? NPC_LOOKS[sq.leader] : resolveLook(state.player)), 16, 24);
     this.makeAnims('player');
 
     // starfield behind the hull

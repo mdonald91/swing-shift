@@ -319,6 +319,24 @@ const BUILD = {
     <path d="M520 690 H1080 L1120 760 H480Z" fill="#3a2418"/><path d="M480 760 H1120 V790 H480Z" fill="#24160e"/><rect x="560" y="660" width="60" height="30" fill="#e9b23a"/><rect x="900" y="672" width="90" height="18" fill="#f1e8d4"/>
     <g transform="translate(220 640)"><rect x="-40" y="140" width="80" height="40" fill="#2c3346"/><path d="M-30 140 L-12 -40 M30 140 L12 -40" stroke="#5fe3d4" stroke-width="10" opacity=".7"/>${[0, 40, 80, 120].map(y => `<path d="M-24 ${y} H24" stroke="#5fe3d4" stroke-width="6" opacity=".5"/>`).join('')}</g>
     <text x="1540" y="870" text-anchor="end" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="40" fill="#2b8f8a" opacity=".7">ヘリックス社</text></svg>`,
+  // Blue Note: inside the listening array, dishes turned inwards, Saturn through the glass
+  bluenote: () => {
+    let dishes = '';
+    [[180, 300, 150], [560, 230, 110], [1060, 230, 110], [1420, 300, 150]].forEach(([x, y, r]) => {
+      dishes += `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * .9}" fill="#c9ccd6" opacity=".9"/><ellipse cx="${x}" cy="${y}" rx="${r * .8}" ry="${r * .72}" fill="#8d90a8"/><ellipse cx="${x}" cy="${y}" rx="${r * .35}" ry="${r * .3}" fill="#5d6a80"/>`;
+      dishes += `<path d="M${x} ${y} L${x} ${y - r * .9}" stroke="#46516a" stroke-width="6"/><circle cx="${x}" cy="${y}" r="${r * .12}" fill="#5fb8ff"/><circle cx="${x}" cy="${y}" r="${r * .5}" fill="#5fb8ff" opacity=".08"/>`;
+    });
+    return `${open}<defs><radialGradient id="bdBnGlow" cx="50%" cy="80%" r="60%"><stop offset="0" stop-color="#3a7bff" stop-opacity=".45"/><stop offset="1" stop-color="#3a7bff" stop-opacity="0"/></radialGradient></defs>
+      <rect width="1600" height="900" fill="#050a1c"/>${stars(160, 1600, 600)}
+      <g opacity=".85"><ellipse cx="800" cy="170" rx="330" ry="54" fill="none" stroke="#d8b878" stroke-width="14" transform="rotate(-8 800 170)"/><circle cx="800" cy="170" r="110" fill="#d8b878"/><path d="M690 160 Q800 140 910 160" stroke="#a8844e" stroke-width="12" fill="none"/><path d="M700 190 Q800 205 900 190" stroke="#c9a46a" stroke-width="8" fill="none"/></g>
+      ${dishes}
+      <path d="M0 560 Q800 470 1600 560 V900 H0Z" fill="#0d1630"/>
+      ${Array.from({ length: 12 }, (_, i) => `<path d="M${i * 150 - 100} 900 L${400 + i * 70} 560" stroke="#13204a" stroke-width="3"/>`).join('')}
+      <path d="M0 560 Q800 470 1600 560" stroke="#3a7bff" stroke-width="6" fill="none"/>
+      <rect width="1600" height="900" fill="url(#bdBnGlow)"/>
+      <g transform="translate(800 700)"><path d="M-90 120 L-60 -70 H60 L90 120Z" fill="#141c36"/><circle cy="-100" r="60" fill="#0a1124" stroke="#5fb8ff" stroke-width="6"/><circle cy="-100" r="22" fill="#d5473b"/><circle cy="-100" r="8" fill="#ffd1c8"/></g>
+      <text x="1540" y="870" text-anchor="end" font-family="Noto Sans JP, sans-serif" font-weight="700" font-size="44" fill="#5fb8ff" opacity=".6">ブルーノート</text></svg>`;
+  },
   black: () => ''
 };
 

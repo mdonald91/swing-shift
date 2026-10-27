@@ -225,6 +225,9 @@ body:not(.in-world) #game { visibility: hidden; }
 .chits { background: var(--panel); padding: 7px 12px; font-weight: 700; color: var(--mustard); font-variant-numeric: tabular-nums; }
 .hud-menu { background: var(--panel); border: 1px solid var(--line); padding: 6px 14px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; font-size: 13px; cursor: pointer; }
 .hud-menu:hover { background: var(--panel2); }
+.hud-squad { border-color: #3a7bff; color: #9fd0ff; }
+.bt-team { margin-left: 12px; padding: 3px 10px; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; background: var(--mustard); color: var(--ink); }
+.bt.team-b .bt-team { background: #3a7bff; color: #fff; }
 .hud-hint {
   position: absolute; left: 50%; bottom: calc(18px + var(--safe-b)); transform: translateX(-50%);
   display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line); padding: 7px 14px; font-weight: 600; white-space: nowrap; pointer-events: none;

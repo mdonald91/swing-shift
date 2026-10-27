@@ -89,6 +89,23 @@ function tracks() {
         f.hale_office && 'Handed Director Hale to the Bounty Office. She gave you the Blue Note docking codes first.',
         f.hale_free && 'Let Director Hale walk away. She left you the Blue Note docking codes.'
       ]
+    },
+    {
+      n: '08', side: 'C', name: 'Blue Note', where: 'The listening array, past Saturn', done: flag('bluenote_done'), started: f.bn_arrived,
+      notes: [
+        'Split the crew into two teams to break into the listening array, each opening the way for the other.',
+        f.bnm_tam && "Tam found Ferro's name stamped on the array's tuning arms, and scratched hers underneath.",
+        f.bnm_brushes && 'Brushes found the recording he was scrapped for, and filed it under GOOD.',
+        f.bnm_lyra && (f.lyra_joined ? "Lyra saw the conductor's podium built for her, and chose the jukebox." : "Lyra's podium stood empty."),
+        f.bnm_rook && "Rook found every bounty he worked with Cass, copied into the Conductor's logbook.",
+        f.bnm_rhea && (f.rhea_joined ? 'Rhea locked the relay routing with a Helix login nobody ever closed.' : 'Rhea, working the array for Helix, locked the relay routing for you and left on the next shuttle.'),
+        f.bnm_juno && (f.juno_handed ? 'Freed Juno from the cell where Hale had sent her.' : 'Juno found a cell built for her, and broke into the array instead.'),
+        'Beat Warden Prime and the whole Warden network, with both teams at once.',
+        'Ambrose Hale was gone, with the broadcast core, headed for Titan.',
+        f.array_down && 'Tore the array down for scrap.',
+        f.array_ours && 'Kept the array running, listening for him for once.',
+        f.array_fifth && 'Played the fifth bar through every speaker in the system.'
+      ]
     }
   ].map(t => ({ ...t, notes: t.notes.filter(Boolean) }));
 }
@@ -141,7 +158,7 @@ function html({ finale, side }) {
     </div>
     ${sideC ? `<section class="ln-sec ln-next"><h3>Sides A and B, in short</h3>
       <p>${esc(all.filter(t => t.side !== 'C' && t.done).map(t => `${t.n} ${t.name}`).join(' · '))}. ${flag('fifth_bar') ? 'You know the fifth bar.' : 'You never heard the fifth bar.'}</p></section>
-      <section class="ln-sec ln-next"><h3>Still to come in the Encore</h3><p>${flag('metronome_done') ? '' : '07 · The Conductor &nbsp; '}08 · Blue Note &nbsp; 09 · Last Set</p></section>`
+      <section class="ln-sec ln-next"><h3>Still to come in the Encore</h3><p>${flag('metronome_done') ? '' : '07 · The Conductor &nbsp; '}${flag('bluenote_done') ? '' : '08 · Blue Note &nbsp; '}09 · Last Set</p></section>`
       : sideB && finale ? `<section class="ln-sec ln-next"><h3>Coming up: the Encore</h3>
       <p>07 · The Conductor &nbsp; 08 · Blue Note &nbsp; 09 · Last Set. ${flag('fifth_bar') ? 'And you know something he does not: the fifth bar.' : 'And he knows exactly where you are.'}</p></section>`
       : sideB ? `<section class="ln-sec ln-next"><h3>Side A, in short</h3>

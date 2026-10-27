@@ -35,6 +35,7 @@ function blank() {
     job: null,             // the odd job you've taken: { id, picked }
     jobsDone: 0,
     jamStyle: 'bigband',
+    squads: null,          // Blue Note: the crew split into two teams { split, active: 'a'|'b', a: {members, loc, pos, face}, b: {...} }
     playtime: 0,
     savedAt: 0
   };
@@ -78,6 +79,7 @@ export function loadGame(slot) {
   state.job = data.job || null;
   state.jobsDone = data.jobsDone || 0;
   state.jamStyle = data.jamStyle || 'bigband';
+  state.squads = data.squads || null;
   // saves from before levels existed: start the crew at a level that fits how far they've got
   if (!data.levels) {
     const f = state.flags;

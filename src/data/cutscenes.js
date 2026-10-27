@@ -444,6 +444,97 @@ export const CUTSCENES = {
     { l: 'player', r: 'brushes', who: 'player', line: 'Set a course for Saturn.',
       byTemp: { Calm: 'Rest up, everyone. Then we set a course for Saturn.', Sarcastic: 'A secret station full of speakers. What could go wrong?', Idealistic: "He wants one song. We're going to give him a band.", Ruthless: 'Set a course for Saturn. I want my quarter of a million.' } },
     { l: null, r: null, card: { track: 'Next session', name: 'Blue Note' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
+  ],
+  // ---- Track 08: Blue Note ----
+  bluenote_depart: [
+    { bg: 'lounge', mood: 'ship', l: 'player', r: 'brushes', who: 'brushes', line: "Course laid in for Saturn, Captain. Blue Note station. Hale's codes say it has no crew. Only ears." },
+    { r: 'hale', if: 'hale_ally', who: 'hale', line: "He designed it to need two people at once. Doors that only open from the other side. He never trusted anyone enough to use it properly." },
+    { r: 'juno', if: 'juno_protected', who: 'juno', line: "Captain, I'm on comms. The array's been listening for one tune for fifty years. Let's give it something else to listen to." },
+    { r: 'tam', who: 'tam', line: "So we're breaking into a giant ear. I've packed earplugs. For the ear." },
+    { r: 'brushes', who: 'brushes', sfx: 'countin', line: 'Blue Note, locked in. One... two... one, two, three, four.' },
+    { l: null, r: null, card: { track: 'Track 08', name: 'Blue Note' }, mood: 'title', sfx: 'cymbal', fx: 'flash' },
+    { bg: 'bluenote', mood: 'bluenote', caption: "Blue Note station. A ring of dishes the size of moons, all of them turned inwards, listening to the rest of us." }
+  ],
+  bn_arrive: [
+    { bg: 'bluenote', mood: 'bluenote', l: 'player', r: 'brushes', who: 'brushes', line: 'Docked. Captain, it is so quiet. Not empty quiet. Listening quiet.' },
+    { r: 'rook', who: 'rook', line: "Every speaker on this station is pointed at us. I feel like I'm on stage. I hate being on stage." },
+    { r: 'tam', who: 'tam', line: "The ring door's right there, by the dock. Let's see what kind of welcome mat Mr Hale left out." }
+  ],
+  bn_split: [
+    { bg: 'bluenote', mood: 'bluenote', l: 'player', r: 'brushes', who: 'brushes', line: 'Team A takes the outer ring with you, Captain. Team B takes the maintenance spine.' },
+    { who: 'brushes', line: 'Each team opens the other team\'s doors. Swap between us whenever you need to. We will wait exactly where you leave us. Probably humming.' },
+    { l: 'player', who: 'player', line: 'Stay on comms.',
+      byTemp: { Calm: 'Stay on comms. Nobody does anything clever without telling me.', Sarcastic: "Two teams, one brain cell. Let's share it nicely.", Idealistic: "We've got each other's backs. That's the whole plan.", Ruthless: "Open your doors fast. I'm not waiting long." } }
+  ],
+  bnm_tam: [
+    { bg: 'bluenote', mood: 'ship', l: 'tam', r: null, who: 'tam', line: "Cap. Look at the stamp on this tuning arm. D. FERRO, TARGON WORKS." },
+    { who: 'tam', line: "Ferro built these arms forty years ago. She never knew what they were for. She thought she was building a telescope." },
+    { if: 'mantis_spared', who: 'tam', line: "She's going to be furious. I'm telling her anyway. She'd want to know." },
+    { who: 'tam', line: "...There. T.O. WAS HERE. Right underneath hers. Now it's both of us." }
+  ],
+  bnm_brushes: [
+    { bg: 'bluenote', mood: 'ship', l: 'brushes', who: 'brushes', line: 'Captain, this is a production archive. B-series percussion. It is my production line.' },
+    { who: 'brushes', line: 'One recording is marked ERROR. The reason I was scrapped. My first improvised fill.' },
+    { who: null, caption: 'Brushes plays it. It is four seconds long, and it is wonderful.' },
+    { who: 'brushes', line: 'They kept it. They called it a mistake and they kept it. I am keeping it too. Under GOOD.' }
+  ],
+  bnm_lyra: [
+    { bg: 'bluenote', mood: 'nyx', if: 'lyra_joined', l: 'lyra', who: 'lyra', line: "A conductor's podium. With a slot shaped exactly like me. This is where he wanted me to stand, Captain. Conducting everything." },
+    { if: 'lyra_joined', who: 'lyra', line: 'I prefer the jukebox. And the lounge. And you lot.' },
+    { bg: 'bluenote', mood: 'nyx', if: 'proto_free', l: null, r: 'lyra', who: 'lyra', line: "...Hello, Captain. I am in the speakers. I have seen this podium from the inside of the network." },
+    { if: 'proto_free', who: 'lyra', line: 'He built it for me. I am standing on it now, in a way, and playing it the wrong note. He hates that.' },
+    { bg: 'bluenote', mood: 'nyx', if: 'proto_returned', l: null, r: 'sato', who: 'sato', line: "Captain, it's Dr Sato, on a recorded message. Lyra's safe on Nyx. She asked me to tell you something if you ever found this podium." },
+    { if: 'proto_returned', who: 'sato', line: "She said: it is empty. Keep it that way." }
+  ],
+  bnm_rook: [
+    { bg: 'bluenote', mood: 'tense', l: 'rook', who: 'rook', line: "Office logbook. Every bounty I ever worked with Cass, copied here. With a little baton drawn next to each one." },
+    { who: 'rook', line: "He was using us. Every collection we made, we were tidying up for him." },
+    { if: 'cass_free', who: 'rook', line: "Cass would laugh at this. Then she'd hit something. I'll send her a copy." },
+    { if: 'cass_jailed', who: 'rook', line: "Cass is in a cell for doing his dirty work. I put her there. ...When this is over, I'm going to visit her." },
+    { who: 'rook', line: "Okay. I'm awake now. Properly awake. Let's finish this." }
+  ],
+  bnm_rhea: [
+    { bg: 'bluenote', mood: 'tense', if: 'rhea_joined', l: 'rhea', who: 'rhea', line: "My old Helix login still works. Twelve years and they never closed it. Sloppy." },
+    { if: 'rhea_joined', who: 'rhea', line: "Locking the relay routing. When Warden Prime tries to reroute power to a dead node, it'll hit a wall. My wall." },
+    { bg: 'bluenote', mood: 'tense', ifNot: 'rhea_joined', l: 'player', r: 'rhea', who: 'rhea', line: "...Captain. Didn't think I'd see you again." },
+    { ifNot: 'rhea_joined', who: 'rhea', line: "After Juno, I walked. Took a Helix contract. Ended up here, listening to everybody. I'm done listening." },
+    { ifNot: 'rhea_joined', who: 'rhea', line: "I've locked the relay routing for you. Warden Prime won't reroute its nodes easily. Then I'm on the next shuttle out." },
+    { ifNot: 'rhea_joined', who: 'player', line: 'Thank you, Rhea.',
+      byTemp: { Calm: 'Thank you, Rhea. Get somewhere safe.', Sarcastic: 'Still sarcastic. Still the best signals tech I know.', Idealistic: "You're always welcome aboard. You know that.", Ruthless: "We'll call it even." } }
+  ],
+  bnm_juno: [
+    { bg: 'bluenote', mood: 'tense', if: 'juno_handed', l: 'player', r: 'juno', who: 'juno', line: "Captain? ...Captain. Hale handed me to him. He's had me tuning this array for months." },
+    { if: 'juno_handed', who: 'juno', line: "Don't apologise. Open the door. I know this station's control loop better than he does, and I am going to wreck it." },
+    { bg: 'bluenote', mood: 'tense', if: 'juno_protected', l: 'player', r: 'juno', who: 'juno', line: "Captain, that cell. It's got my name on it. It was built for me. In case you'd handed me over." },
+    { if: 'juno_protected', who: 'juno', line: "...Thank you. Really. I'm in the array's control loop now. The relay nodes are going to have a very bad day." }
+  ],
+  bn_core: [
+    { bg: 'bluenote', mood: 'tense', l: 'player', r: 'brushes', who: 'brushes', line: 'Team B in the node room. Team A at the core door. Captain, I can hear both of you. Stereo.' },
+    { r: 'warden', who: 'warden', fx: 'shake', sfx: 'clank', line: 'NETWORK INTRUSION. ALL WARDEN UNITS: ONE NETWORK. ONE VOICE.' },
+    { if: 'hale_ally', r: 'hale', who: 'hale', line: "That's Warden Prime. Every Warden you've ever fought was one of its fingers. The nodes in Team B's room power its shield. Take them out, and it's naked." },
+    { ifNot: 'hale_ally', r: 'brushes', who: 'brushes', line: "Captain, the three nodes in our room are feeding that thing's shield. We take them down, you take it down. Teamwork!" },
+    { l: 'player', who: 'player', line: 'Both teams. On the one.',
+      byTemp: { Calm: 'Both teams, together. On the one.', Sarcastic: 'Great. A giant robot organ. Let us play it.', Idealistic: "This is what he never had. A band. Let's go.", Ruthless: 'Take it apart. All of it.' } }
+  ],
+  bluenote_victory: [
+    { bg: 'bluenote', mood: 'finale', l: 'player', r: 'conductor', who: 'conductor', fx: 'flash', sfx: 'scratch', line: 'Bravo. Two bands on one stage, in perfect time. Mae would have liked you, Captain.' },
+    { who: 'conductor', line: "But you are playing to an empty hall. I left before the overture, and I took the broadcast core with me." },
+    { if: 'fifth_bar', who: 'conductor', line: 'I will hear the fifth bar soon. From you. Everyone will. I have built a very good stage for it.' },
+    { ifNot: 'fifth_bar', who: 'conductor', line: "I will find the fifth bar. Somebody always remembers the end of a song. They just need the right stage." },
+    { l: 'brushes', r: 'tam', who: 'brushes', line: 'Team A! Team B! Everybody is in one piece. Rook has a new scratch. He says it is a battle scar. It is from a door.' },
+    { r: 'hale', if: 'hale_ally', who: 'hale', line: "The broadcast core. He can play to every speaker in the system at once with it. He's going somewhere with an audience." }
+  ],
+  bluenote_ending: [
+    { bg: 'lounge', mood: 'ship', l: 'brushes', r: 'tam', who: 'brushes', line: 'Captain, the whole crew is back aboard. Both teams. I counted twice. Then I counted in.' },
+    { if: 'array_down', r: 'tam', who: 'tam', line: "The array's in pieces. Ferro's buying the tuning arms back. She cried a bit. She says it was dust." },
+    { if: 'array_ours', l: 'brushes', r: 'juno', who: 'juno', line: "I've got the array listening for him now, for once. He can't hum without us hearing it." },
+    { if: 'array_fifth', l: 'brushes', r: 'rook', who: 'rook', line: 'Every noodle cart in the system played the fifth bar today. My sister called. She cried. She hates music.' },
+    { r: 'rhea', if: 'rhea_joined', who: 'rhea', line: "The broadcast core went out on a Helix freighter, headed for Titan. Where Mae Halloway taught him. He's going home to finish the song." },
+    { r: 'brushes', ifNot: 'rhea_joined', who: 'brushes', line: "The broadcast core left on a Helix freighter, headed for Titan. Where Mae Halloway taught him. He is going home to finish the song." },
+    { r: 'hale', if: 'hale_ally', who: 'hale', line: 'The Lyceum. He always said the acoustics were perfect. He means to play all five bars there, to everyone, at once.' },
+    { l: 'player', r: 'brushes', who: 'player', line: 'Then we play the last set.',
+      byTemp: { Calm: 'Then we finish this. One last set.', Sarcastic: "Great. A finale. I'll wear a nice jacket.", Idealistic: "Then the song ends our way.", Ruthless: 'Then we go collect. Quarter of a million.' } },
+    { l: null, r: null, card: { track: 'Next session', name: 'Last Set' }, mood: 'title', sfx: 'cymbal', fx: 'flash' }
   ]
 
 };

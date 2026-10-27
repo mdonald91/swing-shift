@@ -12,7 +12,24 @@ export function objective() {
   if (!f.intro_done) return '';
   const met = ['met_rook', 'met_tam', 'met_brushes'].filter(k => f[k]).length;
   if (f.act1_done) {
-    if (f.metronome_done) return 'Track 07 complete. Track 08, Blue Note, arrives in a later build.';
+    if (f.bluenote_done) return 'Track 08 complete. Track 09, Last Set, arrives in a later build.';
+    if (f.metronome_done) {
+      const loc = state.location, sq = state.squads?.split ? state.squads.active : null;
+      if (loc === 'bn_ring' || loc === 'bn_spine') {
+        if (!f.bn_split) return 'Find a way into the ring. The door by the dock';
+        if (sq === 'a') {
+          if (!f.bn_d1) return "Team A: the ring door is sealed. Swap to Team B to open it";
+          if (!f.bn_d2) return "Team A: pull the pressure lever in the ring to open Team B's hatch";
+          if (!f.bn_d3) return 'Team A: Team B has to open the core door from the node room. Swap to them';
+          return 'Team A: go through the core door. Both teams are in place';
+        }
+        if (!f.bn_d1) return "Team B: open the ring door from the controls by the airlock";
+        if (!f.bn_d2) return "Team B: the hatch is sealed. Swap to Team A to pull the pressure lever";
+        if (!f.bn_d3) return 'Team B: reach the node room at the end of the spine and open the core door';
+        return 'Team B is in place. Swap to Team A and go through the core door';
+      }
+      return f.bn_arrived ? 'Fly back to Blue Note station from the cockpit' : 'Fly to Blue Note station, past Saturn, from the cockpit';
+    }
     if (f.act3_open) {
       if (!f.bounty_conductor) return 'Accept The Conductor on the bounty board';
       if (state.location === 'helix_hq') return 'Find Director Hale on the top floor';
@@ -100,6 +117,7 @@ export const Hud = {
       </div>
       <div class="hud-right">
         <span class="chits" id="hud-chits" title="Chits"></span>
+        <button class="hud-menu hud-squad" id="hud-squad" type="button" hidden>Swap team</button>
         <button class="hud-menu" id="hud-menu" type="button">Menu</button>
       </div>
       <canvas class="minimap" id="minimap" hidden aria-label="Map"></canvas>
@@ -121,6 +139,8 @@ export const Hud = {
     locEl = { name: root.querySelector('#hud-name'), jp: root.querySelector('#hud-jp') };
 
     root.querySelector('#hud-menu').addEventListener('click', () => bus.emit('menu'));
+    root.querySelector('#hud-squad').addEventListener('click', () => bus.emit('swap-squad'));
+    window.addEventListener('keydown', e => { if ((e.key === 'Tab' || e.key === 'q' || e.key === 'Q') && state.squads?.split && /^bn_/.test(state.location) && !root.hidden) { e.preventDefault(); bus.emit('swap-squad'); } });
     const a = root.querySelector('#btn-a');
     a.addEventListener('pointerdown', e => { e.preventDefault(); Input.action = true; a.classList.add('down'); });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => a.addEventListener(ev, () => a.classList.remove('down')));
@@ -176,6 +196,9 @@ export const Hud = {
     objEl.hidden = !o;
     objEl.querySelector('span').textContent = o;
     chitsEl.textContent = '₡ ' + state.chits.toLocaleString('en-AU');
+    const sq = root.querySelector('#hud-squad'), split = !!state.squads?.split && /^bn_/.test(state.location);
+    sq.hidden = !split;
+    if (split) sq.textContent = state.squads.active === 'a' ? `Swap to Team B` : 'Swap to Team A';
     const jobEl = root.querySelector('#hud-job'), jt = jobObjective();
     jobEl.hidden = !jt; jobEl.textContent = jt;
   },

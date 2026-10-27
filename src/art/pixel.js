@@ -192,7 +192,7 @@ export function droneSheet(hostile = false) {
 
 // ---- Ship tiles (16x16), in the order used by data/maps.js TILE ----
 export function tileSheet() {
-  const T = 16, cols = 8, count = 152;   // room to grow: 0-151
+  const T = 16, cols = 8, count = 168;   // room to grow: 0-167
   const cv = document.createElement('canvas');
   cv.width = T * cols; cv.height = T * Math.ceil(count / cols);
   const ctx = cv.getContext('2d');
@@ -530,6 +530,32 @@ export function tileSheet() {
   r = at(148); r(0, 0, 16, 16, '#d8dce6'); r(4, 12, 8, 4, '#2c3346'); r(5, 12, 6, 1, '#5fe3d4'); r(5, 1, 6, 10, '#5fe3d422'); r(6, 2, 1, 8, '#5fe3d4'); r(9, 2, 1, 8, '#5fe3d4'); for (let y = 3; y < 10; y += 2) r(6, y, 4, 1, '#5fe3d488');
   // executive carpet
   r = at(149); r(0, 0, 16, 16, '#3a2430'); r(0, 0, 16, 1, '#4a2e3a'); for (let x = 1; x < 16; x += 5) r(x, 1, 1, 15, '#44303a'); r(7, 7, 2, 2, '#2b8f8a66');
+  // ---- Blue Note: the listening array past Saturn ----
+  const grate = r => { r(0, 0, 16, 16, '#0d1630'); for (let y = 1; y < 16; y += 3) r(0, y, 16, 1, '#13204a'); r(0, 0, 16, 1, '#1a2a5a'); r(7, 0, 1, 16, '#0a1124'); r(3, 8, 1, 1, '#3a7bff55'); };
+  // deck grating
+  r = at(150); grate(r);
+  // hull wall with a blue light strip
+  r = at(151); r(0, 0, 16, 16, '#141c36'); r(0, 0, 16, 2, '#1e2a50'); r(0, 9, 16, 2, '#3a7bff'); r(0, 11, 16, 1, '#1a3a8a'); r(0, 13, 16, 3, '#0a0f22'); r(4, 3, 1, 5, '#0a0f22'); r(11, 3, 1, 5, '#0a0f22');
+  // listening dish
+  r = at(152); grate(r); r(1, 2, 14, 10, '#c9ccd6'); r(2, 3, 12, 8, '#8d90a8'); r(4, 5, 8, 4, '#5d6a80'); r(7, 6, 2, 2, '#5fb8ff'); r(7, 11, 2, 4, '#3a4258'); r(1, 2, 14, 1, '#e8ecf4');
+  // cable trunking underfoot
+  r = at(153); grate(r); r(0, 6, 16, 4, '#1a2448'); r(0, 7, 16, 1, '#e9b23a'); r(0, 8, 16, 1, '#3a7bff');
+  // terminal
+  r = at(154); r(0, 0, 16, 16, '#141c36'); r(1, 1, 14, 13, '#262a40'); r(2, 2, 12, 7, '#0a1124'); r(3, 3, 8, 1, '#5fb8ff'); r(3, 5, 6, 1, '#5fb8ff'); r(3, 7, 9, 1, '#3a7bff'); r(4, 10, 8, 3, '#1b1e30'); r(12, 3, 1, 1, '#e9b23a'); r(0, 14, 16, 2, '#0a0f22');
+  // sealed blast door
+  r = at(155); r(0, 0, 16, 16, '#141c36'); r(1, 1, 14, 15, '#3a4258'); r(7, 1, 2, 15, '#262a40'); for (let y = 3; y < 16; y += 4) { r(1, y, 6, 1, '#e9b23a'); r(9, y, 6, 1, '#e9b23a'); } r(6, 7, 4, 3, '#d5473b');
+  // window: Saturn's rings outside
+  r = at(156); r(0, 0, 16, 16, '#141c36'); r(1, 1, 14, 12, '#02040e'); r(2, 6, 12, 2, '#c9a46a'); r(5, 4, 6, 6, '#d8b878'); r(5, 6, 6, 2, '#a8844e'); r(1, 7, 14, 1, '#f1e8d4'); r(3, 2, 1, 1, '#ffffff'); r(12, 10, 1, 1, '#ffffff'); r(0, 13, 16, 3, '#0a0f22');
+  // pressure lever
+  r = at(157); r(0, 0, 16, 16, '#141c36'); r(2, 2, 12, 12, '#262a40'); r(4, 9, 8, 3, '#3a4258'); r(7, 3, 2, 7, '#8d90a8'); r(6, 2, 4, 2, '#d5473b'); r(2, 13, 12, 1, '#e9b23a');
+  // server stack listening to everyone
+  r = at(158); r(0, 0, 16, 16, '#141c36'); r(1, 0, 14, 16, '#1b1e30'); for (let y = 1; y < 15; y += 3) { r(2, y, 12, 2, '#0a1124'); r(3, y, 1, 1, '#5fb8ff'); r(5, y, 1, 1, '#3fb07a'); r(11, y + 1, 2, 1, '#e9b23a'); }
+  // speaker wall, the array's ears
+  r = at(159); r(0, 0, 16, 16, '#141c36'); r(1, 1, 14, 14, '#1e2a50'); [[5, 5], [11, 5], [5, 11], [11, 11]].forEach(([x, y]) => { r(x - 3, y - 3, 6, 6, '#0a1124'); r(x - 2, y - 2, 4, 4, '#262a40'); r(x - 1, y - 1, 2, 2, '#5fb8ff'); });
+  // pressure hatch (sealed)
+  r = at(160); grate(r); r(1, 1, 14, 14, '#3a4258'); r(2, 2, 12, 12, '#5d6a80'); r(7, 2, 2, 12, '#3a4258'); r(2, 7, 12, 2, '#3a4258'); r(6, 6, 4, 4, '#d5473b'); r(7, 7, 2, 2, '#e9b23a');
+  // the core's glow, floor
+  r = at(161); r(0, 0, 16, 16, '#0f1a44'); r(0, 0, 16, 1, '#1a2a6a'); r(3, 3, 10, 10, '#1a3a8a'); r(5, 5, 6, 6, '#3a7bff44'); r(7, 7, 2, 2, '#9fd0ff');
   r = at(31); dock(r); r(3, 3, 10, 12, '#2b8f8a'); r(3, 6, 10, 1, '#1d6663'); r(3, 11, 10, 1, '#1d6663'); r(3, 2, 10, 2, '#3fb0aa'); r(6, 2, 4, 1, '#1d6663'); r(3, 14, 10, 1, '#14403e');
   return cv;
 }

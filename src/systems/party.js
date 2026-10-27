@@ -83,7 +83,13 @@ export function available(id) {
 }
 
 // The three who fight alongside the captain, topped up if someone has left.
+// While the crew is split into two teams, a fight only uses the team you're playing.
+export function squad() { return state.squads?.split ? state.squads[state.squads.active] : null; }
+export function captainFights() { return !squad() || state.squads.active === 'a'; }
+
 export function activeParty() {
+  const sq = squad();
+  if (sq) return sq.members.filter(available);
   const picked = (state.party || []).filter(available).slice(0, 3);
   for (const r of ROSTER) { if (picked.length >= 3) break; if (!picked.includes(r.id) && available(r.id)) picked.push(r.id); }
   return picked;

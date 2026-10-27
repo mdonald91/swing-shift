@@ -6,7 +6,7 @@ import { BOUNTIES } from '../data/bounties.js';
 import { backdrop } from '../art/backdrops.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
 import { state, setFlag, saveGame, addRep } from '../state.js';
-import { crewStats, startingGroove, rhythmWindow, autoRhythm, pendingPicks, activeParty, addXp, available, level, partyAverageLevel, CREW_KEYS } from '../systems/party.js';
+import { crewStats, startingGroove, rhythmWindow, autoRhythm, pendingPicks, activeParty, addXp, available, level, partyAverageLevel, CREW_KEYS, captainFights } from '../systems/party.js';
 import { MAPS } from '../data/maps.js';
 import { bus } from '../bus.js';
 import { block, unblock } from '../systems/input.js';
@@ -44,13 +44,25 @@ export function startBattle(id, { retry = false, flag = null, retreatTo = null }
   if (!retry) block();
   cleanup();
   Audio.setMood('battle', true);
-  const party = [
-    { key: 'captain', id: 'player', name: state.player.name, ...crewStats('captain') },
-    ...activeParty().map(k => ({ key: k, id: k, name: CREW[k].short, ...crewStats(k) }))
-  ].map(u => ({ ...u, max: u.hp, spMax: u.sp, sp: Math.round(u.sp * .4), ko: false, guard: false }));
+  const unit = k => ({ ...(k === 'captain' ? { key: 'captain', id: 'player', name: state.player.name } : { key: k, id: k, name: CREW[k].short }), ...crewStats(k) });
+  const ready = u => ({ ...u, max: u.hp, spMax: u.sp, sp: Math.round(u.sp * .4), ko: false, guard: false });
+  let party = [...(captainFights() ? ['captain'] : []), ...activeParty()].map(unit).map(ready);
+  // Blue Note: both teams fight at once, taking turns (see switchTeam)
+  let teams = null;
+  if (enc.teams && state.squads?.split) {
+    const sq = state.squads;
+    // each side's enemies are sized to the team facing them (built for three a side)
+    const mk = (list, tag, n) => list.map((e, i) => { const k = n / 3, hp = Math.round(e.hp * k); return { ...e, key: tag + i, ko: false, hp, max: hp, atk: Math.round(e.atk * (.8 + .2 * k)) }; });
+    const pa = ['captain', ...sq.a.members.filter(available)].map(unit).map(ready), pb = sq.b.members.filter(available).map(unit).map(ready);
+    teams = [
+      { name: 'Team A', who: state.player.name, party: pa, enemies: mk(enc.enemiesA, 'a', pa.length) },
+      { name: 'Team B', who: CREW[sq.b.leader]?.short || 'Team B', party: pb, enemies: mk(enc.enemiesB, 'b', pb.length) }
+    ];
+    party = teams[0].party;
+  }
   // encounters marked "scale" grow with the crew (the rehearsal)
   const L = enc.scale ? partyAverageLevel() - 1 : 0;
-  const enemies = enc.enemies.map((e, i) => ({
+  let enemies = (enc.enemies || []).map((e, i) => ({
     ...e, key: 'e' + i, ko: false,
     hp: Math.round(e.hp * (1 + .2 * L)), atk: Math.round(e.atk + 1.3 * L), def: Math.round((e.def || 0) + .4 * L), xp: Math.round((e.xp || 15) * (1 + .3 * L))
   })).map(e => ({ ...e, max: e.hp }));
@@ -85,14 +97,29 @@ export function startBattle(id, { retry = false, flag = null, retreatTo = null }
     bonded.forEach(u => { u.atk = Math.round(u.atk * 1.15); u.inspired = true; });
     if (bonded.length) assists.push(`${bonded.map(u => u.name).join(' and ')} ${bonded.length > 1 ? 'look' : 'looks'} at you and ${bonded.length > 1 ? 'nod' : 'nods'}. Inspired: they hit harder this fight.`);
   }
-  enemies.forEach((e, i) => { e.key = 'e' + i; });
-  B = { jam: JAM_STYLES[state.jamStyle] ? state.jamStyle : 'bigband', id, enc, party, enemies, groove: Math.min(100, groove0), assists, turn: 0, overclock: 0, shield: shield0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null, xflag: flag, retreatTo };
+  // a split team (Blue Note) is smaller than a full band, so ordinary fights shrink to match it
+  if (!teams && state.squads?.split && party.length < 4) {
+    const k = party.length / 4;
+    enemies.forEach(e => { e.hp = e.max = Math.round(e.hp * k); e.atk = Math.round(e.atk * (.8 + .2 * k)); e.xp = Math.round((e.xp || 15) * k); });
+  }
+  if (teams) {
+    enemies = teams[0].enemies;
+    const f = state.flags, holds = [];
+    if (f.lyra_joined || f.proto_free) holds.push('Lyra holds the network open.');
+    if (f.rhea_joined || f.bnm_rhea) holds.push('Rhea has locked the relay routing.');
+    teams.holds = holds.length; teams.holdBy = holds.join(' ');
+    if (holds.length) assists.push(`Warden Prime can reroute its dead nodes. ${holds.join(' ')} The first ${holds.length > 1 ? 'two reroutes' : 'reroute'} will fail.`);
+    if (f.bnm_juno) { teams[1].enemies.forEach(e => { e.weak = 2; }); assists.push("Juno is in the array's control loop. The relay nodes hit softer for a while."); }
+  }
+  else enemies.forEach((e, i) => { e.key = 'e' + i; });
+  B = { jam: JAM_STYLES[state.jamStyle] ? state.jamStyle : 'bigband', id, enc, party, enemies, groove: Math.min(100, groove0), assists, teams, team: 0, holds: teams ? teams.holds : 0, holdBy: teams ? teams.holdBy : '', turn: 0, overclock: 0, shield: shield0, perfects: 0, ricochet: 0, wrench: 0, over: false, mode: 'busy', pending: null, xflag: flag, retreatTo };
 
   root = el(`<div class="bt" role="dialog" aria-label="Combat">
     <div class="bt-bg">${backdrop(enc.bg)}</div>
     <div class="bt-wrap">
       <header class="bt-hud">
         <span class="bt-tag">Combat <span class="jp">戦闘</span></span>
+        ${teams ? '<span class="bt-team"></span>' : ''}
         <div class="metro" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <div class="groove"><span>Groove</span><div class="gbar"><i></i></div></div>
       </header>
@@ -110,7 +137,8 @@ export function startBattle(id, { retry = false, flag = null, retreatTo = null }
     <div class="bt-over" hidden></div>
   </div>`);
   sceneLayer().append(root);
-  root.querySelectorAll('.bt-card').forEach(c => c.addEventListener('click', () => onCard(c.dataset.k)));
+  wireCards();
+  if (teams) teamBanner();
   root.addEventListener('pointerdown', e => rhythmPress(e.timeStamp));
   document.addEventListener('keydown', onKey);
   update();
@@ -126,6 +154,30 @@ export function startBattle(id, { retry = false, flag = null, retreatTo = null }
     if (root) nextActor();
   }, 900);
 }
+
+function wireCards() { root.querySelectorAll('.bt-card').forEach(c => c.addEventListener('click', () => onCard(c.dataset.k))); }
+function teamBanner() {
+  const t = B?.teams ? B.teams[B.team] : null;
+  const el2 = root?.querySelector('.bt-team'); if (!el2 || !t) return;
+  el2.textContent = `${t.name} · ${t.who}`; el2.dataset.t = B.team;
+}
+// Blue Note: hand the turn to the other team, if it still has someone standing and something to fight.
+function switchTeam() {
+  if (!B.teams) return false;
+  const other = B.teams[1 - B.team];
+  if (!living(other.party).length || !living(other.enemies).length) return false;
+  B.team = 1 - B.team; B.party = other.party; B.enemies = other.enemies; B.turn = 0;
+  root.querySelector('.bt-enemies').innerHTML = B.enemies.map(e => card(e, true)).join('');
+  root.querySelector('.bt-party').innerHTML = B.party.map(p => card(p, false)).join('');
+  wireCards(); teamBanner(); update();
+  root.classList.toggle('team-b', B.team === 1);
+  return true;
+}
+const allEnemies = () => B.teams ? B.teams.flatMap(t => t.enemies) : B.enemies;
+const allParty = () => B.teams ? B.teams.flatMap(t => t.party) : B.party;
+// the Warden network: each relay node that's down weakens Warden Prime's shield
+const nodesDown = () => allEnemies().filter(e => e.ai === 'node' && e.ko).length;
+const primeShield = () => Math.min(1, .4 + .2 * nodesDown());
 
 function cleanup() {
   cancelAnimationFrame(raf); raf = 0;
@@ -201,6 +253,7 @@ function update() {
     if (u.ai === 'nocturne' && !u.ko && B.enemies.some(x => x.accomp && !x.ko)) tags.push('Accompanied');
     if (u.ai === 'metronome' && !u.ko) tags.push(u.count <= 1 ? 'Downbeat next!' : `Count-in ${u.count}`);
     if (u.inspired && !u.ko) tags.push('Inspired');
+    if (u.ai === 'prime' && !u.ko) { const up = 3 - nodesDown(); tags.push(up ? `Network shield ${up}/3` : 'Shield down'); }
     if (u.spMax && B.overclock > 0 && !u.ko) tags.push('Overclocked');
     if (u.spMax && B.shield > 0 && !u.ko) tags.push('Shielded');
     c.querySelector('.bt-tags').innerHTML = tags.map(t => `<em>${t}</em>`).join('');
@@ -214,6 +267,24 @@ function update() {
 /* ---------------- turns ---------------- */
 function nextActor() {
   if (!root || checkEnd()) return;
+  // Blue Note: a team with nothing left to fight (or nobody standing) hands over straight away, even mid-turn
+  if (B.teams && (!living(B.enemies).length || !living(B.party).length)) {
+    const was = B.teams[B.team], wiped = !living(B.party).length, other = B.teams[1 - B.team];
+    // one team down and the other team done with its own fight: the survivors take over what's left
+    if (wiped && living(other.party).length && !living(other.enemies).length && living(was.enemies).length) {
+      other.enemies = living(was.enemies); was.enemies = [];
+    } else if (!wiped && !living(was.enemies).length && !living(other.party).length && living(other.enemies).length) {
+      was.enemies = living(other.enemies); other.enemies = []; B.enemies = was.enemies;
+      root.querySelector('.bt-enemies').innerHTML = B.enemies.map(e => card(e, true)).join('');
+      wireCards(); update();
+      log(`${other.name} is down. ${was.name} takes on what's left.`);
+      setTimeout(nextActor, 1300); return;
+    }
+    if (switchTeam()) {
+      log(wiped ? `${was.name} is down. It's all on ${B.teams[B.team].name} now.` : `${was.name} has nothing left to fight. Over to ${B.teams[B.team].name}.`);
+      setTimeout(nextActor, 1200); return;
+    }
+  }
   while (B.turn < B.party.length && B.party[B.turn].ko) B.turn++;
   if (B.turn >= B.party.length) { enemyPhase(); return; }
   const a = B.party[B.turn];
@@ -462,6 +533,7 @@ function hitEnemy(a, e, mult, word, snd, { type, pierce } = {}) {
   let v = a.atk * mult * typeMult * rnd(.9, 1.1) * (B.overclock > 0 ? 1.3 : 1) * (e.jammed > 0 ? 1.25 : 1) - (pierce ? 0 : e.def);
   if (e.shielded) v *= .6;
   if (e.ai === 'nocturne' && B.enemies.some(x => x.accomp && !x.ko)) v *= .65;
+  if (e.ai === 'prime') v *= primeShield();
   v = Math.max(1, Math.round(v));
   e.hp = Math.max(0, e.hp - v);
   const c = cardOf(e); pop(c, weak ? 'WEAK!' : resist ? 'RESIST' : word, weak ? 'weak' : resist ? 'resist' : ''); pop(c, '-' + v, 'num'); shake(c);
@@ -601,6 +673,33 @@ async function enemyPhase() {
       } else {
         const p = pick(targets); const v = hitParty(e, p, 1.1, 'BWOOM!');
         log(`Vox swings his bass like a club at ${p.name}. ${v} damage.`);
+      }
+    } else if (e.ai === 'prime') {
+      B.primeRound = (B.primeRound || 0) + 1;
+      const dead = B.teams ? B.teams[1].enemies.filter(x => x.ai === 'node' && x.ko) : [];
+      if (B.primeRound % 4 === 0 && dead.length && B.holds > 0) {
+        B.holds--; pop(cardOf(e), 'REROUTE?'); Audio.sfx('clam');
+        log(`Warden Prime tries to reroute a dead node. ${B.holdBy} It fails.`); update(); await sleep(1000);
+      } else if (B.primeRound % 4 === 0 && dead.length) {
+        const n = dead[0]; n.ko = false; n.hp = Math.round(n.max * .5);
+        pop(cardOf(e), 'REROUTE'); Audio.sfx('heal');
+        log(`REROUTE. Warden Prime brings ${n.name} back online at half power. Team B will have to take it down again.`); update(); await sleep(1100);
+      } else if (Math.random() < .35) {
+        log('FEEDBACK. Every speaker in the array screams the four bars at once.');
+        targets.forEach((p, i) => setTimeout(() => root && hitParty(e, p, .62, 'SKREE!'), i * 150));
+        await sleep(500);
+      } else {
+        const p = pick(targets); const v = hitParty(e, p, 1.15, 'BZOW!');
+        log(`Warden Prime's eye locks on ${p.name}. ${v} damage.`);
+      }
+    } else if (e.ai === 'node') {
+      if (e.role === 'jammer' && Math.random() < .45) {
+        const p = pick(targets); const drain = Math.min(p.sp, 10); p.sp -= drain;
+        const v = hitParty(e, p, .7, 'GLITCH');
+        log(`${e.name} floods ${p.name}'s comms with static: ${v} damage and ${drain} SP gone.`);
+      } else {
+        const p = pick(targets); const v = hitParty(e, p, 1, e.word || 'ZZT!');
+        log(`${e.name} ${e.verb || 'fires at'} ${p.name}. ${v} damage.`);
       }
     } else if (e.ai === 'metronome') {
       e.pushed = false;
@@ -751,16 +850,23 @@ async function enemyPhase() {
   B.party.forEach(p => { if (!p.ko) p.sp = Math.min(p.spMax, p.sp + 4); });
   B.turn = 0; update();
   await sleep(400);
+  if (B.teams && switchTeam()) {
+    log(`Over to ${B.teams[B.team].name}: ${B.teams[B.team].who}'s squad.`);
+    Audio.sfx('zap'); await sleep(1100); if (!root) return;
+  }
   nextActor();
 }
 
 function checkEnd() {
   if (!B || B.over) return true;
-  if (!living(B.enemies).length) {
+  const foes = allEnemies(), boss = foes.filter(e => e.boss);
+  const won = B.teams ? (boss.length ? boss.every(e => e.ko) : !living(foes).length) : !living(B.enemies).length;
+  if (won) {
     B.over = true; B.mode = 'busy'; cmd('');
     Audio.sfx('cymbal');
+    if (B.teams) { foes.forEach(e => { e.ko = true; e.hp = 0; }); update(); log('Warden Prime goes dark, and every node in the network goes dark with it.'); }
     setTimeout(async () => {
-      const res = { ...B };
+      const res = { ...B, party: allParty(), enemies: foes };
       // collect skirmish spoils now; bounty money comes in the ledger later
       const rw = res.enc.bounty ? {} : (res.enc.reward || {});
       if (res.enc.flag) setFlag(res.enc.flag);
@@ -779,7 +885,7 @@ function checkEnd() {
     }, 1200);
     return true;
   }
-  if (!living(B.party).length) {
+  if (!living(allParty()).length) {
     B.over = true; B.mode = 'busy'; cmd('');
     Audio.sfx('scratch'); Audio.setMood('ship');
     setTimeout(showDefeat, 700);
@@ -862,7 +968,8 @@ const AFTER = {
   nocturne: { cut: 'nocturne_victory', choice: 'halcyon_choice', ending: 'nocturne_ending', title: 'Track 06 · Mister Nocturne' },
   proto: { cut: 'sentinel_victory', choice: 'proto_choice', ending: 'proto_ending', title: 'Track 05 · Runaway Prototype' },
   mantis: { cut: 'mantis_victory', choice: 'mantis_choice', ending: 'mantis_ending', title: 'Track 04 · Iron Mantis' },
-  metronome: { cut: 'metronome_victory', choice: 'hale_choice', ending: 'conductor_ending', title: 'Track 07 · The Conductor' }
+  metronome: { cut: 'metronome_victory', choice: 'hale_choice', ending: 'conductor_ending', title: 'Track 07 · The Conductor' },
+  bluenote: { cut: 'bluenote_victory', choice: 'array_choice', ending: 'bluenote_ending', title: 'Track 08 · Blue Note' }
 };
 
 async function finishBounty(res) {
@@ -876,6 +983,23 @@ async function finishBounty(res) {
 function ledgerFor(res) {
   const b = BOUNTIES.find(x => x.id === res.id) || { name: 'Bounty', reward: 0 };
   const style = [`Style bonus: ${res.perfects} ${res.perfects === 1 ? 'hit' : 'hits'} on the beat`, res.perfects * 150];
+  if (res.id === 'bluenote') {
+    const f = state.flags;
+    return {
+      outcome: 'The Warden network is down. Ambrose Hale was not home.',
+      extra: f.array_down ? 'The array is scrap' : f.array_ours ? 'The array listens for us now' : 'The whole system heard the fifth bar',
+      items: [
+        ['Bounty Office: Warden network decommissioned (a public service)', 30000],
+        ...(f.array_down ? [['Salvage: forty tuning cores, slightly haunted', 22000]] : []),
+        ...(f.array_ours ? [["Juno's first report: free", 0]] : []),
+        ...(f.array_fifth ? [['Royalties for one bar of music, played everywhere at once', 9000]] : []),
+        style,
+        ['Fuel to Saturn and back', -6200],
+        ['Docking fees, twice (you came in two teams)', -1400],
+        ['Repairs: everything Team B touched', -4800]
+      ]
+    };
+  }
   if (res.id === 'metronome') {
     const f = state.flags;
     return {
@@ -1016,13 +1140,14 @@ function showLedger(res) {
     Audio.sfx('confirm');
     screen.remove();
     playCut(a.ending, { restoreMood: false }).then(() => {
+      if (res.id === 'bluenote') state.squads = null;     // the two teams are back together
       state.bounties[res.id] = 'done';
       setFlag(res.id + '_done');
       if (res.id === 'velvet' && !state.flags.rep_init) { addRep({ office: 2 }); setFlag('rep_init'); }
       unblock();
       travel('ship', 'lounge');
       const ok = saveGame();
-      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04', proto: 'Track 05', nocturne: 'Track 06', metronome: 'Track 07' }[res.id] || 'Track';
+      const label = { velvet: 'Track 01', ghost: 'Track 02', courier: 'Track 03', mantis: 'Track 04', proto: 'Track 05', nocturne: 'Track 06', metronome: 'Track 07', bluenote: 'Track 08' }[res.id] || 'Track';
       setTimeout(() => { toast(ok ? `${label} complete. Game saved.` : `${label} complete.`); Hud.refresh(); }, 800);
     });
   });

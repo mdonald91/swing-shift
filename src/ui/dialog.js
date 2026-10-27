@@ -9,7 +9,7 @@ import { BOND_HP, BOND_ATK } from '../systems/party.js';
 import { block, unblock } from '../systems/input.js';
 import { Audio } from '../systems/audio.js';
 import { bus } from '../bus.js';
-import { el, esc, dialogLayer, toast, travel } from './ui.js';
+import { el, esc, dialogLayer, toast, travel, splitCrew, resumeSquad } from './ui.js';
 import { Hud } from './hud.js';
 import { playCut } from './cutscene.js';
 import { startBattle } from './battle.js';
@@ -17,7 +17,7 @@ import { openShop } from './menus.js';
 import { busk } from './busk.js';
 import { openCircuit } from './circuit.js';
 import { openEcho } from './echo.js';
-import { partyAverageLevel } from '../systems/party.js';
+import { partyAverageLevel, available } from '../systems/party.js';
 import { completeJob, jobObjective } from '../systems/jobs.js';
 
 // Things a conversation can trigger. Anything that changes scene waits until the box closes.
@@ -76,6 +76,29 @@ const ACTIONS = {
     setTimeout(() => toast(flag('cass_jailed') ? `Cass handed in: ₡ 5,000. Bond with Rook deepened.` : 'Cass is gone, with a head start. Bond with Rook deepened.'), 300);
     after = () => bus.emit('dialog-closed');
   },
+  // ---- Track 08: Blue Note ----
+  departBlueNote() { after = () => playCut('bluenote_depart', { restoreMood: false }).then(() => travel('bn_ring')); },
+  toBlueNote() { after = () => (state.squads?.split ? resumeSquad() : travel('bn_ring')); },
+  bnToShip() { after = () => travel('ship', 'cockpit'); },
+  split(leader) {
+    after = () => playCut('bn_split', { restoreMood: false }).then(() => {
+      splitCrew(leader); Hud.refresh(); bus.emit('dialog-closed');
+      setTimeout(() => toast(`Team B, led by ${CREW[leader].short}, heads for the spine. Swap teams with the button at the top.`), 400);
+    });
+  },
+  bnOpen(msg) { Audio.sfx('clank'); bus.emit('shake'); setTimeout(() => { toast(msg); Hud.refresh(); }, 300); },
+  // a crew member's moment on the station: a short scene, then their bond deepens
+  moment(k) {
+    after = () => playCut('bnm_' + k).then(() => {
+      setFlag('bnm_' + k);
+      const crew = ['rook', 'tam', 'brushes', 'rhea', 'lyra'].includes(k) && available(k);
+      if (crew && (state.bonds[k] || 0) < 3) { state.bonds[k] = (state.bonds[k] || 0) + 1; setTimeout(() => toast(`Bond with ${CREW[k].short} deepened`), 300); }
+      if (k === 'rhea') setTimeout(() => toast('The relay routing is locked: Warden Prime will struggle to reroute'), 2400);
+      if (k === 'juno') setTimeout(() => toast("Juno is in the array's control loop"), 2400);
+      Hud.refresh(); bus.emit('dialog-closed');
+    });
+  },
+  bnBoss() { after = () => playCut('bn_core', { restoreMood: false }).then(() => startBattle('warden_net')); },
   // ---- Act 3: Cygnus under lockdown ----
   gateOpen() { Audio.sfx('confirm'); setTimeout(() => toast('The checkpoint gate is open'), 300); },
   hatchOpen() { Audio.sfx('clank'); setTimeout(() => toast('The maintenance hatches are open'), 300); },

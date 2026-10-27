@@ -14,7 +14,8 @@ import { tip } from './tips.js';
 import { playFinale, playFinale2 } from './recap.js';
 import { openUpgrades, openWorkshop, openBooth } from './hihat.js';
 import { jobDialogue } from '../systems/jobs.js';
-import { available } from '../systems/party.js';
+import { available, CREW_KEYS } from '../systems/party.js';
+import { CREW } from '../data/crew.js';
 import { startBattle } from './battle.js';
 import { playAct3Open } from './recap.js';
 
@@ -72,6 +73,7 @@ export const UI = {
       toast(['Spotted! The collectors close in.', 'A visor flashes red. You have been made.', '"Hi-Hat crew! Over here!"'][Math.floor(Math.random() * 3)]);
       setTimeout(() => startBattle(fight, { flag: 'patrol_' + state.location + '_' + id, retreatTo: 'default' }), 800);
     });
+    bus.on('swap-squad', () => { if (!modals.length && !document.querySelector('.dlg, .cs, .bt, .tip')) swapSquad(); });
     bus.on('menu', () => { if (!modals.length && !document.querySelector('.dlg')) openPauseMenu(); });
     bus.on('hint', t => Hud.hint(t));
     bus.on('area', map => {
@@ -93,6 +95,12 @@ export const UI = {
       if (state.location === 'ship' && flag('courier_done') && !flag('act1_done')) setTimeout(playFinale, 1200);
       if (state.location === 'ship' && flag('nocturne_done') && !flag('act2_done')) setTimeout(playFinale2, 1200);
       if (state.location === 'ship' && flag('act2_done') && !flag('act3_open')) setTimeout(playAct3Open, 1200);
+      if (state.location === 'bn_ring' && !flag('bn_arrived')) {
+        setTimeout(() => playCut('bn_arrive').then(() => { setFlag('bn_arrived'); Hud.refresh(); }), 400);
+      }
+      if (state.location === 'bn_spine' && !flag('bn_spine_arrived')) {
+        setTimeout(async () => { setFlag('bn_spine_arrived'); await tip('squads'); runDialogue('bn_spine_arrive'); Hud.refresh(); }, 700);
+      }
       if (state.location === 'cygnus_lock' && !flag('lock_arrived')) {
         setTimeout(async () => { setFlag('lock_arrived'); await tip('patrols'); runDialogue('lock_arrive'); Hud.refresh(); }, 700);
       }
@@ -180,6 +188,44 @@ export function updateStanding() {
   set('std_helix', (r.helix || 0) >= 2);
   set('std_helix_bad', (r.helix || 0) <= -2);
   for (const k of ['rook', 'tam', 'brushes', 'rhea', 'lyra']) set('bonded_' + k, (b[k] || 0) >= 2 && available(k));
+}
+
+// ---- Blue Note: the crew splits into two teams, and you swap between them ----
+export function splitCrew(leader) {
+  const crew = CREW_KEYS.filter(k => k !== 'captain' && available(k));
+  const rest = crew.filter(k => k !== leader);
+  const second = rest.find(k => ['brushes', 'tam', 'lyra'].includes(k)) || rest[0];
+  const teamB = [leader, second];
+  if (crew.length >= 5) teamB.push(rest.filter(k => k !== second).at(-1));
+  const teamA = crew.filter(k => !teamB.includes(k));
+  state.squads = {
+    split: true, active: 'a',
+    a: { members: teamA, loc: state.location, pos: state.pos ? { ...state.pos } : null, face: 'right' },
+    b: { members: teamB, leader, loc: 'bn_spine', pos: null, face: 'right' }
+  };
+  setFlag('bn_split');
+  if (!flag('rhea_joined')) setFlag('bn_rhea_here');     // Rhea walked away after Juno; she turns up in the spine
+}
+const teamName = k => k === 'a' ? `Team A (${state.player.name})` : `Team B (${CREW[state.squads.b.leader]?.short || 'B'})`;
+export function swapSquad() {
+  const sq = state.squads; if (!sq?.split || !/^bn_/.test(state.location) || !game.scene.isActive('world')) return;
+  const cur = sq[sq.active], scene = game.scene.getScene('world');
+  cur.loc = state.location; cur.pos = state.pos ? { ...state.pos } : null; cur.face = scene?.facing || 'down';
+  sq.active = sq.active === 'a' ? 'b' : 'a';
+  resumeSquad();
+  Audio.sfx('zap');
+  setTimeout(() => toast(`Now playing ${teamName(sq.active)}`), 300);
+}
+// Go to wherever the team you're playing left off.
+export function resumeSquad() {
+  const sq = state.squads, t = sq[sq.active], m = MAPS[t.loc];
+  const sp = m.spawns.default;
+  state.location = t.loc;
+  state.pos = t.pos || { px: sp.x * 16 + 8, py: sp.y * 16 + 8 };
+  state.face = t.face || sp.face || null;
+  updateStanding();
+  if (game.scene.isActive('world') || game.scene.isPaused('world')) game.scene.stop('world');
+  game.scene.start('world');
 }
 
 // Cygnus is under lockdown while the Conductor's bounty is out on the crew.

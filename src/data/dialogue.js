@@ -24,6 +24,7 @@ export function entry(id, flags, location) {
   switch (id) {
     case 'rook': return docks ? 'rook_docks' : flags.rook_s1 && !flags.rook_s2 ? 'rook_waiting' : flags.rook_s2 ? 'rook_after2' : flags.velvet_done ? 'rook_after' : flags.met_rook ? 'rook_idle' : 'rook_first';
     case 'cass': return location === 'cygnus_lock' ? 'cass_lock' : 'cass';
+    case 'hale': return location === 'bn_ring' ? 'hale_bn' : 'hale';
     // ---- Nyx ----
     case 'sato': return flags.proto_done ? 'sato_done' : flags.met_sato ? 'sato_idle' : 'sato';
     case 'lyra': return location === 'titan' ? 'lyra_titan' : location === 'ship' ? 'lyra_ship' : flags.lyra_met ? 'lyra_wait' : 'lyra_first';
@@ -55,6 +56,7 @@ export function entry(id, flags, location) {
       if (location === 'targon') return 'rhea_targon';
       if (location === 'nyx') return 'rhea_nyx';
       if (location === 'titan') return 'rhea_titan';
+      if (location === 'bn_spine') return 'bn_rhea';
       if (location === 'ship') return 'rhea_ship';
       return flags.rhea_met ? 'rhea_idle' : 'rhea_first';
     case 'drone': return 'drones';
@@ -230,6 +232,7 @@ export const DIALOGUE = {
       { t: 'Targon', if: 'bounty_mantis', go: 'nav_targon' },
       { t: 'Nyx', if: 'bounty_proto', go: 'nav_nyx' },
       { t: 'Titan', if: 'bounty_nocturne', go: 'nav_titan' },
+      { t: 'Blue Note station', if: 'blue_note_codes', ifNot: 'bluenote_done', go: 'nav_bluenote' },
       { t: 'Stay put' }
     ] }
   ],
@@ -1168,6 +1171,100 @@ export const DIALOGUE = {
     { set: 'brushes_s2' }, { do: 'bond', arg: 'brushes' }
   ],
 
+  // ---- Track 08: Blue Note ----
+  nav_bluenote: [
+    { if: 'bn_arrived', do: 'toBlueNote' },
+    { ifNot: 'bn_arrived', do: 'departBlueNote' }
+  ],
+  bn_ship: [
+    { who: null, if: 'bn_split', t: "Not without Team B. Nobody gets left on this station." },
+    { ifNot: 'bn_split', choices: [{ t: 'Back to the ship', do: 'bnToShip' }, { t: 'Stay' }] }
+  ],
+  bn_d1door: [
+    { ifNot: 'bn_split', go: 'bn_split' },
+    { who: null, if: 'bn_split', ifNot: 'bn_d1', t: "Sealed. The lock panel says CONTROLLED FROM SPINE. Team B will have to open it." },
+    { who: null, if: 'bn_d1', t: 'The ring door stands open.' }
+  ],
+  bn_split: [
+    { who: 'brushes', t: "Captain. This door is sealed from the maintenance spine, and the spine hatch is sealed from the ring. Whoever built this station hated teamwork." },
+    { who: 'brushes', t: 'We will have to split up. Two teams. You take the ring. Who leads the second team, through the spine?' },
+    { choices: [
+      { t: 'Rook. Keep them alive.', go: 'bn_lead_rook' },
+      { t: "Tam. You know machines.", go: 'bn_lead_tam' },
+      { t: 'Rhea. You know Helix.', if: 'rhea_joined', go: 'bn_lead_rhea' }
+    ] }
+  ],
+  bn_lead_rook: [{ who: 'rook', t: "Me? Leading? Fine. Nobody touch anything I wouldn't. Which is everything." }, { do: 'split', arg: 'rook' }],
+  bn_lead_tam: [{ who: 'tam', t: "Spine team, on me. If anything beeps, I'll hit it. Lovingly." }, { do: 'split', arg: 'tam' }],
+  bn_lead_rhea: [{ who: 'rhea', t: "I used to fix these spines for Helix. I know where the bodies are buried. Not literally. Probably." }, { do: 'split', arg: 'rhea' }],
+  bn_spine_arrive: [
+    { who: 'brushes', t: "Team B, in position. The ring team's door controls are right here by the airlock. Let us not keep the Captain waiting." },
+    { who: 'brushes', t: 'Further in, a pressure hatch. Sealed from the ring side. The node room is past it, at the very end.' }
+  ],
+  bn_t1: [
+    { who: null, if: 'bn_d1', t: 'RING DOOR: OPEN. The panel shows Team A on a little camera, waving.' },
+    { ifNot: 'bn_d1', who: null, t: 'RING DOOR CONTROL. One big switch. It is labelled DO NOT.' },
+    { ifNot: 'bn_d1', choices: [{ t: 'Do.', set: 'bn_d1', do: 'bnOpen', arg: 'The ring door is open for Team A' }, { t: 'Leave it' }] }
+  ],
+  bn_lever: [
+    { who: null, if: 'bn_d2', t: 'The pressure lever is down. Somewhere below, a hatch is open.' },
+    { ifNot: 'bn_d2', who: null, t: "A pressure lever. The gauge beside it reads SPINE HATCH: SEALED." },
+    { ifNot: 'bn_d2', choices: [{ t: 'Pull it', set: 'bn_d2', do: 'bnOpen', arg: "Team B's pressure hatch is open" }, { t: 'Not yet' }] }
+  ],
+  bn_hatch: [
+    { who: null, if: 'bn_d2', t: 'The pressure hatch hangs open.' },
+    { who: null, ifNot: 'bn_d2', t: "A pressure hatch, sealed from the ring. Team A has a lever for it somewhere." }
+  ],
+  bn_cams: [
+    { who: null, if: 'bn_cams', t: 'LISTENER CONTROL: ALL UNITS IN STANDBY. They are humming to themselves.' },
+    { ifNot: 'bn_cams', who: null, t: 'LISTENER CONTROL. Every drone on the station, on one screen. There is a button marked STANDBY.' },
+    { ifNot: 'bn_cams', choices: [{ t: 'Press it', set: 'bn_cams', do: 'bnOpen', arg: 'Every listener drone on the station is in standby' }, { t: 'Leave it' }] }
+  ],
+  bn_t3: [
+    { who: null, if: 'bn_d3', t: 'CORE DOOR: OPEN. Team B is in place. The relay nodes in here hum louder every minute.' },
+    { ifNot: 'bn_d3', who: null, t: "CORE DOOR CONTROL. The three relay nodes around you feed Warden Prime's shield." },
+    { ifNot: 'bn_d3', choices: [{ t: 'Open the core door', set: 'bn_d3', do: 'bnOpen', arg: "The core door is open. Swap to Team A when you're ready" }, { t: 'Not yet' }] }
+  ],
+  bn_coredoor: [
+    { who: null, ifNot: 'bn_d3', t: "The core door. Sealed from the node room. Team B has to get there first." },
+    { if: 'bn_d3', who: null, t: "The core door is open. Behind it, something enormous is listening. On the comms, Team B says they're ready." },
+    { if: 'bn_d3', choices: [{ t: 'Go in. Both teams, together.', do: 'bnBoss' }, { t: 'Wait' }] }
+  ],
+  hale_bn: [{ who: 'hale', pick: [
+    "I'll watch the dock. If he tries to leave by ship, I'll know. I used to fly his.",
+    "My father designed this station to need two people. He never had two people. He had employees."
+  ] }],
+  // the moments: one for every crew member, and the ones who left
+  moment_tam: [{ if: 'bnm_tam', who: null, t: "D. FERRO, TARGON WORKS. And underneath, freshly scratched: T.O. WAS HERE." }, { ifNot: 'bnm_tam', do: 'moment', arg: 'tam' }],
+  moment_brushes: [{ if: 'bnm_brushes', who: null, t: 'B-SERIES PERCUSSION ARCHIVE. One file is marked ERROR. It is the best drum fill you have ever heard.' }, { ifNot: 'bnm_brushes', do: 'moment', arg: 'brushes' }],
+  moment_lyra: [{ if: 'bnm_lyra', who: null, t: "The conductor's podium. Empty. Keep it that way." }, { ifNot: 'bnm_lyra', do: 'moment', arg: 'lyra' }],
+  moment_rook: [{ if: 'bnm_rook', who: null, t: "The Office logbook. Rook's name, Cass's name, and a little baton drawn beside both." }, { ifNot: 'bnm_rook', do: 'moment', arg: 'rook' }],
+  moment_rhea: [{ if: 'bnm_rhea', who: null, t: 'The Helix comms desk. The relay routing is locked. Someone has left a note: DONE LISTENING.' }, { ifNot: 'bnm_rhea', do: 'moment', arg: 'rhea' }],
+  bn_rhea: [{ go: 'moment_rhea' }],
+  moment_juno: [{ if: 'bnm_juno', who: null, t: 'The holding cell. Open now. Nobody is coming back to it.' }, { ifNot: 'bnm_juno', do: 'moment', arg: 'juno' }],
+  // after Warden Prime: what to do with the array
+  array_choice: [
+    { who: 'brushes', t: "Captain, the array is ours. Every relay, every ear, every speaker in the system runs through this station. What do we do with it?" },
+    { choices: [
+      { t: 'Tear it down. Nobody should listen like this.', go: 'array_down' },
+      { t: 'Keep it running. We listen for him, for once.', go: 'array_ours' },
+      { t: 'Play the fifth bar through it. Every speaker, everywhere.', if: 'fifth_bar', go: 'array_fifth' }
+    ] }
+  ],
+  array_down: [
+    { set: 'array_down' }, { rep: { office: 1 } },
+    { who: 'tam', t: "Pulling every tuning core. Ferro would want them back. I'll sell her the rest. At a discount. Small discount." }
+  ],
+  array_ours: [
+    { set: 'array_ours' },
+    { who: 'juno', if: 'bnm_juno', t: "I'll run it. Quietly. If he so much as hums, we'll hear him." },
+    { who: 'rhea', if: 'rhea_joined', t: "Fine. But I'm putting a big sign on it. WE ARE THE GOOD ONES. In case anyone asks." }
+  ],
+  array_fifth: [
+    { set: 'array_fifth' },
+    { who: 'brushes', t: 'Playing it now. Every speaker in the system. Every ship, every station, every noodle cart.' },
+    { who: null, t: 'For one bar, the whole system hears the end of the song. Then it is quiet. Wherever he is, Ambrose Hale heard it too.' }
+  ],
   // ---- Act 3, Track 07: Cygnus under lockdown ----
   lock_arrive: [
     { who: 'brushes', t: "Captain, collectors on the plaza. Their visors light up red wherever they are looking. Please stay out of the red." },

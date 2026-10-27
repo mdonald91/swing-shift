@@ -28,7 +28,9 @@ export const TILE = {
   'Γ': 124, 'Δ': 125, 'Θ': 126, 'Λ': 127, 'Ξ': 128, 'Π': 129, 'Σ': 130, 'Φ': 131, 'Ψ': 132, 'Ω': 133,
   // Act 3: Cygnus under lockdown and the Helix tower
   'Б': 134, 'Ж': 135, 'Д': 136, 'И': 137, 'Л': 138, 'Ц': 139, 'Ш': 140,
-  'П': 141, 'Ф': 142, 'Ч': 143, 'Щ': 144, 'Ы': 145, 'Э': 146, 'Ю': 147, 'Я': 148, 'З': 149
+  'П': 141, 'Ф': 142, 'Ч': 143, 'Щ': 144, 'Ы': 145, 'Э': 146, 'Ю': 147, 'Я': 148, 'З': 149,
+  // Blue Note
+  'а': 150, 'б': 151, 'в': 152, 'г': 153, 'д': 154, 'е': 155, 'ж': 156, 'з': 157, 'и': 158, 'й': 159, 'к': 160, 'л': 161
 };
 export const RUBBLE = 90;
 export const DOOR_OPEN = 60;
@@ -40,7 +42,8 @@ export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 2
   80, 82, 83, 87, 88, 89, 90, 91, 92, 94, 95, 96, 97, 98, 99,
   101, 102, 103, 104, 105, 106, 108, 109, 110, 111, 112, 113,
   116, 117, 118, 119, 120, 121, 122, 123, 125, 126, 127, 129, 130, 131, 132,
-  134, 135, 136, 138, 139, 142, 143, 144, 145, 146, 147, 148];
+  134, 135, 136, 138, 139, 142, 143, 144, 145, 146, 147, 148,
+  151, 152, 154, 155, 156, 157, 158, 159, 160];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
 export const TILE_LOOKS = {
   20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
@@ -49,6 +52,7 @@ export const TILE_LOOKS = {
   74: 'stall', 75: 'stall', 77: 'lantern', 71: 'rockwall',
   116: 'titanwall', 117: 'column', 119: 'poster', 120: 'cafe', 121: 'titanlamp', 122: 'hedge', 123: 'titanfountain',
   125: 'curtain', 126: 'flats', 127: 'roadcase', 129: 'footlights', 132: 'mirror',
+  151: 'bnwall', 152: 'bndish', 154: 'bnterminal', 156: 'bnwindow', 158: 'bnservers', 159: 'bnspeakers',
   134: 'barricade', 140: 'torn_shutter', 142: 'helixwall', 143: 'helixwindow', 144: 'reception', 145: 'haledesk', 146: 'helixplant', 148: 'helixlogo',
   102: 'labglass', 103: 'labbench', 104: 'servers', 105: 'specimen', 108: 'icepond', 109: 'frozentree', 110: 'crystals', 111: 'domeglass',
   80: 'basalt', 82: 'mineface', 83: 'timber', 87: 'chasm', 88: 'orecart', 90: 'rubble', 91: 'minelamp', 92: 'winch', 95: 'hutwall',
@@ -677,6 +681,92 @@ export const MAPS = {
       { id: 'reception', x: 7, y: 12, w: 3, label: 'Reception' },
       { id: 'hq_lift', x: 2, y: 7, label: 'Lift' },
       { id: 'hq_lift', x: 19, y: 7, label: 'Lift' }
+    ]
+  },
+
+  // ---- Track 08: Blue Note, the listening array past Saturn. The crew splits into two teams. ----
+  // Team A (the captain) works the outer ring; Team B works the maintenance spine. Each opens the way for the other.
+  bn_ring: {
+    name: 'Blue Note',
+    jp: 'ブルーノート',
+    where: 'The outer listening ring',
+    music: 'bluenote',
+    minimap: true,
+    rows: [
+      '##############################',
+      '#ббжжжббббйбжжжббзбббжжжббйбб#',
+      '#ааааааабаааааааааааааааааабб#',
+      '#ааааааабаааааааааааааааааабб#',
+      '#ааааааабаааввааааааааавваабб#',
+      '#ааааааабаааааааааааааааааабб#',
+      '#аааааааеггггггггггггггггггбб#',
+      '#ааааааабааааааааааааааааааеб#',
+      '#ааааааабаааааааааввааааааабб#',
+      '#аPPPPPабааааааиаааааиааааабб#',
+      '#аPPPPPабааааааиаааааиааааабб#',
+      '#аPPPPPабаааааааааааааааадабб#',
+      '#бббббббббйбббббббббббббббйбб#',
+      '##############################'
+    ],
+    swaps: [{ x: 8, y: 6, flag: 'bn_d1', to: 'а' }],
+    spawns: { default: { x: 4, y: 6, face: 'right' } },
+    ship: { x: 4, y: 11 },
+    npcs: [
+      { id: 'hale', x: 2, y: 3, face: 'right', if: 'hale_ally' }
+    ],
+    patrols: [
+      { id: 'top', look: 'listener', path: [[10, 3], [25, 3]], speed: 24, fight: 'listeners', ifNot: 'bn_cams' },
+      { id: 'low', look: 'listener', path: [[24, 11], [10, 11]], speed: 22, fight: 'listeners', ifNot: 'bn_cams' }
+    ],
+    objects: [
+      { id: 'bn_ship', x: 2, y: 9, w: 5, h: 3, label: 'Board the Hi-Hat' },
+      { id: 'bn_d1door', x: 8, y: 6, label: 'Ring door' },
+      { id: 'bn_lever', x: 17, y: 1, label: 'Pressure lever' },
+      { id: 'moment_tam', x: 12, y: 4, w: 2, label: 'Tuning arm' },
+      { id: 'moment_brushes', x: 15, y: 9, h: 2, label: 'Archive stack' },
+      { id: 'moment_lyra', x: 25, y: 11, label: 'Podium' },
+      { id: 'bn_coredoor', x: 27, y: 7, label: 'Core door' }
+    ]
+  },
+  bn_spine: {
+    name: 'Blue Note',
+    jp: 'ブルーノート',
+    where: 'The maintenance spine',
+    music: 'bluenote',
+    minimap: true,
+    rows: [
+      '############################',
+      '#ббббдбббббйббдббббдббббйбб#',
+      '#аааааааабааааааааааааааалл#',
+      '#аааааааабааааааааааааааалл#',
+      '#аааааааабаааиаааааааиааалл#',
+      '#аааааааабаааиаааааааиааалл#',
+      '#аааааааабааааааааааааааалл#',
+      '#аааааааакггггггггггггггглд#',
+      '#аааааааабааааааааааааааалл#',
+      '#аааааааабаааааааиааааааалл#',
+      '#аааааааабаааааааиааааааалл#',
+      '#аааааааабааааааааааааааалл#',
+      '#бббббббббббдбббббббббебббб#',
+      '############################'
+    ],
+    swaps: [{ x: 9, y: 7, flag: 'bn_d2', to: 'г' }],
+    spawns: { default: { x: 3, y: 7, face: 'right' } },
+    npcs: [
+      { id: 'rhea', x: 11, y: 11, face: 'right', if: 'bn_rhea_here', ifNot: 'bnm_rhea' }
+    ],
+    patrols: [
+      { id: 'sp1', look: 'listener', path: [[11, 3], [24, 3]], speed: 24, fight: 'listeners', ifNot: 'bn_cams' },
+      { id: 'sp2', look: 'listener', path: [[24, 11], [12, 11]], speed: 22, fight: 'listeners', ifNot: 'bn_cams' }
+    ],
+    objects: [
+      { id: 'bn_t1', x: 5, y: 1, label: 'Ring door controls' },
+      { id: 'bn_hatch', x: 9, y: 7, label: 'Pressure hatch' },
+      { id: 'bn_cams', x: 14, y: 1, label: 'Listener control' },
+      { id: 'moment_rook', x: 19, y: 1, label: 'Office logbook' },
+      { id: 'moment_rhea', x: 12, y: 12, label: 'Comms desk' },
+      { id: 'moment_juno', x: 22, y: 12, label: 'Holding cell' },
+      { id: 'bn_t3', x: 26, y: 7, label: 'Core controls' }
     ]
   },
 

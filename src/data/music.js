@@ -15,6 +15,7 @@ export const TRACKS = {
   nocturne: { file: 'music/nocturne.mp3', bpm: 84, label: "Mister Nocturne's show (the heist keeps its beat)" },
   lockdown: { file: 'music/lockdown.mp3', bpm: 100, label: 'Cygnus under lockdown' },
   helix:   { file: 'music/helix.mp3',   bpm: 92,  label: 'Helix Salvage, top floor' },
+  bluenote: { file: 'music/bluenote.mp3', bpm: 96, label: 'Blue Note, the listening array' },
   battle:  { file: 'music/battle.mp3',  bpm: 192, label: 'Big band brawl' },
   victory: { file: 'music/victory.mp3', bpm: 150, label: 'Payday' },
   brushes: { file: 'music/brushes.mp3', bpm: 120, label: "Brushes' song", unlock: 'song_done' },

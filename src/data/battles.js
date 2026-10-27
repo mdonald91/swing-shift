@@ -205,7 +205,10 @@ export const ENEMIES = {
   collector: { id: 'collector', name: 'Collector', hp: 250, atk: 36, def: 8, xp: 72, weakTo: ['shock'], word: 'GOTCHA!', verb: 'swings a stun baton at' },
   sharpshooter: { id: 'collector2', name: 'Collector sharpshooter', hp: 210, atk: 40, def: 6, xp: 72, weakTo: ['blunt'], resists: ['shot'], word: 'BLAM!', verb: 'takes a shot at' },
   bruiser: { id: 'collector', name: 'Collector bruiser', hp: 300, atk: 34, def: 10, xp: 80, weakTo: ['shot'], resists: ['blunt'], word: 'THWACK!', verb: 'tackles' },
-  helixguard: { id: 'helixsec', name: 'Helix security', hp: 300, atk: 37, def: 10, xp: 80, weakTo: ['shock'], resists: ['shot'], word: 'HALT!', verb: 'fires a tagging dart at' }
+  helixguard: { id: 'helixsec', name: 'Helix security', hp: 300, atk: 37, def: 10, xp: 80, weakTo: ['shock'], resists: ['shot'], word: 'HALT!', verb: 'fires a tagging dart at' },
+  // Blue Note: the listening array's own defences
+  listener: { id: 'drone', name: 'Listener drone', hp: 230, atk: 38, def: 9, xp: 70, weakTo: ['shock'], resists: ['blunt'], machine: true, word: 'PING!', verb: 'fires a sonic pulse at' },
+  node: { id: 'warden', name: 'Relay node', hp: 270, atk: 37, def: 9, xp: 90, ai: 'node', weakTo: ['blunt'], machine: true, word: 'ZZT!', verb: 'arcs a bolt at' }
 };
 const E = (key, over = {}) => ({ ...ENEMIES[key], ...over });
 
@@ -389,6 +392,21 @@ export const ENCOUNTERS = {
       { id: 'crane', name: 'Silas Crane', hp: 1250, atk: 41, def: 12, boss: true, ai: 'metronome', xp: 450, weakTo: ['blunt'], resists: ['shot'] },
       E('sharpshooter')
     ]
+  },
+  // ---- Blue Note: the listening array ----
+  listeners: {
+    bg: 'bluenote', intro: 'Listener drones swing round, their speaker grilles glowing. They have heard you.',
+    reward: { chits: 1000, items: { cell: 1 } },
+    enemies: [E('listener'), E('listener', { name: 'Listener drone (heavy)', hp: 300, atk: 41 })]
+  },
+  // The full Warden network, fought by both teams at once. Team A faces Warden Prime; Team B faces the relay
+  // nodes that power its shield. Each node down weakens the shield; Prime reroutes a dead node every fourth round.
+  warden_net: {
+    bg: 'bluenote', bounty: 'bluenote', teams: true,
+    intro: 'Warden Prime unfolds from the core like a cathedral organ made of guns. Somewhere below, three relay nodes spin up for Team B.',
+    noRun: "There's nowhere to run. Both teams are in, and the doors have locked behind you.",
+    enemiesA: [{ id: 'warden', name: 'Warden Prime', hp: 1350, atk: 41, def: 12, boss: true, machine: true, ai: 'prime', xp: 520, weakTo: ['shock'] }],
+    enemiesB: [E('node', { name: 'Relay node A' }), E('node', { name: 'Relay node B', role: 'jammer' }), E('node', { name: 'Relay node C' })]
   },
   // Brushes' holo-rehearsal on the Hi-Hat: repeatable, grows with the crew, XP only.
   rehearsal: {

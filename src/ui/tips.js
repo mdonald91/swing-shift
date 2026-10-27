@@ -45,6 +45,10 @@ export const TIPS = {
     title: 'Collectors on patrol',
     lines: ['Bounty hunters walk the plaza. The red cone in front of each one is what they can see. Walls and boards block their view.', 'Wait until they turn away, then move. If one spots you, you fight that group. Win, and they stop patrolling.']
   }),
+  squads: () => ({
+    title: 'Two teams',
+    lines: ['The crew has split. <b>Team A</b> (you) works the outer ring; <b>Team B</b> works the maintenance spine.', 'Each team opens doors for the other. Tap <b>Swap to Team B</b> at the top (or press <b>Tab</b>) to switch. Each team waits where you left it.']
+  }),
   metronome: () => ({
     title: 'The Metronome',
     lines: ['Crane counts down on his card: <b>Count-in 4, 3, 2</b>... On the downbeat he hits the whole crew at once.', 'Choose <b>Defend</b> just before the downbeat to halve it. Hitting Crane <b>on the beat</b> throws his count back by one, once a round.']
