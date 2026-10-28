@@ -12,7 +12,7 @@ export function objective() {
   if (!f.intro_done) return '';
   const met = ['met_rook', 'met_tam', 'met_brushes'].filter(k => f[k]).length;
   if (f.act1_done) {
-    if (f.game_done) return "The record's over. Thanks for listening";
+    if (f.game_done) return "The record's over. Thanks for listening. New Game+ waits on the title screen";
     if (f.bluenote_done) {
       if (state.location === 'lyceum_hall') return 'Say hello to the audience, then talk to Ambrose on stage';
       return f.lastset_arrived ? 'Fly back to the Lyceum on Titan from the cockpit' : 'Fly to Titan for the last set, from the cockpit';

@@ -6,7 +6,7 @@ import { BOUNTIES } from '../data/bounties.js';
 import { backdrop } from '../art/backdrops.js';
 import { playerPortrait, npcPortrait } from '../art/portrait.js';
 import { state, setFlag, saveGame, addRep } from '../state.js';
-import { crewStats, startingGroove, rhythmWindow, autoRhythm, pendingPicks, activeParty, addXp, available, level, partyAverageLevel, CREW_KEYS, captainFights } from '../systems/party.js';
+import { crewStats, startingGroove, rhythmWindow, autoRhythm, pendingPicks, activeParty, addXp, available, level, partyAverageLevel, CREW_KEYS, captainFights, ngpLevels } from '../systems/party.js';
 import { MAPS } from '../data/maps.js';
 import { bus } from '../bus.js';
 import { block, unblock } from '../systems/input.js';
@@ -16,6 +16,7 @@ import { playCut } from './cutscene.js';
 import { runDialogue } from './dialog.js';
 import { Hud } from './hud.js';
 import { tip } from './tips.js';
+import { markEnding } from '../systems/meta.js';
 import { rollCredits } from './credits.js';
 import { pickEnding } from '../data/endings.js';
 
@@ -54,7 +55,8 @@ export function startBattle(id, { retry = false, flag = null, retreatTo = null }
   if (enc.teams && state.squads?.split) {
     const sq = state.squads;
     // each side's enemies are sized to the team facing them (built for three a side)
-    const mk = (list, tag, n) => list.map((e, i) => { const k = n / 3, hp = Math.round(e.hp * k); return { ...e, key: tag + i, ko: false, hp, max: hp, atk: Math.round(e.atk * (.8 + .2 * k)) }; });
+    const NL = ngpLevels();
+    const mk = (list, tag, n) => list.map((e, i) => { const k = n / 3, hp = Math.round(e.hp * k * (1 + .045 * NL)); return { ...e, key: tag + i, ko: false, hp, max: hp, atk: Math.round(e.atk * (.8 + .2 * k) + 1.3 * NL), def: Math.round((e.def || 0) + .4 * NL), xp: Math.round((e.xp || 15) * (1 + .3 * NL)) }; });
     const pa = ['captain', ...sq.a.members.filter(available)].map(unit).map(ready), pb = sq.b.members.filter(available).map(unit).map(ready);
     teams = [
       { name: 'Team A', who: state.player.name, party: pa, enemies: mk(enc.enemiesA, 'a', pa.length) },
@@ -62,14 +64,14 @@ export function startBattle(id, { retry = false, flag = null, retreatTo = null }
     ];
     party = teams[0].party;
   }
-  // encounters marked "scale" grow with the crew (the rehearsal)
-  const L = enc.scale ? partyAverageLevel() - 1 : 0;
+  // encounters marked "scale" grow with the crew (the rehearsal); in New Game+ every fight grows to meet you
+  const L = enc.scale ? partyAverageLevel() - 1 : ngpLevels(), hpRate = enc.scale ? .2 : .045;
   let enemies = (enc.enemies || []).map((e, i) => ({
     ...e, key: 'e' + i, ko: false,
-    hp: Math.round(e.hp * (1 + .2 * L)), atk: Math.round(e.atk + 1.3 * L), def: Math.round((e.def || 0) + .4 * L), xp: Math.round((e.xp || 15) * (1 + .3 * L))
+    hp: Math.round(e.hp * (1 + hpRate * L)), atk: Math.round(e.atk + 1.3 * L), def: Math.round((e.def || 0) + .4 * L), xp: Math.round((e.xp || 15) * (1 + .3 * L))
   })).map(e => ({ ...e, max: e.hp }));
   for (const e of enemies) if (e.ai === 'sentinel') { e.shielded = true; e.summons = 0; }
-  for (const e of enemies) if (e.ai === 'ambrose') { e.mv = 0; e.bar = 0; }
+  for (const e of enemies) if (e.ai === 'ambrose') { e.mv = 0; e.bar = 0; e.hpK = e.hp / MOVEMENTS[0].hp; }
   for (const e of enemies) if (e.ai === 'mantis') {
     e.baseDef = e.def - (state.flags.core_kept ? 3 : 0);
     setStance(e, 'guard');
@@ -569,7 +571,7 @@ function hitEnemy(a, e, mult, word, snd, { type, pierce } = {}) {
   }
   Audio.sfx(snd);
   if (e.shielded && type === 'shock' && e.hp > 0) {
-    e.shielded = false; e.shieldT = 3;
+    e.shielded = false; e.shieldT = 4;
     setTimeout(() => { if (!root) return; pop(c, 'SHIELD DOWN', 'weak'); Audio.sfx('clam'); log(`The shock shorts out ${e.name}'s shield! Hit it with everything.`); update(); }, 250);
   }
   if (e.hp === 0 && e.ai === 'ambrose' && e.mv < MOVEMENTS.length - 1) { nextMovement(e); update(); return; }
@@ -580,7 +582,7 @@ function hitEnemy(a, e, mult, word, snd, { type, pierce } = {}) {
 // The last set: the next movement begins. Ambrose stands back up with a new trick and the band changes key.
 function nextMovement(e) {
   e.mv++; const mv = MOVEMENTS[e.mv];
-  e.hp = e.max = mv.hp; e.ko = false; e.bar = 0; e.answered = false; e.skipOnce = e.mv === 1 && state.flags.hale_ally;
+  e.hp = e.max = Math.round(mv.hp * (e.hpK || 1)); e.ko = false; e.bar = 0; e.answered = false; e.skipOnce = e.mv === 1 && state.flags.hale_ally;
   B.enemies.forEach(x => { if (x !== e && !x.ko) { x.ko = true; x.hp = 0; } });     // the echoes fade between movements
   B.movement = e.mv;
   const c = cardOf(e); pop(c, mv.n.toUpperCase(), 'weak');
@@ -1238,6 +1240,7 @@ function showLedger(res) {
         const end = pickEnding(state, available);
         setFlag('ending_' + end); setFlag('game_done');
         state.bounties.conductor = 'done'; setFlag('conductor_done');
+        markEnding(end, state.player?.name);
         await rollCredits(end);
       }
       state.bounties[res.id] = 'done';

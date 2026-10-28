@@ -893,3 +893,29 @@ body.ts-1 .liner ul li, body.ts-2 .liner ul li { font-size: calc(14px * var(--ts
 .cr-end { padding-top: 10px; }
 .cr-skip { position: fixed; right: max(16px, var(--safe-r)); bottom: calc(16px + var(--safe-b)); z-index: 6; background: transparent; border: 1px solid var(--line); color: var(--smoke); padding: 6px 12px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
 .bt-cmd .answer { background: var(--crimson); color: var(--cream); }
+
+/* ---------------- 1.0: extras, endings gallery, full jukebox, New Game+ ---------------- */
+.extras { max-width: 560px; width: 100%; max-height: min(86vh, 720px); display: flex; flex-direction: column; }
+.ex-tabs { display: flex; gap: 6px; padding: 12px 18px 0; }
+.ex-tabs button { flex: 1; padding: 9px 6px; background: var(--ink2); border: 1px solid var(--line-soft); color: var(--smoke); font: 600 12px var(--f-ui); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+.ex-tabs button.on { color: var(--mustard); border-color: var(--mustard); }
+.ex-body { overflow-y: auto; touch-action: pan-y; min-height: 0; flex: 1; }
+.ex-count { margin: 0; padding: 14px 18px 4px; color: var(--smoke); font-size: 13px; }
+.ex-endings { list-style: none; margin: 0; padding: 8px 18px 18px; display: flex; flex-direction: column; gap: 8px; }
+.ex-end { padding: 12px 14px; border: 1px dashed var(--line-soft); background: var(--ink2); }
+.ex-end b { display: block; font-family: var(--f-title); font-size: 20px; letter-spacing: .06em; text-transform: uppercase; color: var(--smoke); }
+.ex-end p { margin: 4px 0 6px; color: var(--smoke); font-size: 14px; }
+.ex-end small { color: var(--smoke); font-size: 12px; opacity: .8; }
+.ex-end.got { border-style: solid; border-color: var(--mustard); }
+.ex-end.got b { color: var(--mustard); }
+.ex-end.got p { color: var(--cream); }
+.ex-credits { padding: 18px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.ex-credits p { margin: 0; color: var(--cream); }
+.jb-count { color: var(--smoke); font-size: 13px; padding: 0 2px 4px; }
+.jb-row.locked { opacity: .45; cursor: default; }
+.jb-row.locked .jb-disc { filter: grayscale(1); }
+.slot-tag { font-style: normal; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; vertical-align: middle; padding: 2px 6px; margin-left: 6px; border: 1px solid var(--teal); color: var(--teal); }
+.slot-tag.done { border-color: var(--mustard); color: var(--mustard); }
+.slots-note { margin: 10px 0 0; color: var(--smoke); max-width: 520px; }
+.btn.ngp { border-color: var(--mustard); color: var(--mustard); }
+.cr-ngp p { max-width: 520px; margin-left: auto; margin-right: auto; }

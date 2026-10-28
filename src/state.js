@@ -1,4 +1,5 @@
 // Game state, save slots and settings. Saves live in this browser's local storage.
+import { backfill } from './systems/meta.js';
 const SLOT_KEY = 'swingshift.slot.';
 const SETTINGS_KEY = 'swingshift.settings';
 export const SLOT_COUNT = 3;
@@ -35,7 +36,8 @@ function blank() {
     job: null,             // the odd job you've taken: { id, picked }
     jobsDone: 0,
     jamStyle: 'bigband',
-    squads: null,          // Blue Note: the crew split into two teams { split, active: 'a'|'b', a: {members, loc, pos, face}, b: {...} }
+    squads: null,
+    ngp: 0,                // New Game+ cycle: 0 on a first playthrough          // Blue Note: the crew split into two teams { split, active: 'a'|'b', a: {members, loc, pos, face}, b: {...} }
     playtime: 0,
     savedAt: 0
   };
@@ -43,6 +45,22 @@ function blank() {
 
 export function newGame(slot, player) {
   Object.assign(state, blank(), { slot, player });
+}
+
+// New Game+: start the record again with the same captain, keeping the crew's levels, skills, gear and bonds.
+// The story, chits, items and standing all start fresh. Enemies grow to meet you (see systems/party.js ngpScale).
+export function newGamePlus(slot, from) {
+  const b = blank();
+  Object.assign(state, b, {
+    slot, player: from.player,
+    levels: JSON.parse(JSON.stringify(from.levels || {})),
+    skills: JSON.parse(JSON.stringify(from.skills || {})),
+    gear: [...(from.gear || [])],
+    bonds: { ...b.bonds, ...(from.bonds || {}) },
+    ngp: (from.ngp || 0) + 1
+  });
+  // they already know how to fight
+  for (const t of ['controls', 'battle', 'rhythm', 'types']) state.flags['tut_' + t] = true;
 }
 
 // Change faction standing, e.g. addRep({ docks: 1 }). Returns a short description of the change.
@@ -80,6 +98,7 @@ export function loadGame(slot) {
   state.jobsDone = data.jobsDone || 0;
   state.jamStyle = data.jamStyle || 'bigband';
   state.squads = data.squads || null;
+  state.ngp = data.ngp || 0;
   // saves from before levels existed: start the crew at a level that fits how far they've got
   if (!data.levels) {
     const f = state.flags;
@@ -90,6 +109,7 @@ export function loadGame(slot) {
   if (state.flags.velvet_done) for (const t of ['controls', 'battle', 'rhythm', 'types']) state.flags['tut_' + t] ??= true;
   // saves from before reputation existed
   if (state.flags.velvet_done && !state.flags.rep_init) { state.rep.office += 2; state.flags.rep_init = true; }
+  backfill(state);
   return true;
 }
 

@@ -305,7 +305,7 @@ export const ENCOUNTERS = {
     noRun: "The dome has sealed itself. Lyra is pressed against the glass behind you.",
     enemies: [
       E('labdrone', { hp: 180 }),
-      { id: 'warden', name: 'The Sentinel', hp: 950, atk: 34, def: 8, boss: true, machine: true, ai: 'sentinel', xp: 300, weakTo: ['shock'], resists: ['shot'] }
+      { id: 'warden', name: 'The Sentinel', hp: 860, atk: 34, def: 8, boss: true, machine: true, ai: 'sentinel', xp: 300, weakTo: ['shock'], resists: ['shot'] }
     ]
   },
 
@@ -317,7 +317,7 @@ export const ENCOUNTERS = {
     noRun: 'Two thousand people are watching. You are not leaving by the front.',
     enemies: [
       E('clockwork', { name: 'Clockwork violinist' }),
-      { id: 'nocturne', name: 'Mister Nocturne', hp: 1100, atk: 36, def: 10, boss: true, ai: 'nocturne', xp: 360, weakTo: ['shot'], resists: ['blunt'] },
+      { id: 'nocturne', name: 'Mister Nocturne', hp: 1000, atk: 36, def: 10, boss: true, ai: 'nocturne', xp: 360, weakTo: ['shot'], resists: ['blunt'] },
       E('clockwork', { name: 'Clockwork cellist', hp: 300 })
     ]
   },

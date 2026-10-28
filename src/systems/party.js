@@ -94,3 +94,17 @@ export function activeParty() {
   for (const r of ROSTER) { if (picked.length >= 3) break; if (!picked.includes(r.id) && available(r.id)) picked.push(r.id); }
   return picked;
 }
+
+// Roughly where the crew's level sits on a first playthrough, Track by Track (used to size New Game+ fights).
+const PROGRESS = [['bluenote_done', 19], ['metronome_done', 18], ['nocturne_done', 16], ['proto_done', 14], ['mantis_done', 12],
+  ['courier_done', 10], ['ghost_done', 7], ['velvet_done', 5]];
+export function expectedLevel(f = state.flags) {
+  for (const [k, lv] of PROGRESS) if (f[k]) return lv;
+  return 3;
+}
+// New Game+: how many levels ahead of a first playthrough the crew is (enemies grow by that much),
+// plus one more level every cycle so a second lap still bites.
+export function ngpLevels() {
+  if (!state.ngp) return 0;
+  return Math.max(0, partyAverageLevel() - expectedLevel()) + state.ngp;
+}

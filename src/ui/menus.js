@@ -575,26 +575,4 @@ function openCalibrate(done) {
   return m;
 }
 
-/* ---------------- Jukebox ---------------- */
-export function openJukebox() {
-  Audio.sfx('confirm');
-  const node = el(`<div class="panel jukebox">
-    ${head("Brushes' record collection", 'ジュークボックス')}
-    <ul class="jb-list"></ul>
-    <p class="muted small">Picks stick until you leave the ship.</p>
-  </div>`);
-  const m = openModal(node);
-  wireClose(node, m);
-  const list = node.querySelector('.jb-list');
-  const render = () => {
-    const tracks = Object.entries(TRACKS).filter(([k, t]) => !t.unlock || state.flags[t.unlock]);
-    list.innerHTML = tracks.map(([k, t]) => `
-      <li><button type="button" class="jb-row ${Audio.mood === k ? 'sel' : ''}" data-k="${k}">
-        <span class="jb-disc" aria-hidden="true"></span>
-        <span class="jb-main"><b>${esc(t.label)}</b><small>${Audio.isSuno(k) ? 'Your Suno track' : Audio.sunoMissing(k) || !settings.suno ? 'House band' : 'Suno track if present, else house band'}</small></span>
-        ${Audio.mood === k ? '<em>Playing</em>' : ''}
-      </button></li>`).join('');
-    list.querySelectorAll('.jb-row').forEach(r => r.addEventListener('click', () => { Audio.init(); Audio.setMood(r.dataset.k); Audio.sfx('tick'); setTimeout(render, 400); render(); }));
-  };
-  render();
-}
+export { openJukebox } from './extras.js';

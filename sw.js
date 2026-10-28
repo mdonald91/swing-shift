@@ -1,5 +1,5 @@
 // Offline support. Bump VERSION whenever you publish an update so phones pick it up.
-const VERSION = 'swing-shift-v0.16.0';
+const VERSION = 'swing-shift-v1.0.0';
 const SHELL = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'vendor/phaser.min.js',
@@ -9,7 +9,7 @@ const SHELL = [
   'src/data/dialogue.js', 'src/data/maps.js', 'src/data/music.js', 'src/data/shop.js', 'src/data/circuits.js', 'src/data/jobs.js', 'src/data/endings.js', 'src/systems/jobs.js',
   'src/scenes/WorldScene.js', 'src/systems/audio.js', 'src/systems/input.js', 'src/systems/party.js',
   'src/ui/ui.js', 'src/ui/title.js', 'src/ui/creator.js', 'src/ui/dialog.js',
-  'src/ui/menus.js', 'src/ui/hud.js', 'src/ui/cutscene.js', 'src/ui/battle.js', 'src/ui/busk.js', 'src/ui/tips.js', 'src/ui/recap.js', 'src/ui/circuit.js', 'src/ui/hihat.js', 'src/ui/echo.js', 'src/ui/credits.js'
+  'src/ui/menus.js', 'src/ui/hud.js', 'src/ui/cutscene.js', 'src/ui/battle.js', 'src/ui/busk.js', 'src/ui/tips.js', 'src/ui/recap.js', 'src/ui/circuit.js', 'src/ui/hihat.js', 'src/ui/echo.js', 'src/ui/credits.js', 'src/ui/extras.js', 'src/systems/meta.js'
 ];
 
 self.addEventListener('install', e => {

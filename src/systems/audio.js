@@ -1,6 +1,7 @@
 // Music and sound. A small generative jazz combo (walking bass, ride, piano, muted horn)
 // plays by default; your own Suno tracks from data/music.js take over when present.
 import { settings, state } from '../state.js';
+import { markHeard } from './meta.js';
 import { TRACKS } from '../data/music.js';
 
 const A = { ctx: null, master: null, gen: null, music: null, sfx: null, noise: null, step: 0, nextT: 0, mel: 69, comp: [] };
@@ -195,7 +196,7 @@ export const Audio = {
   setMood(name, force) {
     if (!MOODS[name]) return;
     if (name === moodName && !force && A.ctx) return;
-    moodName = name; mood = resolveMood(name);
+    moodName = name; mood = resolveMood(name); markHeard(name);
     Clock.bpm = mood.bpm; Clock.swing = mood.swing; resetClock();
     if (A.ctx) trySuno(name);
   },

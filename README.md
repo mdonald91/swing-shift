@@ -73,7 +73,9 @@ Any file that's missing is covered by the built-in generated jazz combo. If a tr
 
 **Balancing fights:** `node tools/balance.mjs` simulates every fight hundreds of times at different crew levels and prints the win rate and how much HP is left. Enemy stats live in `src/data/battles.js`.
 
-Saves are kept in the browser on each device (3 slots).
+Saves are kept in the browser on each device (3 slots). The endings gallery and the jukebox collection are shared by every slot on that device.
+
+**New Game+:** finish the record once and *New Game+* appears on the title screen. Pick the finished save, then a slot for the new run.
 
 ## Roadmap
 
@@ -92,5 +94,6 @@ Saves are kept in the browser on each device (3 slots).
 - [x] **0.14 Track 07, The Conductor:** Act 3 opens with a bounty on the crew, Cygnus Station under lockdown with collectors on patrol, shortcuts opened by your standing and old friends, the Metronome boss, who stands with you in the fight, and the Conductor's name
 - [x] **0.15 Track 08, Blue Note:** the listening array past Saturn, a two-team heist where each squad opens the way for the other, a moment for every crew member (and the ones who left), and the Warden network fought by both teams at once
 - [x] **0.16 Track 09, Last Set:** the finale at the Lyceum with everyone you met in the audience, a four-movement battle against Ambrose Hale, five endings set by your choices, bonds and standing, and credits with a where-are-they-now for everyone
+- [x] **1.0 Release:** New Game+ (keep your crew's levels, skills, gear and bonds; the bounties grow to meet them), an Extras menu with the endings gallery, the full jukebox (every track joins the collection as you hear it) and the credits, a balance pass across all nine Tracks and a final bug sweep
 
 Built with [Phaser 3](https://phaser.io) (MIT licence), included in `vendor/`.

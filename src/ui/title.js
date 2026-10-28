@@ -1,9 +1,11 @@
 // Title screen and save-slot picker.
-import { allSlots, latestSlot, loadGame, formatTime, SLOT_COUNT } from '../state.js';
+import { allSlots, latestSlot, loadGame, formatTime, SLOT_COUNT, newGamePlus, readSlot, state } from '../state.js';
+import { meta, backfill } from '../systems/meta.js';
+import { openExtras } from './extras.js';
 import { Audio } from '../systems/audio.js';
 import { playerPortrait } from '../art/portrait.js';
 import { MAPS } from '../data/maps.js';
-import { el, esc, showScreen, startWorld } from './ui.js';
+import { el, esc, showScreen, startWorld, toast } from './ui.js';
 import { Creator } from './creator.js';
 import { openSettings } from './menus.js';
 
@@ -20,7 +22,7 @@ export const Title = {
         <p class="tagline">Bounties. Jazz. One more tank of fuel.</p>
         <nav class="title-menu"></nav>
       </div>
-      <p class="title-foot">Build 0.16 · Last Set</p>
+      <p class="title-foot">Version 1.0</p>
     </section>`);
     showScreen(node);
     renderMenu(node, Audio.started);
@@ -35,10 +37,15 @@ function renderMenu(node, started) {
   } else {
     const latest = latestSlot();
     const any = allSlots().some(Boolean);
+    const done = allSlots().some(s => s?.flags?.game_done);
+    allSlots().forEach(s => s && backfill(s));            // saves from before 1.0 fill in the gallery and jukebox
+    const m = meta(), extras = any || Object.keys(m.heard).length > 1;
     nav.innerHTML = `
       ${latest >= 0 ? `<button class="btn primary big" type="button" data-a="continue">Continue</button>` : ''}
       <button class="btn ${latest >= 0 ? '' : 'primary big'}" type="button" data-a="new">New game</button>
+      ${done ? `<button class="btn ngp" type="button" data-a="ngp">New Game+</button>` : ''}
       ${any ? `<button class="btn" type="button" data-a="load">Load game</button>` : ''}
+      ${extras ? `<button class="btn" type="button" data-a="extras">Extras</button>` : ''}
       <button class="btn ghost" type="button" data-a="settings">Settings</button>`;
   }
   nav.querySelectorAll('[data-a]').forEach(b => b.addEventListener('click', () => {
@@ -48,37 +55,43 @@ function renderMenu(node, started) {
     if (a === 'continue') { if (loadGame(latestSlot())) { stopBg(); startWorld(); } }
     else if (a === 'new') slotPicker('new');
     else if (a === 'load') slotPicker('load');
+    else if (a === 'ngp') slotPicker('ngp-from');
+    else if (a === 'extras') openExtras(() => nav.querySelector('[data-a=extras]')?.focus({ preventScroll: true }));
     else if (a === 'settings') openSettings({ fromTitle: true });
   }));
   nav.querySelector('button')?.focus({ preventScroll: true });
 }
 
-function slotPicker(mode) {
+function slotPicker(mode, from) {
   stopBg();
   const slots = allSlots();
+  const T = { new: ['New game', 'Pick a save slot'], load: ['Load game', 'Pick a save'],
+    'ngp-from': ['New Game+', 'Pick a finished record to carry over'], 'ngp-to': ['New Game+', 'Pick where to save the new run'] }[mode];
   const node = el(`<section class="screen slots">
     <div class="slots-inner">
-      <p class="eyebrow">${mode === 'new' ? 'New game' : 'Load game'}</p>
-      <h2>${mode === 'new' ? 'Pick a save slot' : 'Pick a save'}</h2>
+      <p class="eyebrow">${T[0]}</p>
+      <h2>${T[1]}</h2>
+      ${mode === 'ngp-from' ? '<p class="slots-note">Your captain and crew start again from Track 01, keeping their levels, skills, gear and bonds. The bounties grow to meet them.</p>' : ''}
       <div class="slot-list">${Array.from({ length: SLOT_COUNT }, (_, i) => {
         const s = slots[i];
-        const disabled = mode === 'load' && !s;
+        const disabled = (mode === 'load' && !s) || (mode === 'ngp-from' && !s?.flags?.game_done);
         return `<button type="button" class="slot ${s ? '' : 'empty'}" data-i="${i}" ${disabled ? 'disabled' : ''}>
           <span class="slot-n">${i + 1}</span>
           ${s ? `<span class="slot-pt">${playerPortrait(s.player)}</span>
-            <span class="slot-main"><b>${esc(s.player.name)}</b><small>${esc((MAPS[s.location] || MAPS.ship).name)} · ${formatTime(s.playtime)} played</small>
+            <span class="slot-main"><b>${esc(s.player.name)}${s.ngp ? ` <i class="slot-tag">NG+${s.ngp > 1 ? s.ngp : ''}</i>` : ''}${s.flags?.game_done ? ' <i class="slot-tag done">Finished</i>' : ''}</b><small>${esc((MAPS[s.location] || MAPS.ship).name)} · ${formatTime(s.playtime)} played</small>
             <small class="when">${new Date(s.savedAt).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' })}</small></span>`
-            : `<span class="slot-main"><b>Empty</b><small>${mode === 'new' ? 'Start a new captain here' : 'No save'}</small></span>`}
+            : `<span class="slot-main"><b>Empty</b><small>${mode === 'new' ? 'Start a new captain here' : mode === 'ngp-to' ? 'Start the new run here' : 'No save'}</small></span>`}
         </button>`;
       }).join('')}</div>
       <button class="btn ghost" type="button" data-back>Back</button>
     </div>
   </section>`);
   showScreen(node);
-  node.querySelector('[data-back]').addEventListener('click', () => { Audio.sfx('back'); Title.show(); });
+  node.querySelector('[data-back]').addEventListener('click', () => { Audio.sfx('back'); mode === 'ngp-to' ? slotPicker('ngp-from') : Title.show(); });
   node.querySelectorAll('.slot').forEach(b => b.addEventListener('click', () => {
     const i = +b.dataset.i;
     if (mode === 'load') { Audio.sfx('confirm'); if (loadGame(i)) startWorld(); return; }
+    if (mode === 'ngp-from') { Audio.sfx('confirm'); slotPicker('ngp-to', i); return; }
     if (slots[i] && !b.dataset.armed) {
       b.dataset.armed = '1';
       b.querySelector('.slot-main small').textContent = 'Tap again to overwrite this save';
@@ -86,6 +99,7 @@ function slotPicker(mode) {
       return;
     }
     Audio.sfx('confirm');
+    if (mode === 'ngp-to') { const src = readSlot(from); if (src) { newGamePlus(i, src); startWorld(); setTimeout(() => toast(`New Game+${state.ngp > 1 ? ' ' + state.ngp : ''}: the crew remembers everything. So do the bounties.`), 3200); } return; }
     Creator.show(i);
   }));
   node.querySelector('.slot:not([disabled])')?.focus({ preventScroll: true });

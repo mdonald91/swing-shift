@@ -1173,6 +1173,22 @@ export const DIALOGUE = {
     { set: 'brushes_s2' }, { do: 'bond', arg: 'brushes' }
   ],
 
+  // ---- looks that were missing (Relay K-17 and Blue Note) ----
+  console_k17: [{ who: null, ifNot: 'power_on', t: 'A dead console. The screen holds a faint ghost of the last thing it showed: a waveform, four bars long.' },
+    { who: null, if: 'power_on', t: 'The relay console. Every channel is quiet except one, which keeps playing the same four bars.' }],
+  racks: [{ who: null, t: 'Signal racks, floor to ceiling. Someone has labelled one of them DO NOT TOUCH in very angry handwriting.' }],
+  cryo_look: [{ who: null, t: 'A cryo pod. The frost on the glass has a handprint in it, from the inside, long since melted.' }],
+  bunk: [{ who: null, pick: ['A crew bunk, neatly made. A paperback lies face down on the pillow, halfway through.', 'A bunk with a photo taped above it: the K-17 crew, all six of them, squinting into the sun on Ganymede.'] }],
+  locker: [{ who: null, pick: ['A crew locker. A spare jumpsuit, a toothbrush and a harmonica.', 'Locked. Somebody has scratched a little treble clef into the door.'] }],
+  window_k17: [{ who: null, t: 'Jupiter fills the window, slow and enormous. The relay has been watching it turn for twenty years.' }],
+  crate_k17: [{ who: null, t: 'Supply crates. Freeze-dried food, spare filters, and one crate marked GUITAR STRINGS (DO NOT EAT).' }],
+  bnwall: [{ who: null, t: 'The station wall is lined with sound baffles. Your footsteps vanish into it.' }],
+  bndish: [{ who: null, t: 'A listening dish, turned inwards. It hums very faintly when you speak, as if it is taking notes.' }],
+  bnterminal: [{ who: null, ifNot: 'bn_cams', t: 'An array terminal. Thousands of channels scroll past: every bar, dock and lounge in the system.' },
+    { who: null, if: 'bn_cams', t: 'An array terminal. Juno has replaced every channel name with the word NOPE.' }],
+  bnwindow: [{ who: null, t: "Saturn's rings, close enough to count the ice. Somewhere out there, a dish is listening to you look at them." }],
+  bnservers: [{ who: null, t: 'Server stacks. A label reads: ARCHIVE, 1 OF 4,000. Fifty years of everyone, recorded.' }],
+  bnspeakers: [{ who: null, t: 'A wall of speakers, every one of them silent. Waiting for one song.' }],
   // ---- Track 09: Last Set ----
   nav_lastset: [
     { if: 'lastset_arrived', do: 'toLastSet' },
