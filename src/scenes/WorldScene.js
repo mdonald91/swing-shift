@@ -494,7 +494,6 @@ export class WorldScene extends Phaser.Scene {
       Input.action = false; Input.menu = false;
       return;
     }
-    state.playtime += dt / 1000;
 
     let vx = Input.x, vy = Input.y;
     if (k.left.isDown || k.a.isDown) vx = -1;

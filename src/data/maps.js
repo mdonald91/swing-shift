@@ -32,7 +32,7 @@ export const TILE = {
   // Blue Note
   'а': 150, 'б': 151, 'в': 152, 'г': 153, 'д': 154, 'е': 155, 'ж': 156, 'з': 157, 'и': 158, 'й': 159, 'к': 160, 'л': 161,
   // the Lyceum's auditorium
-  'м': 162, 'н': 163
+  'м': 162, 'н': 163, 'о': 164
 };
 export const RUBBLE = 90;
 export const DOOR_OPEN = 60;
@@ -45,7 +45,7 @@ export const SOLID = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 2
   101, 102, 103, 104, 105, 106, 108, 109, 110, 111, 112, 113,
   116, 117, 118, 119, 120, 121, 122, 123, 125, 126, 127, 129, 130, 131, 132,
   134, 135, 136, 138, 139, 142, 143, 144, 145, 146, 147, 148,
-  151, 152, 154, 155, 156, 157, 158, 159, 160, 162];
+  151, 152, 154, 155, 156, 157, 158, 159, 160, 162, 164];
 // Tiles that give a generic "Look" when you face them and nothing more specific is there.
 export const TILE_LOOKS = {
   20: 'container', 21: 'container', 22: 'container', 26: 'lamp', 24: 'warehouse',
@@ -167,7 +167,7 @@ export const MAPS = {
     rain: true,
     glows: [
       { x: 3, y: 1, w: 2, c: 0xff5fa2 }, { x: 13, y: 1, w: 2, c: 0x5fe3d4 }, { x: 27, y: 1, w: 2, c: 0xffd34d },
-      { x: 17, y: 1, w: 1, c: 0xff5fa2 }, { x: 24, y: 1, w: 1, c: 0x5fe3d4 }
+      { x: 17, y: 1, w: 1, c: 0xff5fa2 }, { x: 24, y: 1, w: 1, c: 0x5fe3d4 }, { x: 14, y: 9, w: 4, c: 0xffd34d }
     ],
     rows: [
       '################################',
@@ -180,7 +180,8 @@ export const MAPS = {
       '#wwwwwwwwwwwwwwwwwwwwwwwwwwwwww#',
       '#wkwwwuuuwwwwwwwwwwwwwwwwwwwkww#',
       '#wwwwwwwwwwwwwwwwwwwwwwwwwwwwww#',
-      '#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#'
+      '#XXXXXXXXXXXXXооооXXXXXXXXXXXXX#',
+      '##############оооо##############'
     ],
     spawns: { default: { x: 15, y: 8 }, bar: { x: 17, y: 2 } },
     npcs: [
@@ -200,7 +201,7 @@ export const MAPS = {
       { id: 'helix', x: 24, y: 1, label: 'Helix Salvage' },
       { id: 'stand', x: 6, y: 8, w: 3, label: 'Noodle stand' },
       { id: 'vend_cygnus', x: 29, y: 3, label: 'Vending machine' },
-      { id: 'dockgate', x: 13, y: 10, w: 5, label: 'Docking bay' }
+      { id: 'dockgate', x: 13, y: 10, w: 6, label: 'Docking bay: back to the Hi-Hat' }
     ]
   },
 

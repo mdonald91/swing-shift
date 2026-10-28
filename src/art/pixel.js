@@ -560,6 +560,9 @@ export function tileSheet() {
   // a row of red velvet seats
   r = at(162); r(0, 0, 16, 16, '#3a1418'); r(0, 0, 16, 2, '#2a0e12'); for (let x = 0; x < 16; x += 4) { r(x, 3, 3, 6, '#9a2a2a'); r(x, 3, 3, 1, '#c84a42'); r(x, 9, 3, 3, '#7a1e1e'); r(x + 3, 4, 1, 9, '#2a0e12'); } r(0, 13, 16, 3, '#2a0e12'); r(1, 14, 14, 1, '#e9b23a55');
   // aisle carpet with a gold runner
+  // the docking bay gate on Cygnus: a gap in the railing with a lit gangway and arrows pointing to the ships
+  r = at(164); r(0, 0, 16, 16, '#0b0d18'); r(0, 0, 16, 2, '#1a2238'); r(0, 0, 1, 16, '#5fe3d4'); r(15, 0, 1, 16, '#5fe3d4');
+  for (let y = 2; y < 16; y += 5) { r(4, y, 8, 2, '#e9b23a'); r(6, y + 2, 4, 1, '#e9b23a'); r(7, y + 3, 2, 1, '#e9b23a'); }
   r = at(163); r(0, 0, 16, 16, '#5a1a20'); r(0, 0, 16, 1, '#6a2228'); r(3, 0, 1, 16, '#e9b23a88'); r(12, 0, 1, 16, '#e9b23a88'); r(7, 6, 2, 2, '#7a2a30');
   r = at(31); dock(r); r(3, 3, 10, 12, '#2b8f8a'); r(3, 6, 10, 1, '#1d6663'); r(3, 11, 10, 1, '#1d6663'); r(3, 2, 10, 2, '#3fb0aa'); r(6, 2, 4, 1, '#1d6663'); r(3, 14, 10, 1, '#14403e');
   return cv;

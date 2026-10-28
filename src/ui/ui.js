@@ -156,6 +156,14 @@ function autosave() {
   setTimeout(() => { if (saveGame()) Hud.autosaved(); }, 250);
 }
 
+// Play time: every second the game is open on a save and the tab is visible counts, including talking,
+// cutscenes, menus and fights (it used to count only time spent walking).
+let lastTick = 0;
+setInterval(() => {
+  const now = performance.now(), d = (now - lastTick) / 1000; lastTick = now;
+  if (document.body.classList.contains('in-world') && !document.hidden && d > 0 && d < 5) state.playtime = (state.playtime || 0) + d;
+}, 1000);
+
 export function startWorld() {
   showScreen(null);
   document.body.classList.add('in-world');
